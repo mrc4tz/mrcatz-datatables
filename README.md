@@ -11,6 +11,8 @@
 
 Full-featured DataTable + CRUD base class for **Laravel Livewire** — from install to a complete admin page in minutes.
 
+**[View Live Demo](https://mrcatz-datatables-demo.xo.je)** | **[Demo Source Code](https://github.com/mrc4tz/mrcatz-datatable-demo)**
+
 One command, four files, ready to go:
 
 ```bash
