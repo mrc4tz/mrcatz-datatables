@@ -3,6 +3,7 @@
 namespace MrCatz\DataTable;
 
 use Illuminate\Support\ServiceProvider;
+use MrCatz\DataTable\Console\MrcatzMakeCommand;
 
 class MrCatzServiceProvider extends ServiceProvider
 {
@@ -13,5 +14,11 @@ class MrCatzServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/mrcatz'),
         ], 'mrcatz-views');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                MrcatzMakeCommand::class,
+            ]);
+        }
     }
 }

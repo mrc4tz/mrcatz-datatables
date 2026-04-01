@@ -1,0 +1,13 @@
+<div>
+
+    @extends('mrcatz::components.ui.datatable-form')
+
+    @section('forms')
+
+        {{-- Tambahkan form fields di sini --}}
+        {{-- Contoh: --}}
+        {{-- <x-ui.input id="name" placeholder="Nama" message="{{ $errors->first('name') }}" input_type="text" icon="person" /> --}}
+
+    @endsection
+
+</div>

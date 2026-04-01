@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Livewire\{{path}}\{{name}};
+
+use App\Models\{{name}};
+use MrCatz\DataTable\MrCatzComponent;
+use Illuminate\Support\Facades\Auth;
+
+class {{name}}Page extends MrCatzComponent
+{
+    // Tambahkan property form sesuai kebutuhan
+    // public $field_name;
+
+    public function mount()
+    {
+        $this->setTitle('{{name}}');
+        session()->put('active', '{{pathLower}}-{{kebab}}');
+        $this->breadcrumbs = [
+            ['title' => 'Dashboard', 'url' => route('{{pathLower}}.dashboard')],
+            ['title' => '{{name}}', 'url' => null],
+        ];
+    }
+
+    public function render()
+    {
+        return view('livewire.{{pathLower}}.{{kebab}}.{{kebab}}-page')
+            ->layout('components.layouts.admin_layout');
+    }
+
+    public function prepareAddData()
+    {
+        $this->form_title = 'Tambah {{name}}';
+        $this->resetErrorBag();
+        $this->resetValidation();
+        // Reset form fields
+    }
+
+    public function prepareEditData($data)
+    {
+        $this->id = $data['id'];
+        $this->form_title = 'Edit {{name}}';
+        $this->resetErrorBag();
+        $this->resetValidation();
+        // Set form fields dari $data
+    }
+
+    public function prepareDeleteData($data)
+    {
+        $this->id = $data['id'];
+        $this->form_title = 'Hapus {{name}}';
+        $this->deleted_text = $data['id'];
+    }
+
+    public function saveData()
+    {
+        // $this->validate([...]);
+
+        if ($this->isEdit) {
+            $record = {{name}}::find($this->id);
+            // $record->update([...]);
+            $this->dispatch_to_view(true, 'update');
+        } else {
+            // $record = {{name}}::create([...]);
+            $this->dispatch_to_view(true, 'insert');
+        }
+    }
+
+    public function dropData()
+    {
+        $record = {{name}}::find($this->id);
+
+        if (!$record) {
+            $this->show_notif('error', '{{name}} tidak ditemukan!');
+            return;
+        }
+
+        $delete = $record->delete();
+        $this->dispatch_to_view($delete, 'delete');
+    }
+
+    public function dropBulkData($selectedRows)
+    {
+        if (empty($selectedRows)) return;
+
+        $count = {{name}}::whereIn('id', $selectedRows)->delete();
+
+        $this->dispatch('refresh-data', [
+            'status' => true,
+            'text' => $count . ' {{lower}} berhasil dihapus!'
+        ]);
+    }
+}

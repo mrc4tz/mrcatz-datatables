@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Livewire\{{path}}\{{name}};
+
+use MrCatz\DataTable\MrCatzDataTableFilter;
+use MrCatz\DataTable\MrCatzDataTables;
+use MrCatz\DataTable\MrCatzDataTablesComponent;
+use Illuminate\Support\Facades\DB;
+
+class {{name}}Table extends MrCatzDataTablesComponent
+{
+    public $showSearch = true;
+    public $showAddButton = true;
+    public $exportTitle = 'Data {{name}}';
+
+    public function configTable()
+    {
+        return [
+            'table_name' => '{{table}}',
+            'table_id' => 'id',
+        ];
+    }
+
+    public function baseQuery()
+    {
+        return DB::table('{{table}}');
+    }
+
+    public function setTable()
+    {
+        return $this->CreateMrCatzTable()
+            ->withColumnIndex('No')
+            // Tambahkan kolom sesuai kebutuhan:
+            // ->withColumn('Nama', 'name')
+            // ->withColumn('Email', 'email')
+            ->withCustomColumn('Aksi', function ($data, $i) {
+                return MrCatzDataTables::getActionView($data, $i, true, true);
+            });
+    }
+
+    public function setFilter()
+    {
+        // Tambahkan filter jika dibutuhkan:
+        // $filter = MrCatzDataTableFilter::create(
+        //     'filter_id', 'Label', $data, 'value', 'label', 'db_column'
+        // )->get();
+        // return [$filter];
+
+        return [];
+    }
+
+    public function getRowPerPageOption()
+    {
+        return [10, 15, 20, 30];
+    }
+}

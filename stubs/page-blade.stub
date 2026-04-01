@@ -1,0 +1,15 @@
+@push('title')
+    <title>{{ $title ?? '{{name}}' }} || {{ config('site.name', config('app.name')) }}</title>
+@endpush
+
+<div class="grid-row p-6">
+
+    @include('mrcatz::components.ui.breadcrumbs')
+
+    <livewire:{{pathLower}}.{{kebab}}.{{kebab}}-table/>
+
+    @include('livewire.{{pathLower}}.{{kebab}}.{{snake}}_form')
+
+</div>
+
+@include('mrcatz::components.ui.datatable-scripts')

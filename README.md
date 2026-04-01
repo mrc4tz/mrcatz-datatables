@@ -10,6 +10,50 @@ composer require mrcatz/datatable
 
 Laravel akan otomatis mendaftarkan service provider via package discovery.
 
+---
+
+## Generator (Artisan Command)
+
+Generate semua file yang dibutuhkan untuk halaman CRUD baru dalam satu perintah:
+
+```bash
+php artisan mrcatz:make Product
+```
+
+Ini akan membuat 4 file:
+
+```
+app/Livewire/Admin/Product/ProductPage.php       ← CRUD logic
+app/Livewire/Admin/Product/ProductTable.php       ← DataTable config
+resources/views/livewire/admin/product/product-page.blade.php
+resources/views/livewire/admin/product/product_form.blade.php
+```
+
+### Opsi
+
+```bash
+# Custom nama tabel database (default: plural dari nama resource)
+php artisan mrcatz:make Product --table=my_products
+
+# Custom path folder (default: Admin)
+php artisan mrcatz:make Product --path=Dashboard
+
+# Overwrite file yang sudah ada
+php artisan mrcatz:make Product --force
+```
+
+### Setelah Generate
+
+1. Tambahkan route:
+   ```php
+   Route::get('/product', ProductPage::class)->name('product');
+   ```
+2. Edit `baseQuery()` dan kolom di `ProductTable.php`
+3. Tambahkan form fields di `product_form.blade.php`
+4. Sesuaikan `saveData()` dan validasi di `ProductPage.php`
+
+---
+
 ### Publish Views (Opsional)
 
 Jika ingin meng-customize tampilan blade:
