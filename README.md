@@ -316,7 +316,7 @@ class UserTable extends MrCatzDataTablesComponent
 {{-- resources/views/livewire/admin/user/user-form.blade.php --}}
 @extends('mrcatz::components.ui.datatable-form')
 
-@section('form-body')
+@section('forms')
     <div class="space-y-4">
         <label class="form-control">
             <div class="label"><span class="label-text">Nama</span></div>

@@ -5,8 +5,14 @@
     @section('forms')
 
         {{-- Tambahkan form fields di sini --}}
-        {{-- Contoh: --}}
-        {{-- <x-ui.input id="name" placeholder="Nama" message="{{ $errors->first('name') }}" input_type="text" icon="person" /> --}}
+        {{-- Contoh form field: --}}
+        {{-- <div class="space-y-4">
+                <label class="form-control">
+                    <div class="label"><span class="label-text">Nama</span></div>
+                    <input type="text" class="input input-bordered" wire:model="name" />
+                    @error('name') <span class="text-error text-xs">{{ '{{ $message }}' }}</span> @enderror
+                </label>
+            </div> --}}
 
     @endsection
 
