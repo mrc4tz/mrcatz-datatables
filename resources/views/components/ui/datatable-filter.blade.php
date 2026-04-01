@@ -38,9 +38,9 @@
                     <div style="position:relative;">
                         {{-- Trigger button --}}
                         <div @click="isOpen = !isOpen" @click.outside="close()" @keydown.escape="close()"
-                             style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:32px;padding:0 12px;font-size:13px;cursor:pointer;border-radius:var(--rounded-btn);border:1px solid color-mix(in srgb,var(--color-base-content) 15%,transparent);background:var(--color-base-100);color:var(--color-base-content);user-select:none;">
+                             style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:2rem;padding:0 0.75rem;font-size:0.8125rem;line-height:1.25rem;cursor:pointer;border-radius:var(--rounded-btn);border:1px solid color-mix(in srgb,var(--color-base-content) 20%,transparent);background:var(--color-base-100);color:var(--color-base-content);user-select:none;">
                             <span x-text="selectedLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"></span>
-                            <span class="material-icons" style="font-size:16px;opacity:.3;transition:transform .2s;" :style="isOpen ? 'transform:rotate(180deg)' : ''">expand_more</span>
+                            <span class="material-icons" style="font-size:1rem;opacity:.3;transition:transform .2s;" :style="isOpen ? 'transform:rotate(180deg)' : ''">expand_more</span>
                         </div>
 
                         {{-- Dropdown panel --}}
@@ -50,12 +50,12 @@
 
                             {{-- Search --}}
                             <div style="padding:8px 8px 4px;">
-                                <div style="display:flex;align-items:center;gap:6px;padding:0 8px;height:30px;border-radius:0.5rem;border:1px solid color-mix(in srgb,var(--color-base-content) 12%,transparent);background:color-mix(in srgb,var(--color-base-content) 3%,transparent);">
-                                    <span class="material-icons" style="font-size:14px;opacity:.25;">search</span>
+                                <div style="display:flex;align-items:center;gap:6px;padding:0 0.625rem;height:2rem;border-radius:var(--rounded-btn);border:1px solid color-mix(in srgb,var(--color-base-content) 12%,transparent);background:color-mix(in srgb,var(--color-base-content) 3%,transparent);">
+                                    <span class="material-icons" style="font-size:0.875rem;opacity:.25;">search</span>
                                     <input type="text" x-model="query" x-ref="filterSearch" @click.stop
                                            x-init="$watch('isOpen', v => { if(v) $nextTick(() => $refs.filterSearch.focus()) })"
                                            placeholder="Cari..."
-                                           style="width:100%;font-size:12px;border:none;outline:none;background:transparent;color:var(--color-base-content);" />
+                                           style="width:100%;font-size:0.8125rem;line-height:1.25rem;border:none;outline:none;background:transparent;color:var(--color-base-content);" />
                                 </div>
                             </div>
 
@@ -65,7 +65,7 @@
                                 <div @click="pick('', 'Semua')"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
                                      :style="selected === '' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
-                                     style="padding:7px 12px;font-size:13px;border-radius:0.5rem;cursor:pointer;transition:background .1s;"
+                                     style="padding:0.4375rem 0.75rem;font-size:0.8125rem;line-height:1.25rem;border-radius:var(--rounded-btn);cursor:pointer;transition:background .1s;"
                                      onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
                                      onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                     Semua
@@ -75,7 +75,7 @@
                                     <div @click="pick('{{ addslashes($data[$filter['value']]) }}', '{{ addslashes($data[$filter['option']]) }}')"
                                          x-show="'{{ strtolower(addslashes($data[$filter['option']])) }}'.includes(query.toLowerCase()) || query === ''"
                                          :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
-                                         style="padding:7px 12px;font-size:13px;border-radius:0.5rem;cursor:pointer;transition:background .1s;"
+                                         style="padding:0.4375rem 0.75rem;font-size:0.8125rem;line-height:1.25rem;border-radius:var(--rounded-btn);cursor:pointer;transition:background .1s;"
                                          onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
                                          onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                         {{ $data[$filter['option']] }}
