@@ -60,12 +60,12 @@
                             </div>
 
                             {{-- Options list --}}
-                            <div style="max-height:180px;overflow-y:auto;padding:4px 6px 6px;">
+                            <div style="max-height:180px;overflow-y:auto;padding:4px 6px 8px;display:flex;flex-direction:column;gap:2px;">
                                 {{-- Semua --}}
                                 <div @click="pick('', 'Semua')"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
                                      :style="selected === '' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
-                                     style="padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;"
+                                     style="padding:7px 12px;font-size:13px;border-radius:0.5rem;cursor:pointer;transition:background .1s;"
                                      onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
                                      onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                     Semua
@@ -75,7 +75,7 @@
                                     <div @click="pick('{{ addslashes($data[$filter['value']]) }}', '{{ addslashes($data[$filter['option']]) }}')"
                                          x-show="'{{ strtolower(addslashes($data[$filter['option']])) }}'.includes(query.toLowerCase()) || query === ''"
                                          :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
-                                         style="padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;"
+                                         style="padding:7px 12px;font-size:13px;border-radius:0.5rem;cursor:pointer;transition:background .1s;"
                                          onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
                                          onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                         {{ $data[$filter['option']] }}
