@@ -29,6 +29,16 @@ Tambahkan path package ke konfigurasi Tailwind agar class dari blade views ter-c
 './vendor/mrcatz/**/*.blade.php'
 ```
 
+### Notifikasi Toast
+
+Tambahkan include berikut di layout utama (misalnya `admin_layout.blade.php`), sebelum `</body>`:
+
+```blade
+@include('mrcatz::components.ui.notification')
+```
+
+Ini menyediakan toast notification yang digunakan oleh `show_notif()` dan `dispatch_to_view()`.
+
 ### Dependensi Opsional
 
 ```bash
