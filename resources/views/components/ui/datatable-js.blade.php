@@ -235,13 +235,15 @@
                                     @if($posts->gravity($ci)=='center') text-center
                                     @elseif($posts->gravity($ci)=='right') text-right
                                     @else text-left @endif"
+                                    @if($enableColumnReorder)
                                     draggable="true"
                                     @dragstart="dragCol = {{ $pos }}"
                                     @dragover.prevent="dragOverCol = {{ $pos }}"
                                     @drop.prevent="$wire.reorderColumn(dragCol, {{ $pos }}, {{ $totalCols }}); dragCol = -1; dragOverCol = -1"
                                     @dragend="dragCol = -1; dragOverCol = -1"
-                                    :style="dragOverCol === {{ $pos }} && dragCol !== {{ $pos }} && dragCol >= 0 ? 'box-shadow: inset 3px 0 0 0 var(--color-primary)' : ''">
-                                    @if($posts->getKey($ci) != null && $posts->getSort($ci))
+                                    :style="dragOverCol === {{ $pos }} && dragCol !== {{ $pos }} && dragCol >= 0 ? 'box-shadow: inset 3px 0 0 0 var(--color-primary)' : ''"
+                                    @endif>
+                                    @if($enableColumnSorting && $posts->getKey($ci) != null && $posts->getSort($ci))
                                         <button class="flex items-center gap-1 hover:text-primary transition-colors duration-200"
                                                 wire:click="orderData({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }})">
                                             {{ $posts->getHead($ci) }}

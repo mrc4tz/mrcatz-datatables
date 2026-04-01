@@ -574,6 +574,8 @@ $this->dispatch_to_view($success, 'insert');  // 'insert', 'update', 'delete'
 | `$showBulkButton` | bool | `false` | Tombol toggle bulk select |
 | `$enableKeyboardNav` | bool | `true` | Keyboard navigation |
 | `$enableColumnResize` | bool | `true` | Column resize |
+| `$enableColumnReorder` | bool | `true` | Column reorder (drag & drop header) |
+| `$enableColumnSorting` | bool | `true` | Column sorting (klik header untuk sort) |
 | `$expandableRows` | bool | `false` | Expandable row detail |
 
 ---
