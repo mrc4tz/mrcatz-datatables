@@ -67,7 +67,6 @@
 
     {{-- Toolbar --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-        {{-- Search & Filter Toggle --}}
         <div class="flex items-center gap-2 w-full md:w-auto">
             @if($showSearch)
                 <form class="flex-1 md:flex-none" wire:submit="searchData">
@@ -75,7 +74,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 text-base-content/40">
                             <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd"/>
                         </svg>
-                        <input type="text" class="grow text-sm" placeholder="Cari data..." wire:model="search"
+                        <input type="text" class="grow text-sm" placeholder="{{ mrcatz_lang('search_placeholder') }}" wire:model="search"
                                @if($typeSearchWithDelay)
                                    x-data @input.debounce.{{$typeSearchDelay}}="$dispatch('search-typing', { value: $event.target.value })"
                                @elseif($typeSearch)
@@ -95,16 +94,15 @@
                     <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-base-200/40">
                         <span class="material-icons text-base-content/40 text-sm">filter_alt</span>
                         <p class="text-sm text-base-content/60">
-                            <span class="font-semibold text-base-content">{{ $activeFilterCount }}</span> filter aktif
+                            <span class="font-semibold text-base-content">{{ $activeFilterCount }}</span> {{ mrcatz_lang('filter_active') }}
                         </p>
                     </div>
                 @endif
             @endif
 
-            {{-- Filter presets --}}
             @if(count($filters) > 0 || $showSearch)
                 <div class="relative hidden sm:block">
-                    <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="Filter Preset"
+                    <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('filter_preset') }}"
                             @click="presetOpen = !presetOpen">
                         <span class="material-icons text-lg">bookmarks</span>
                     </button>
@@ -114,10 +112,9 @@
                          x-transition:leave="transition ease-in duration-100"
                          x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                          class="absolute right-0 top-full mt-2 w-64 bg-base-100 border border-base-content/10 rounded-xl shadow-xl z-50 p-3 space-y-2">
-                        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide">Filter Preset</p>
-
+                        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide">{{ mrcatz_lang('filter_preset') }}</p>
                         <template x-if="presets.length === 0">
-                            <p class="text-xs text-base-content/30 italic py-2">Belum ada preset tersimpan</p>
+                            <p class="text-xs text-base-content/30 italic py-2">{{ mrcatz_lang('filter_no_preset') }}</p>
                         </template>
                         <template x-for="(p, i) in presets" :key="i">
                             <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-base-200/50 cursor-pointer group">
@@ -125,10 +122,9 @@
                                 <button class="material-icons text-xs text-base-content/20 group-hover:text-error transition-colors" @click.stop="deletePreset(i)">close</button>
                             </div>
                         </template>
-
                         <div class="border-t border-base-content/10 pt-2 mt-2">
                             <div class="flex gap-1">
-                                <input type="text" class="input input-bordered input-xs flex-1 text-xs" placeholder="Nama preset..."
+                                <input type="text" class="input input-bordered input-xs flex-1 text-xs" placeholder="{{ mrcatz_lang('filter_preset_placeholder') }}"
                                        x-model="presetName" @keydown.enter.prevent="savePreset()"/>
                                 <button class="btn btn-xs btn-primary btn-square" @click="savePreset()">
                                     <span class="material-icons text-xs">save</span>
@@ -140,30 +136,29 @@
             @endif
         </div>
 
-        {{-- Action Buttons --}}
         <div class="flex items-center gap-2 justify-end">
             @if($showAddButton)
                 <button class="btn btn-sm md:btn-md btn-primary gap-2 shadow-sm" wire:click="addData()">
                     <span class="material-icons text-lg">add</span>
-                    <span class="hidden sm:inline">Tambahkan</span>
+                    <span class="hidden sm:inline">{{ mrcatz_lang('btn_add') }}</span>
                 </button>
             @endif
             @if($bulkEnabled && $showBulkButton)
                 <button class="btn btn-sm md:btn-md gap-1 {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
                         wire:click="toggleBulk">
                     <span class="material-icons text-lg">{{ $bulkActive ? 'check_box' : 'check_box_outline_blank' }}</span>
-                    <span class="hidden sm:inline text-sm">Pilih</span>
+                    <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_select') }}</span>
                 </button>
             @endif
             @if($showExportButton)
                 <button class="btn btn-sm md:btn-md btn-ghost border border-base-content/15 gap-1"
                         wire:click="openExportModal">
                     <span class="material-icons text-lg">download</span>
-                    <span class="hidden sm:inline text-sm">Export</span>
+                    <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_export') }}</span>
                 </button>
             @endif
             @if(count($filters) > 0 || $showSearch)
-                <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="Reset"
+                <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
                         x-on:click="
                             if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
                                 document.getElementById('modal-reset-confirm')?.showModal()
@@ -177,31 +172,28 @@
         </div>
     </div>
 
-    {{-- Filters --}}
     @include('mrcatz::components.ui.datatable-filter')
 
-    {{-- Bulk Action Bar --}}
     @if($bulkShow && count($selectedRows) > 0)
         <div class="mb-4 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="material-icons text-primary text-sm">check_circle</span>
-                <span class="text-sm font-medium text-primary">{{ count($selectedRows) }} data dipilih</span>
+                <span class="text-sm font-medium text-primary">{{ count($selectedRows) }} {{ mrcatz_lang('data_selected') }}</span>
             </div>
             <div class="flex gap-2">
                 <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none"
                         x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
                     <span class="material-icons text-xs">delete</span>
-                    Hapus
+                    {{ mrcatz_lang('btn_delete') }}
                 </button>
                 <button class="btn btn-xs btn-ghost gap-1 flex-1 sm:flex-none" wire:click="clearSelection">
                     <span class="material-icons text-xs">close</span>
-                    Batal
+                    {{ mrcatz_lang('btn_cancel') }}
                 </button>
             </div>
         </div>
     @endif
 
-    {{-- Table Card --}}
     <div class="@if($cardContainer) card shadow-md @endif @if($borderContainer) border rounded-xl border-base-content/10 @endif bg-base-100 w-full overflow-hidden">
         <div @if($cardContainer) class="card-body p-0" @endif>
 
@@ -263,7 +255,6 @@
                                         @endif
                                     @endif
 
-                                    {{-- Column resize handle --}}
                                     @if($enableColumnResize && $posts->getKey($ci) != null)
                                         <div style="position:absolute;right:-2px;top:25%;bottom:25%;width:12px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center;"
                                              @mousedown.prevent.stop="startResize($event, $el.parentElement)"
@@ -340,24 +331,22 @@
                         @endif
                     </div>
                     @if(!empty($search))
-                        <p class="text-base-content/40 text-sm font-medium">Tidak ada hasil ditemukan untuk pencarian '{{ $search }}'</p>
-                        <p class="text-base-content/25 text-xs mt-1">Coba ubah kata kunci atau filter pencarian</p>
+                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results_for', [':query' => $search]) }}</p>
+                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_hint') }}</p>
                     @elseif($activeFilterCount > 0)
-                        <p class="text-base-content/40 text-sm font-medium">Tidak ada hasil ditemukan</p>
-                        <p class="text-base-content/25 text-xs mt-1">Coba ubah filter yang sedang aktif</p>
+                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results') }}</p>
+                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_filter_hint') }}</p>
                     @else
-                        <p class="text-base-content/40 text-sm font-medium">Belum ada data</p>
-                        <p class="text-base-content/25 text-xs mt-1">Data akan muncul di sini setelah ditambahkan</p>
+                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_data') }}</p>
+                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_data_hint') }}</p>
                     @endif
                 </div>
             @endif
 
-            {{-- Loading --}}
             <div class="flex items-center justify-center py-20" wire:target="datatables" wire:loading>
                 <span class="loading loading-spinner loading-lg text-primary"></span>
             </div>
 
-            {{-- Pagination --}}
             @if($usePagination)
                 <div class="px-4 py-3 border-t border-base-content/5 @if($borderContainer) p-4 @endif">
                     {{ $posts->links('mrcatz::components.ui.pagination') }}
@@ -366,80 +355,61 @@
         </div>
     </div>
 
-    {{-- Keyboard navigation hint --}}
     @if($showKeyboardNavNote && $enableKeyboardNav && $posts->hasData())
         <div class="mt-2 flex items-center justify-center gap-3 flex-wrap" style="font-size:10px;color:oklch(var(--bc)/.15);">
-            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">&#8593;&#8595;</kbd> navigasi</span>
-            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Enter</kbd> edit</span>
-            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Del/&#9003;</kbd> hapus</span>
-            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Esc</kbd> batal</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">&#8593;&#8595;</kbd> {{ mrcatz_lang('key_navigate') }}</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Enter</kbd> {{ mrcatz_lang('key_edit') }}</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Del/&#9003;</kbd> {{ mrcatz_lang('key_delete') }}</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Esc</kbd> {{ mrcatz_lang('key_cancel') }}</span>
         </div>
     @endif
 
-    {{-- Export Modal --}}
     @if($showExportButton)
-        <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self x-data="{
-            format: 'excel',
-            scope: 'filtered',
-        }">
+        <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self x-data="{ format: 'excel', scope: 'filtered' }">
             <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg">
                 <div class="flex items-center justify-between pb-4 mb-5 border-b border-base-content/10">
                     <h3 class="text-lg font-bold text-base-content flex items-center gap-2">
                         <span class="material-icons text-primary">download</span>
-                        Export Data
+                        {{ mrcatz_lang('export_title') }}
                     </h3>
                     <form method="dialog">
-                        <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200">
-                            <span class="material-icons">close</span>
-                        </button>
+                        <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200"><span class="material-icons">close</span></button>
                     </form>
                 </div>
 
                 <div class="max-h-[65vh] overflow-y-auto pr-1 -mr-1 space-y-5">
                     <div>
-                        <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-2 block">Format File</label>
+                        <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-2 block">{{ mrcatz_lang('export_format') }}</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="format === 'excel' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="format = 'excel'">
                                 <span class="material-icons text-success text-2xl">table_view</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-base-content">Excel</p>
-                                    <p class="text-xs text-base-content/40">.xlsx</p>
-                                </div>
+                                <div><p class="text-sm font-semibold text-base-content">Excel</p><p class="text-xs text-base-content/40">.xlsx</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="format === 'pdf' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="format = 'pdf'">
                                 <span class="material-icons text-error text-2xl">picture_as_pdf</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-base-content">PDF</p>
-                                    <p class="text-xs text-base-content/40">.pdf</p>
-                                </div>
+                                <div><p class="text-sm font-semibold text-base-content">PDF</p><p class="text-xs text-base-content/40">.pdf</p></div>
                             </label>
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-2 block">Cakupan Data</label>
+                        <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-2 block">{{ mrcatz_lang('export_scope') }}</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="scope === 'all' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="scope = 'all'; $wire.updateExportCount('all')">
                                 <span class="material-icons text-lg" :class="scope === 'all' ? 'text-primary' : 'text-base-content/30'">select_all</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-base-content">Semua Data</p>
-                                    <p class="text-xs text-base-content/40">Tanpa filter</p>
-                                </div>
+                                <div><p class="text-sm font-semibold text-base-content">{{ mrcatz_lang('export_all') }}</p><p class="text-xs text-base-content/40">{{ mrcatz_lang('export_all_desc') }}</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="scope === 'filtered' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="scope = 'filtered'; $wire.updateExportCount('filtered')">
                                 <span class="material-icons text-lg" :class="scope === 'filtered' ? 'text-primary' : 'text-base-content/30'">filter_alt</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-base-content">Sesuai Filter</p>
-                                    <p class="text-xs text-base-content/40">Dengan filter</p>
-                                </div>
+                                <div><p class="text-sm font-semibold text-base-content">{{ mrcatz_lang('export_filtered') }}</p><p class="text-xs text-base-content/40">{{ mrcatz_lang('export_filtered_desc') }}</p></div>
                             </label>
                         </div>
                     </div>
@@ -449,14 +419,13 @@
                         <div class="rounded-xl bg-base-200/40 p-4 space-y-3">
                             <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide flex items-center gap-1">
                                 <span class="material-icons text-xs">tune</span>
-                                Atur Filter Export
+                                {{ mrcatz_lang('export_settings') }}
                             </p>
                             <div>
-                                <label class="text-xs text-base-content/50 mb-1 block">Pencarian</label>
+                                <label class="text-xs text-base-content/50 mb-1 block">{{ mrcatz_lang('export_search') }}</label>
                                 <label class="input input-bordered input-sm flex items-center gap-2 w-full focus-within:input-primary transition-all">
                                     <span class="material-icons text-base-content/30 text-sm">search</span>
-                                    <input type="text" class="grow text-sm" placeholder="Kata kunci pencarian..."
-                                           wire:model="exportSearch"/>
+                                    <input type="text" class="grow text-sm" placeholder="{{ mrcatz_lang('export_search_placeholder') }}" wire:model="exportSearch"/>
                                 </label>
                             </div>
                             @foreach($dataFilters as $f => $filter)
@@ -465,7 +434,7 @@
                                         <label class="text-xs text-base-content/50 mb-1 block">{{ $filter['label'] }}</label>
                                         <select class="select select-bordered select-sm w-full text-sm focus:select-primary transition-all"
                                                 wire:model="exportFilterValues.{{ $filter['id'] }}">
-                                            <option value="{{ $default_filter_value }}">Semua</option>
+                                            <option value="{{ $default_filter_value }}">{{ mrcatz_lang('filter_all') }}</option>
                                             @foreach($filterData[$f] as $data)
                                                 <option value="{{ $data[$filter['value']] }}">{{ $data[$filter['option']] }}</option>
                                             @endforeach
@@ -474,7 +443,7 @@
                                 @endif
                             @endforeach
                             @if(count($dataFilters) === 0)
-                                <p class="text-xs text-base-content/40 italic py-1">Tidak ada filter tersedia untuk tabel ini</p>
+                                <p class="text-xs text-base-content/40 italic py-1">{{ mrcatz_lang('filter_no_available') }}</p>
                             @endif
                         </div>
                     </div>
@@ -485,7 +454,7 @@
                     <p class="text-sm text-base-content/60">
                         <span class="font-semibold text-base-content" wire:loading.remove wire:target="updateExportCount">{{ number_format($exportCount) }}</span>
                         <span class="loading loading-spinner loading-xs" wire:loading wire:target="updateExportCount"></span>
-                        data akan di-export
+                        {{ mrcatz_lang('export_count') }}
                     </p>
                 </div>
 
@@ -493,10 +462,10 @@
                     <button class="btn btn-primary gap-2 px-6 shadow-sm"
                             x-on:click="$wire.exportData(format, scope); document.getElementById('modal-export').close();">
                         <span class="material-icons text-lg">download</span>
-                        Export
+                        {{ mrcatz_lang('btn_export') }}
                     </button>
                     <form method="dialog">
-                        <button class="btn btn-ghost">Batal</button>
+                        <button class="btn btn-ghost">{{ mrcatz_lang('btn_cancel') }}</button>
                     </form>
                 </div>
             </div>
@@ -504,43 +473,37 @@
         </dialog>
     @endif
 
-    {{-- Reset Confirmation Modal --}}
     <dialog id="modal-reset-confirm" class="modal modal-bottom sm:modal-middle">
         <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center">
             <div class="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
                 <span class="material-icons text-warning text-2xl">restart_alt</span>
             </div>
-            <h3 class="text-base font-bold text-base-content mb-1">Reset Pencarian & Filter?</h3>
-            <p class="text-sm text-base-content/50 mb-6">Semua kata kunci pencarian dan filter yang aktif akan dihapus.</p>
+            <h3 class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
+            <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('reset_desc') }}</p>
             <div class="flex gap-2 justify-center">
-                <form method="dialog">
-                    <button class="btn btn-ghost btn-sm">Batal</button>
-                </form>
+                <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
                 <button class="btn btn-warning btn-sm"
                         x-on:click="$wire.resetData(); document.getElementById('modal-reset-confirm')?.close();">
-                    Ya, Reset
+                    {{ mrcatz_lang('btn_yes_reset') }}
                 </button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
-    {{-- Bulk Delete Confirmation Modal --}}
     @if($bulkPrimaryKey !== null)
         <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self>
             <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center">
                 <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
                     <span class="material-icons text-error text-2xl">delete_sweep</span>
                 </div>
-                <h3 class="text-base font-bold text-base-content mb-1">Hapus Data Terpilih?</h3>
-                <p class="text-sm text-base-content/50 mb-6">Data yang dipilih akan dihapus secara permanen.</p>
+                <h3 class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
+                <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('bulk_delete_desc') }}</p>
                 <div class="flex gap-2 justify-center">
-                    <form method="dialog">
-                        <button class="btn btn-ghost btn-sm">Batal</button>
-                    </form>
+                    <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
                     <button class="btn btn-error btn-sm"
                             x-on:click="$wire.bulkDelete(); document.getElementById('modal-bulk-delete')?.close();">
-                        Ya, Hapus
+                        {{ mrcatz_lang('btn_yes_delete') }}
                     </button>
                 </div>
             </div>
@@ -548,13 +511,12 @@
         </dialog>
     @endif
 
-    {{-- Full-screen Loading Overlay --}}
     @if($withLoading)
         @if($load_start)
             <div class="fixed inset-0 z-50 flex items-center justify-center bg-base-content/20 backdrop-blur-sm">
                 <div class="bg-base-100 rounded-2xl p-6 shadow-xl flex items-center gap-3">
                     <span class="loading loading-spinner loading-md text-primary"></span>
-                    <span class="text-sm text-base-content/70">Memuat data...</span>
+                    <span class="text-sm text-base-content/70">{{ mrcatz_lang('loading') }}</span>
                 </div>
             </div>
         @endif
@@ -562,7 +524,7 @@
              class="fixed inset-0 z-50 flex items-center justify-center bg-base-content/20 backdrop-blur-sm">
             <div class="bg-base-100 rounded-2xl p-6 shadow-xl flex items-center gap-3">
                 <span class="loading loading-spinner loading-md text-primary"></span>
-                <span class="text-sm text-base-content/70">Memproses...</span>
+                <span class="text-sm text-base-content/70">{{ mrcatz_lang('processing') }}</span>
             </div>
         </div>
     @endif

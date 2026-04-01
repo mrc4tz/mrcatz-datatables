@@ -10,7 +10,13 @@ class MrCatzServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        $this->mergeConfigFrom(__DIR__ . '/../config/mrcatz.php', 'mrcatz');
+
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'mrcatz');
+
+        $this->publishes([
+            __DIR__ . '/../config/mrcatz.php' => config_path('mrcatz.php'),
+        ], 'mrcatz-config');
 
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/mrcatz'),

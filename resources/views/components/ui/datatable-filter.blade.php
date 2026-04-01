@@ -14,7 +14,7 @@
                     <select class="select select-bordered select-sm w-full text-sm focus:select-primary transition-all duration-200"
                             id="{{$filter['id']."_".$prefix}}"
                             wire:change="change('{{$filter['id']}}',$event.target.value)">
-                        <option value="{{ $default_filter_value }}" @selected(empty($activeFilterValues[$filter['id']] ?? null))>Semua</option>
+                        <option value="{{ $default_filter_value }}" @selected(empty($activeFilterValues[$filter['id']] ?? null))>{{ mrcatz_lang('filter_all') }}</option>
                         @foreach($filterData[$f] as $data)
                             <option value="{{ $data[$filter['value']] }}" @selected(($activeFilterValues[$filter['id']] ?? null) === $data[$filter['value']])>{{ $data[$filter['option']] }}</option>
                         @endforeach

@@ -8,7 +8,7 @@ use Livewire\Attributes\On;
 class MrCatzComponent extends Component
 {
     public $title = '';
-    public $form_title = 'Tambah Data';
+    public $form_title = '';
     public $deleted_text = '';
     public $isEdit = false;
     public $id = null;
@@ -65,21 +65,21 @@ class MrCatzComponent extends Component
         if (!$condition) {
             $this->dispatch('refresh-data', [
                 'status' => false,
-                'text' => $this->title . ' gagal diproses!'
+                'text' => $this->title . ' ' . mrcatz_lang('failed')
             ]);
             return;
         }
 
         $text = match ($type) {
-            'insert' => 'ditambahkan!',
-            'update' => 'diupdate!',
-            'delete' => 'dihapus!',
+            'insert' => mrcatz_lang('added'),
+            'update' => mrcatz_lang('updated'),
+            'delete' => mrcatz_lang('deleted'),
             default => '',
         };
 
         $this->dispatch('refresh-data', [
             'status' => true,
-            'text' => $this->title . ' berhasil ' . $text
+            'text' => $this->title . ' ' . mrcatz_lang('success') . ' ' . $text
         ]);
     }
 

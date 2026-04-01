@@ -13,7 +13,10 @@
     "autoload": {
         "psr-4": {
             "MrCatz\\DataTable\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "extra": {
         "laravel": {

@@ -8,7 +8,7 @@
                 <input type="text" wire:model="value">
                 <input type="text" wire:model="dataTableSet">
             </label>
-            <span class="text-xs text-base-content/50">Baris per halaman</span>
+            <span class="text-xs text-base-content/50">{{ mrcatz_lang('rows_per_page') }}</span>
             <select class="select select-bordered select-xs focus:select-primary transition-all duration-200"
                     wire:change="paginate($event.target.value)">
                 @foreach($paginator->paginateOptions as $i => $opt)
@@ -24,7 +24,7 @@
                     {{ ($paginator->currentPage() * $paginator->perPage()) - ($paginator->perPage() - 1) }}
                     &ndash;
                     {{ ($paginator->currentPage() * $paginator->perPage()) - ($paginator->perPage() - 1) + (count($paginator->items()) - 1) }}
-                    dari
+                    {{ mrcatz_lang('of') }}
                     {{ $paginator->total() }}
                 </span>
 

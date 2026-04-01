@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between pb-4 mb-4 border-b border-base-content/10">
             <h3 class="text-lg font-bold text-base-content flex items-center gap-2">
                 <span class="material-icons text-primary">{{ $isEdit ? 'edit_note' : 'add_circle' }}</span>
-                {{ $form_title }}
+                {{ $form_title ?: mrcatz_lang('default_form_title') }}
             </h3>
             <form method="dialog">
                 <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors">
@@ -24,10 +24,10 @@
         <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
             <button class="btn btn-primary gap-2 px-6 shadow-sm" wire:click="saveData">
                 <span class="material-icons text-lg">check_circle</span>
-                Simpan
+                {{ mrcatz_lang('btn_save') }}
             </button>
             <form method="dialog">
-                <button class="btn btn-ghost">Batal</button>
+                <button class="btn btn-ghost">{{ mrcatz_lang('btn_cancel') }}</button>
             </form>
         </div>
     </div>
@@ -45,19 +45,19 @@
             </div>
         </div>
 
-        <h3 class="text-lg font-bold text-center text-base-content">Konfirmasi Hapus</h3>
+        <h3 class="text-lg font-bold text-center text-base-content">{{ mrcatz_lang('confirm_delete') }}</h3>
         <p class="py-4 text-center text-base-content/60 text-sm">
-            Apakah Anda yakin ingin menghapus data:<br>
+            {{ mrcatz_lang('confirm_delete_text') }}<br>
             <span class="font-semibold text-base-content mt-1 inline-block">{{ $deleted_text }}</span>
         </p>
 
         <div class="modal-action justify-center gap-3">
             <button class="btn btn-error gap-2 px-6 shadow-sm" wire:click="dropData">
                 <span class="material-icons text-lg">delete_forever</span>
-                Ya, Hapus
+                {{ mrcatz_lang('btn_yes_delete') }}
             </button>
             <form method="dialog">
-                <button class="btn btn-ghost">Batal</button>
+                <button class="btn btn-ghost">{{ mrcatz_lang('btn_cancel') }}</button>
             </form>
         </div>
     </div>

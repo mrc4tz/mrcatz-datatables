@@ -28,6 +28,7 @@ php artisan mrcatz:make Product --path=Admin
 | No bulk delete | **Bulk actions** with per-row control and confirmation modal |
 | No keyboard navigation for tables | **Keyboard nav** — Arrow, Enter, Delete, Escape |
 | Viewing details requires opening a modal | **Expandable rows** — click chevron, details appear inline |
+| UI only in one language | **Multi-language** — English (default) & Indonesian, configurable |
 
 ## Features
 
@@ -48,6 +49,7 @@ php artisan mrcatz:make Product --path=Admin
 - **Breadcrumbs & Page Title** — optional, built-in
 - **Toast Notifications** — success, error, warning, info
 - **Loading Overlay** — fullscreen loading state
+- **Multi-language** — English (default) & Indonesian via config
 - **Artisan Generator** — `mrcatz:make` and `mrcatz:remove`
 
 ---
@@ -616,6 +618,37 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `addOrderBy($key, $dir)` | Additional ordering |
 | `getActionView($data, $i, ...)` | Static: action buttons |
 | `getExpandView($data, $fields)` | Static: expand content |
+
+---
+
+## Localization
+
+All UI strings are configurable. Publish the config file:
+
+```bash
+php artisan vendor:publish --tag=mrcatz-config
+```
+
+This creates `config/mrcatz.php`. Change the locale:
+
+```php
+// config/mrcatz.php
+'locale' => 'id',  // 'en' (default) or 'id' (Indonesian)
+```
+
+All buttons, labels, modals, empty states, and notifications will switch to the selected language.
+
+You can also customize individual strings:
+
+```php
+'en' => [
+    'btn_add' => 'Create New',          // default: 'Add'
+    'no_data' => 'Nothing here yet',    // default: 'No data yet'
+    // ...
+],
+```
+
+Or add a new language by adding a new key alongside `'en'` and `'id'`.
 
 ---
 
