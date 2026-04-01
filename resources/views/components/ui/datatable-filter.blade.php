@@ -24,70 +24,63 @@
                         isOpen: false,
                         query: '',
                         selected: '{{ $currentVal }}',
-                        selectedLabel: '{{ $currentLabel }}',
+                        selectedLabel: '{{ addslashes($currentLabel) }}',
                         filterId: '{{ $filter['id'] }}',
+                        pick(val, label) {
+                            this.selected = val;
+                            this.selectedLabel = label;
+                            $wire.change(this.filterId, val);
+                            this.close();
+                        },
                         close() { this.isOpen = false; this.query = ''; }
                      }">
                     <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
-                    <div class="relative">
-                        {{-- Trigger --}}
-                        <button type="button" @click="isOpen = !isOpen"
-                                @click.outside="close()"
-                                @keydown.escape="close()"
-                                class="select select-bordered select-sm w-full text-sm text-left flex items-center justify-between"
-                                style="cursor:pointer;">
-                            <span x-text="selectedLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-                        </button>
+                    <div style="position:relative;">
+                        {{-- Trigger button --}}
+                        <div @click="isOpen = !isOpen" @click.outside="close()" @keydown.escape="close()"
+                             style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:32px;padding:0 12px;font-size:13px;cursor:pointer;border-radius:var(--rounded-btn);border:1px solid color-mix(in srgb,var(--color-base-content) 15%,transparent);background:var(--color-base-100);color:var(--color-base-content);user-select:none;">
+                            <span x-text="selectedLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"></span>
+                            <span class="material-icons" style="font-size:16px;opacity:.3;transition:transform .2s;" :style="isOpen ? 'transform:rotate(180deg)' : ''">expand_more</span>
+                        </div>
 
-                        {{-- Dropdown --}}
-                        <div x-show="isOpen"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-100"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             style="position:absolute;z-index:50;width:100%;margin-top:4px;background:var(--color-base-100);border:1px solid color-mix(in srgb,var(--color-base-content) 10%,transparent);border-radius:0.75rem;box-shadow:0 10px 25px -5px rgba(0,0,0,.1);overflow:hidden;">
+                        {{-- Dropdown panel --}}
+                        <div x-show="isOpen" x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                             style="position:absolute;z-index:50;width:100%;min-width:200px;margin-top:6px;border-radius:0.75rem;border:1px solid color-mix(in srgb,var(--color-base-content) 10%,transparent);background:var(--color-base-100);box-shadow:0 10px 30px -5px rgba(0,0,0,.12);overflow:hidden;">
 
-                            {{-- Search input --}}
-                            <div style="padding:8px;">
-                                <input type="text" x-model="query" x-ref="filterSearch"
-                                       @click.stop
-                                       x-init="$watch('isOpen', v => { if(v) $nextTick(() => $refs.filterSearch.focus()) })"
-                                       placeholder="Cari..."
-                                       style="width:100%;padding:6px 10px;font-size:13px;border:1px solid color-mix(in srgb,var(--color-base-content) 15%,transparent);border-radius:0.5rem;outline:none;background:transparent;color:var(--color-base-content);" />
+                            {{-- Search --}}
+                            <div style="padding:8px 8px 4px;">
+                                <div style="display:flex;align-items:center;gap:6px;padding:0 8px;height:30px;border-radius:0.5rem;border:1px solid color-mix(in srgb,var(--color-base-content) 12%,transparent);background:color-mix(in srgb,var(--color-base-content) 3%,transparent);">
+                                    <span class="material-icons" style="font-size:14px;opacity:.25;">search</span>
+                                    <input type="text" x-model="query" x-ref="filterSearch" @click.stop
+                                           x-init="$watch('isOpen', v => { if(v) $nextTick(() => $refs.filterSearch.focus()) })"
+                                           placeholder="Cari..."
+                                           style="width:100%;font-size:12px;border:none;outline:none;background:transparent;color:var(--color-base-content);" />
+                                </div>
                             </div>
 
-                            {{-- Options --}}
-                            <div style="max-height:200px;overflow-y:auto;padding:0 4px 4px;">
-                                {{-- Option: Semua --}}
-                                <button type="button"
-                                        x-show="'semua'.includes(query.toLowerCase()) || query === ''"
-                                        @click="selected = ''; selectedLabel = 'Semua'; $wire.change(filterId, ''); close();"
-                                        style="width:100%;text-align:left;padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;transition:background 0.1s;"
-                                        onmouseenter="this.style.background='color-mix(in srgb,var(--color-base-content) 8%,transparent)'"
-                                        onmouseleave="this.style.background='transparent'"
-                                        :style="selected === '' ? 'font-weight:600;color:var(--color-primary)' : 'color:var(--color-base-content)'">
+                            {{-- Options list --}}
+                            <div style="max-height:180px;overflow-y:auto;padding:4px 6px 6px;">
+                                {{-- Semua --}}
+                                <div @click="pick('', 'Semua')"
+                                     x-show="'semua'.includes(query.toLowerCase()) || query === ''"
+                                     :style="selected === '' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
+                                     style="padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;"
+                                     onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
+                                     onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                     Semua
-                                </button>
+                                </div>
 
                                 @foreach($filterData[$f] as $data)
-                                    <button type="button"
-                                            x-show="'{{ strtolower($data[$filter['option']]) }}'.includes(query.toLowerCase()) || query === ''"
-                                            @click="selected = '{{ $data[$filter['value']] }}'; selectedLabel = '{{ $data[$filter['option']] }}'; $wire.change(filterId, '{{ $data[$filter['value']] }}'); close();"
-                                            style="width:100%;text-align:left;padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;transition:background 0.1s;"
-                                            onmouseenter="this.style.background='color-mix(in srgb,var(--color-base-content) 8%,transparent)'"
-                                            onmouseleave="this.style.background='transparent'"
-                                            :style="selected === '{{ $data[$filter['value']] }}' ? 'font-weight:600;color:var(--color-primary)' : 'color:var(--color-base-content)'">
+                                    <div @click="pick('{{ addslashes($data[$filter['value']]) }}', '{{ addslashes($data[$filter['option']]) }}')"
+                                         x-show="'{{ strtolower(addslashes($data[$filter['option']])) }}'.includes(query.toLowerCase()) || query === ''"
+                                         :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'color:var(--color-primary);font-weight:600;background:color-mix(in srgb,var(--color-primary) 8%,transparent)' : ''"
+                                         style="padding:6px 10px;font-size:13px;border-radius:0.375rem;cursor:pointer;"
+                                         onmouseenter="if(!this.style.fontWeight)this.style.background='color-mix(in srgb,var(--color-base-content) 5%,transparent)'"
+                                         onmouseleave="if(!this.style.fontWeight)this.style.background=''">
                                         {{ $data[$filter['option']] }}
-                                    </button>
+                                    </div>
                                 @endforeach
-
-                                {{-- No results --}}
-                                <div x-show="query !== '' && !document.querySelector('[x-show*=query]')"
-                                     style="padding:8px 10px;font-size:12px;color:color-mix(in srgb,var(--color-base-content) 30%,transparent);text-align:center;">
-                                    Tidak ditemukan
-                                </div>
                             </div>
                         </div>
                     </div>
