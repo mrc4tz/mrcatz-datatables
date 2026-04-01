@@ -207,7 +207,7 @@
 
             @if($posts->hasData())
                 <div class="overflow-x-auto">
-                    <table class="table outline-none"
+                    <table class="table {{ $tableZebraStyle ? 'table-zebra' : '' }} outline-none"
                            @if($enableKeyboardNav)
                            tabindex="0"
                            @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
@@ -279,7 +279,7 @@
                         <tbody>
                         @for($i = 0; $i < $posts->countRow(); $i++)
                             <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
-                                :class="focusedRow === {{ $i }} ? 'bg-primary/5' : 'hover:bg-base-200/30'"
+                                :class="focusedRow === {{ $i }} ? 'bg-primary/15' : ''"
                                 @click="focusedRow = {{ $i }}"
                                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
@@ -367,7 +367,7 @@
     </div>
 
     {{-- Keyboard navigation hint --}}
-    @if($enableKeyboardNav && $posts->hasData())
+    @if($showKeyboardNavNote && $enableKeyboardNav && $posts->hasData())
         <div class="mt-2 flex items-center justify-center gap-3 flex-wrap" style="font-size:10px;color:oklch(var(--bc)/.15);">
             <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">&#8593;&#8595;</kbd> navigasi</span>
             <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Enter</kbd> edit</span>

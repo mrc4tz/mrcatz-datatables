@@ -69,6 +69,8 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $enableColumnReorder = true;
     public $expandableRows = false;
     public $enableColumnSorting = true;
+    public $showKeyboardNavNote = false;
+    public $tableZebraStyle = true;
 
     public function CreateMrCatzTable()
     {

@@ -576,6 +576,8 @@ $this->dispatch_to_view($success, 'insert');  // 'insert', 'update', 'delete'
 | `$enableColumnResize` | bool | `true` | Column resize |
 | `$enableColumnReorder` | bool | `true` | Column reorder (drag & drop header) |
 | `$enableColumnSorting` | bool | `true` | Column sorting (klik header untuk sort) |
+| `$showKeyboardNavNote` | bool | `false` | Tampilkan catatan shortcut keyboard di bawah tabel |
+| `$tableZebraStyle` | bool | `true` | Gaya zebra (baris genap/ganjil beda warna) |
 | `$expandableRows` | bool | `false` | Expandable row detail |
 
 ---
