@@ -9,66 +9,66 @@
 
 # MrCatz DataTable
 
-Full-featured DataTable + CRUD base class untuk **Laravel Livewire** — dari install sampai halaman admin lengkap dalam hitungan menit.
+Full-featured DataTable + CRUD base class for **Laravel Livewire** — from install to a complete admin page in minutes.
 
-Satu perintah, empat file, langsung jalan:
+One command, four files, ready to go:
 
 ```bash
 php artisan mrcatz:make Product --path=Admin
 ```
 
-## Kenapa MrCatz DataTable?
+## Why MrCatz DataTable?
 
-| Masalah | Solusi MrCatz |
+| Problem | MrCatz Solution |
 |---|---|
-| Bikin halaman CRUD berulang-ulang | `mrcatz:make` generate 4 file sekaligus |
-| Search cuma LIKE biasa | Multi-keyword search dengan **relevance scoring** |
-| Filter state hilang saat reload | **URL persistence** — search, sort, filter, page semua di URL |
-| Export harus coding manual | **Excel & PDF export** built-in dengan preview count |
-| Bulk delete tidak ada | **Bulk actions** dengan per-row control dan modal konfirmasi |
-| Tabel tidak bisa di-navigate keyboard | **Keyboard navigation** — Arrow, Enter, Delete, Escape |
-| Detail data harus buka modal | **Expandable rows** — klik chevron, detail muncul inline |
+| Building CRUD pages over and over | `mrcatz:make` generates 4 files at once |
+| Search is just basic LIKE | Multi-keyword search with **relevance scoring** |
+| Filter state lost on reload | **URL persistence** — search, sort, filter, page all in URL |
+| Export requires manual coding | **Excel & PDF export** built-in with count preview |
+| No bulk delete | **Bulk actions** with per-row control and confirmation modal |
+| No keyboard navigation for tables | **Keyboard nav** — Arrow, Enter, Delete, Escape |
+| Viewing details requires opening a modal | **Expandable rows** — click chevron, details appear inline |
 
-## Fitur
+## Features
 
 - **CRUD Lifecycle** — prepareAdd, prepareEdit, save, delete hooks
 - **Fluent DataTable API** — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
-- **Multi-keyword Search** dengan relevance scoring dan highlight
-- **Filter** — simple, callback, dependent (parent-child), show/hide dinamis
-- **Export** — Excel (.xlsx) & PDF (.pdf) dengan scope filter
+- **Multi-keyword Search** with relevance scoring and highlight
+- **Filters** — simple, callback, dependent (parent-child), dynamic show/hide
+- **Export** — Excel (.xlsx) & PDF (.pdf) with filter scope
 - **URL Persistence** — search, sort, filter, per_page, page
-- **Filter Presets** — simpan/load kombinasi filter (localStorage)
-- **Bulk Actions** — select all, per-row control, modal konfirmasi
+- **Filter Presets** — save/load filter combinations (localStorage)
+- **Bulk Actions** — select all, per-row control, confirmation modal
 - **Keyboard Navigation** — Arrow Up/Down, Enter, Delete/Backspace, Escape
-- **Column Resize** — drag handle di header kolom
-- **Column Reorder** — drag & drop header kolom
-- **Column Sorting** — klik header untuk sort, visual indicator
-- **Expandable Rows** — detail inline tanpa modal
-- **Zebra Table** — baris genap/ganjil beda warna
-- **Breadcrumbs & Page Title** — opsional, built-in
-- **Toast Notification** — success, error, warning, info
+- **Column Resize** — drag handle on column headers
+- **Column Reorder** — drag & drop column headers
+- **Column Sorting** — click header to sort, visual indicator
+- **Expandable Rows** — inline detail without modal
+- **Zebra Table** — alternating row colors
+- **Breadcrumbs & Page Title** — optional, built-in
+- **Toast Notifications** — success, error, warning, info
 - **Loading Overlay** — fullscreen loading state
-- **Artisan Generator** — `mrcatz:make` dan `mrcatz:remove`
+- **Artisan Generator** — `mrcatz:make` and `mrcatz:remove`
 
 ---
 
-## Instalasi
+## Installation
 
 ```bash
 composer require mrcatz/datatable
 ```
 
-Laravel otomatis mendaftarkan service provider via package discovery.
+Laravel will automatically register the service provider via package discovery.
 
 ### Setup
 
-**1. Notifikasi Toast** — tambahkan di layout utama sebelum `</body>`:
+**1. Toast Notifications** — add to your main layout before `</body>`:
 
 ```blade
 @include('mrcatz::components.ui.notification')
 ```
 
-**2. Tailwind Content Scan** — tambahkan path package:
+**2. Tailwind Content Scan** — add the package path:
 
 ```css
 /* app.css (Tailwind v4) */
@@ -80,14 +80,14 @@ Laravel otomatis mendaftarkan service provider via package discovery.
 content: ['./vendor/mrcatz/**/*.blade.php']
 ```
 
-**3. Dependensi Opsional:**
+**3. Optional Dependencies:**
 
 ```bash
-composer require maatwebsite/excel      # Export Excel
-composer require barryvdh/laravel-dompdf # Export PDF
+composer require maatwebsite/excel       # Excel export
+composer require barryvdh/laravel-dompdf # PDF export
 ```
 
-### Publish Views (Opsional)
+### Publish Views (Optional)
 
 ```bash
 php artisan vendor:publish --tag=mrcatz-views
@@ -97,13 +97,13 @@ php artisan vendor:publish --tag=mrcatz-views
 
 ## Quick Start
 
-### Cara Cepat: Artisan Generator
+### Fast Way: Artisan Generator
 
 ```bash
 php artisan mrcatz:make Product --path=Admin
 ```
 
-Generate 4 file siap pakai:
+Generates 4 ready-to-use files:
 
 ```
 app/Livewire/Admin/Product/ProductPage.php       ← CRUD logic
@@ -112,24 +112,24 @@ resources/views/livewire/admin/product/product-page.blade.php
 resources/views/livewire/admin/product/product_form.blade.php
 ```
 
-Tambahkan route, edit kolom dan form — selesai.
+Add a route, edit columns and form — done.
 
 ```bash
-# Tanpa path
+# Without path
 php artisan mrcatz:make Product
 
-# Custom nama tabel
+# Custom database table name
 php artisan mrcatz:make Product --path=Admin --table=my_products
 
-# Overwrite file yang sudah ada
+# Overwrite existing files
 php artisan mrcatz:make Product --path=Admin --force
 
-# Hapus file yang di-generate
+# Remove generated files
 php artisan mrcatz:remove Product --path=Admin
 php artisan mrcatz:remove Product --path=Admin --force
 ```
 
-### Cara Manual
+### Manual Way
 
 #### 1. Page Component (CRUD Logic)
 
@@ -163,7 +163,7 @@ class UserPage extends MrCatzComponent
 
     public function prepareAddData()
     {
-        $this->form_title = 'Tambah User';
+        $this->form_title = 'Add User';
         $this->reset(['name', 'email', 'password']);
     }
 
@@ -207,7 +207,7 @@ class UserPage extends MrCatzComponent
     {
         $count = User::whereIn('id', $selectedRows)->delete();
         $this->dispatch('refresh-data', [
-            'status' => true, 'text' => $count . ' user berhasil dihapus!'
+            'status' => true, 'text' => $count . ' users deleted!'
         ]);
     }
 }
@@ -229,7 +229,7 @@ class UserTable extends MrCatzDataTablesComponent
 {
     public $showSearch = true;
     public $showAddButton = true;
-    public $exportTitle = 'Data User';
+    public $exportTitle = 'User Data';
 
     public function baseQuery()
     {
@@ -247,13 +247,13 @@ class UserTable extends MrCatzDataTablesComponent
             ->enableExpand(function ($data, $i) {
                 return MrCatzDataTables::getExpandView($data, [
                     'Email' => 'email',
-                    'Dibuat' => 'created_at',
+                    'Created' => 'created_at',
                 ]);
             })
             ->withColumnIndex('No')
-            ->withColumn('Nama', 'name')
+            ->withColumn('Name', 'name')
             ->withColumn('Email', 'email')
-            ->withCustomColumn('Aksi', function ($data, $i) {
+            ->withCustomColumn('Actions', function ($data, $i) {
                 return MrCatzDataTables::getActionView($data, $i);
             });
     }
@@ -290,7 +290,7 @@ class UserTable extends MrCatzDataTablesComponent
     @section('forms')
         <div class="space-y-4">
             <label class="form-control">
-                <div class="label"><span class="label-text">Nama</span></div>
+                <div class="label"><span class="label-text">Name</span></div>
                 <input type="text" class="input input-bordered" wire:model="name" />
                 @error('name') <span class="text-error text-xs">{{ $message }}</span> @enderror
             </label>
@@ -306,44 +306,44 @@ class UserTable extends MrCatzDataTablesComponent
 
 ---
 
-## Dokumentasi Fitur
+## Feature Documentation
 
-### Kolom
+### Columns
 
 ```php
 public function setTable()
 {
     return $this->CreateMrCatzTable()
-        // Kolom nomor urut otomatis
+        // Auto-incrementing row number
         ->withColumnIndex('No')
 
-        // Kolom data biasa
-        ->withColumn('Nama', 'name')
+        // Simple data column
+        ->withColumn('Name', 'name')
 
-        // Kolom dengan opsi lengkap
+        // Column with full options
         ->withColumn('Email', 'email', uppercase: false, th: false, sort: true, gravity: 'left')
 
-        // Kolom custom (return HTML)
+        // Custom column (return HTML)
         ->withCustomColumn('Status', function ($data, $i) {
             $color = $data->active ? 'badge-success' : 'badge-error';
-            return '<span class="badge ' . $color . ' badge-sm">' . ($data->active ? 'Aktif' : 'Nonaktif') . '</span>';
-        }, 'active', false)  // key (untuk search), sortable
+            return '<span class="badge ' . $color . ' badge-sm">' . ($data->active ? 'Active' : 'Inactive') . '</span>';
+        }, 'active', false)  // key (for search), sortable
 
-        // Kolom aksi
-        ->withCustomColumn('Aksi', function ($data, $i) {
+        // Action column
+        ->withCustomColumn('Actions', function ($data, $i) {
             return MrCatzDataTables::getActionView($data, $i, editable: true, deletable: true);
         });
 }
 ```
 
-### Filter
+### Filters
 
-Data option bisa dari **array**, **query builder**, atau **callback custom**:
+Filter options can come from **arrays**, **query builder**, or **custom callbacks**:
 
 ```php
 public function setFilter()
 {
-    // Array manual
+    // Manual array
     $roleFilter = MrCatzDataTableFilter::create(
         'filter_role', 'Role',
         [['value' => 'admin', 'label' => 'Admin'], ['value' => 'user', 'label' => 'User']],
@@ -356,14 +356,14 @@ public function setFilter()
     ), true);
 
     $categoryFilter = MrCatzDataTableFilter::create(
-        'filter_category', 'Kategori', $categories,
+        'filter_category', 'Category', $categories,
         'category_id', 'category_name', 'category_id'
     )->get();
 
-    // Callback custom
+    // Custom callback
     $dateFilter = MrCatzDataTableFilter::createWithCallback(
-        'filter_date', 'Tanggal',
-        [['value' => 'today', 'label' => 'Hari Ini'], ['value' => 'week', 'label' => 'Minggu Ini']],
+        'filter_date', 'Date',
+        [['value' => 'today', 'label' => 'Today'], ['value' => 'week', 'label' => 'This Week']],
         'value', 'label',
         function ($query, $value) {
             return match ($value) {
@@ -378,20 +378,20 @@ public function setFilter()
 }
 ```
 
-### Dependent Filter (Parent-Child)
+### Dependent Filters (Parent-Child)
 
-Override `onFilterChanged()` untuk membuat filter yang saling bergantung:
+Override `onFilterChanged()` to create filters that depend on each other:
 
 ```php
 public function setFilter()
 {
     $categoryFilter = MrCatzDataTableFilter::create(
-        'filter_category', 'Kategori', $categories, 'value', 'label', 'category_id'
+        'filter_category', 'Category', $categories, 'value', 'label', 'category_id'
     )->get();
 
-    // Default hidden
+    // Hidden by default
     $subcategoryFilter = MrCatzDataTableFilter::create(
-        'filter_subcategory', 'Sub Kategori', [], 'value', 'label', 'subcategory_id', false
+        'filter_subcategory', 'Subcategory', [], 'value', 'label', 'subcategory_id', false
     )->get();
 
     return [$categoryFilter, $subcategoryFilter];
@@ -415,11 +415,11 @@ public function onFilterChanged($id, $value)
 }
 ```
 
-> **Penting:** Selalu panggil `resetFilter()` sebelum `setFilterData()` saat parent berubah agar child filter kembali ke "Semua".
+> **Important:** Always call `resetFilter()` before `setFilterData()` when the parent changes — this ensures the child filter resets to "All" so it doesn't display a stale value.
 
 ### Relevance Search
 
-Aktifkan dengan `configTable()` — hasil pencarian diurutkan berdasarkan jumlah keyword yang cocok:
+Enable with `configTable()` — search results are ranked by keyword match count:
 
 ```php
 public function configTable()
@@ -432,10 +432,10 @@ public function configTable()
 
 ```php
 public $showExportButton = true;
-public $exportTitle = 'Data User';
+public $exportTitle = 'User Data';
 ```
 
-User memilih format, scope (semua/filtered), dan melihat preview jumlah data sebelum export.
+Users can choose format, scope (all/filtered), and see a data count preview before exporting.
 
 ### Bulk Actions
 
@@ -448,7 +448,7 @@ public function setTable()
 {
     return $this->CreateMrCatzTable()
         ->enableBulk(function ($data, $i) {
-            return Auth::id() !== $data->id; // tidak bisa select diri sendiri
+            return Auth::id() !== $data->id; // can't select own account
         })
         // ...
 }
@@ -460,7 +460,7 @@ public function dropBulkData($selectedRows)
 {
     $count = User::whereIn('id', $selectedRows)->delete();
     $this->dispatch('refresh-data', [
-        'status' => true, 'text' => $count . ' user berhasil dihapus!'
+        'status' => true, 'text' => $count . ' users deleted!'
     ]);
 }
 ```
@@ -474,17 +474,17 @@ public function setTable()
 {
     return $this->CreateMrCatzTable()
         ->enableExpand(function ($data, $i) {
-            // Helper bawaan — grid responsive
+            // Built-in helper — responsive grid
             return MrCatzDataTables::getExpandView($data, [
                 'Email' => 'email',
-                'Dibuat' => 'created_at',
+                'Created' => 'created_at',
             ]);
         })
         // ...
 }
 ```
 
-Atau custom blade view:
+Or use a custom blade view:
 
 ```php
 ->enableExpand(function ($data, $i) {
@@ -494,22 +494,22 @@ Atau custom blade view:
 
 ### Keyboard Navigation
 
-| Key | Aksi |
+| Key | Action |
 |---|---|
-| `Arrow Up/Down` | Navigasi antar baris |
-| `Enter` | Buka modal edit |
-| `Delete` / `Backspace` | Buka modal hapus |
-| `Escape` | Batalkan fokus |
+| `Arrow Up/Down` | Navigate between rows |
+| `Enter` | Open edit modal |
+| `Delete` / `Backspace` | Open delete modal |
+| `Escape` | Cancel focus |
 
 ### URL Persistence
 
-Semua state tersimpan di URL secara otomatis:
+All state is automatically saved to the URL:
 
 ```
 /users?search=ryan&sort=name&dir=asc&per_page=20&filter[filter_role]=admin&page=2
 ```
 
-### Breadcrumbs & Page Title (Opsional)
+### Breadcrumbs & Page Title (Optional)
 
 ```blade
 @include('mrcatz::components.ui.breadcrumbs')
@@ -518,7 +518,7 @@ Semua state tersimpan di URL secara otomatis:
 ```php
 public function mount()
 {
-    $this->setTitle('User');  // digunakan di <title> dan notifikasi
+    $this->setTitle('User');  // used in <title> and notifications
     $this->breadcrumbs = [
         ['title' => 'Dashboard', 'url' => route('dashboard')],
         ['title' => 'User', 'url' => null],
@@ -526,12 +526,12 @@ public function mount()
 }
 ```
 
-### Notifikasi
+### Notifications
 
 ```php
-$this->show_notif('success', 'Berhasil!');
-$this->show_notif('error', 'Terjadi kesalahan!');
-$this->dispatch_to_view($success, 'insert'); // otomatis: "User berhasil ditambahkan!"
+$this->show_notif('success', 'Success!');
+$this->show_notif('error', 'Something went wrong!');
+$this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 ```
 
 ---
@@ -540,81 +540,81 @@ $this->dispatch_to_view($success, 'insert'); // otomatis: "User berhasil ditamba
 
 ### MrCatzComponent (Page)
 
-| Property | Type | Default | Keterangan |
+| Property | Type | Default | Description |
 |---|---|---|---|
-| `$title` | string | `''` | Judul halaman, digunakan di notifikasi |
-| `$form_title` | string | `'Tambah Data'` | Judul modal form |
-| `$deleted_text` | string | `''` | Teks konfirmasi delete |
-| `$isEdit` | bool | `false` | Mode edit atau tambah |
-| `$breadcrumbs` | array | `[]` | Data breadcrumb |
+| `$title` | string | `''` | Page title, used in notifications |
+| `$form_title` | string | `'Tambah Data'` | Modal form title |
+| `$deleted_text` | string | `''` | Delete confirmation text |
+| `$isEdit` | bool | `false` | Edit or add mode |
+| `$breadcrumbs` | array | `[]` | Breadcrumb data |
 
 ### MrCatzDataTablesComponent (Table)
 
-| Property | Type | Default | Keterangan |
+| Property | Type | Default | Description |
 |---|---|---|---|
-| `$showSearch` | bool | `true` | Tampilkan search input |
-| `$showAddButton` | bool | `true` | Tampilkan tombol tambah |
-| `$showExportButton` | bool | `true` | Tampilkan tombol export |
-| `$exportTitle` | string | `'Data Export'` | Judul file export |
-| `$usePagination` | bool | `true` | Aktifkan pagination |
-| `$cardContainer` | bool | `true` | Tabel dalam card |
-| `$borderContainer` | bool | `false` | Tabel dengan border |
-| `$withLoading` | bool | `false` | Loading overlay fullscreen |
-| `$typeSearch` | bool | `false` | Search realtime |
-| `$typeSearchWithDelay` | bool | `false` | Search realtime dengan delay |
-| `$typeSearchDelay` | string | `'500ms'` | Delay search realtime |
-| `$bulkPrimaryKey` | string\|null | `null` | Primary key untuk bulk, null = off |
-| `$showBulkButton` | bool | `false` | Tombol toggle bulk select |
+| `$showSearch` | bool | `true` | Show search input |
+| `$showAddButton` | bool | `true` | Show add button |
+| `$showExportButton` | bool | `true` | Show export button |
+| `$exportTitle` | string | `'Data Export'` | Export file title |
+| `$usePagination` | bool | `true` | Enable pagination |
+| `$cardContainer` | bool | `true` | Table inside card |
+| `$borderContainer` | bool | `false` | Table with border |
+| `$withLoading` | bool | `false` | Fullscreen loading overlay |
+| `$typeSearch` | bool | `false` | Realtime search |
+| `$typeSearchWithDelay` | bool | `false` | Realtime search with delay |
+| `$typeSearchDelay` | string | `'500ms'` | Realtime search delay |
+| `$bulkPrimaryKey` | string\|null | `null` | Primary key for bulk, null = off |
+| `$showBulkButton` | bool | `false` | Bulk select toggle button |
 | `$enableKeyboardNav` | bool | `true` | Keyboard navigation |
 | `$enableColumnResize` | bool | `true` | Column resize |
 | `$enableColumnReorder` | bool | `true` | Column reorder (drag & drop) |
 | `$enableColumnSorting` | bool | `true` | Column sorting |
-| `$showKeyboardNavNote` | bool | `false` | Catatan shortcut di bawah tabel |
-| `$tableZebraStyle` | bool | `true` | Zebra stripe |
+| `$showKeyboardNavNote` | bool | `false` | Keyboard shortcut hints below table |
+| `$tableZebraStyle` | bool | `true` | Zebra stripe rows |
 | `$expandableRows` | bool | `false` | Expandable row detail |
 
 ## Method Reference
 
 ### Page — Override Methods
 
-| Method | Keterangan |
+| Method | Description |
 |---|---|
-| `prepareAddData()` | Saat tombol tambah diklik |
-| `prepareEditData($data)` | Saat tombol edit diklik |
-| `prepareDeleteData($data)` | Saat tombol delete diklik |
-| `saveData()` | Saat form submit |
-| `dropData()` | Saat konfirmasi delete |
-| `dropBulkData($selectedRows)` | Saat bulk delete dikonfirmasi |
+| `prepareAddData()` | Called when add button is clicked |
+| `prepareEditData($data)` | Called when edit button is clicked |
+| `prepareDeleteData($data)` | Called when delete button is clicked |
+| `saveData()` | Called on form submit |
+| `dropData()` | Called on delete confirmation |
+| `dropBulkData($selectedRows)` | Called on bulk delete confirmation |
 
 ### Table — Override Methods
 
-| Method | Keterangan |
+| Method | Description |
 |---|---|
 | `baseQuery()` | Return query builder |
 | `setTable()` | Return MrCatzDataTables instance |
-| `configTable()` | Config untuk relevance search |
-| `setFilter()` | Return array filter |
-| `getRowPerPageOption()` | Opsi rows per page |
+| `configTable()` | Config for relevance search |
+| `setFilter()` | Return filter array |
+| `getRowPerPageOption()` | Rows per page options |
 | `setView()` | Custom blade view |
-| `setPageName()` | Custom page name (multiple paginator) |
-| `onDataLoaded($builder, $data)` | Hook setelah data di-load |
-| `onFilterChanged($id, $value)` | Hook setelah filter berubah |
+| `setPageName()` | Custom page name (multiple paginators) |
+| `onDataLoaded($builder, $data)` | Hook after data is loaded |
+| `onFilterChanged($id, $value)` | Hook after filter changes |
 | `setFilterShow($id, $show)` | Show/hide filter by ID |
-| `setFilterData($id, $data)` | Update data option filter by ID |
-| `resetFilter($id)` | Reset filter value ke "Semua" |
+| `setFilterData($id, $data)` | Update filter option data by ID |
+| `resetFilter($id)` | Reset filter value to "All" |
 
 ### Engine — Fluent API
 
-| Method | Keterangan |
+| Method | Description |
 |---|---|
-| `withColumnIndex($head)` | Kolom nomor urut |
-| `withColumn($head, $key, ...)` | Kolom data |
-| `withCustomColumn($head, $callback, ...)` | Kolom custom |
-| `enableBulk($callback)` | Bulk select per baris |
+| `withColumnIndex($head)` | Row number column |
+| `withColumn($head, $key, ...)` | Data column |
+| `withCustomColumn($head, $callback, ...)` | Custom column |
+| `enableBulk($callback)` | Per-row bulk select |
 | `enableExpand($callback)` | Expandable row |
 | `setDefaultOrder($key, $dir)` | Default sorting |
-| `addOrderBy($key, $dir)` | Tambahan ordering |
-| `getActionView($data, $i, ...)` | Static: tombol aksi |
+| `addOrderBy($key, $dir)` | Additional ordering |
+| `getActionView($data, $i, ...)` | Static: action buttons |
 | `getExpandView($data, $fields)` | Static: expand content |
 
 ---
