@@ -17,6 +17,7 @@ if (!function_exists('mrcatz_lang')) {
             $text = str_replace($k, $v, $text);
         }
 
+
         return $text;
     }
 }
