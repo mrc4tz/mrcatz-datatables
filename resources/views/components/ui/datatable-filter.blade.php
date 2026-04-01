@@ -64,20 +64,18 @@
                             <div style="max-height:220px;overflow-y:auto;padding:6px 10px 10px;">
                                 <div @click="pick('', 'Semua')" @mouseenter="hover = 0" @mouseleave="hover = -1"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
-                                     :style="hover === 0 && selected !== '' ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
-                                     style="display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.75rem;font-size:0.8125rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
-                                    <span class="material-icons" :style="selected === '' ? 'opacity:1;color:var(--color-primary)' : 'opacity:0'" style="font-size:1rem;">check</span>
-                                    <span :style="selected === '' ? 'color:color-mix(in srgb,var(--color-base-content) 50%,transparent)' : ''">Semua</span>
+                                     :style="selected === '' ? 'color:var(--color-primary);font-weight:500' : hover === 0 ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
+                                     style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
+                                    Semua
                                 </div>
 
                                 @foreach($filterData[$f] as $idx => $data)
                                     <div @click="pick('{{ addslashes($data[$filter['value']]) }}', '{{ addslashes($data[$filter['option']]) }}')"
                                          @mouseenter="hover = {{ $idx + 1 }}" @mouseleave="hover = -1"
                                          x-show="'{{ strtolower(addslashes($data[$filter['option']])) }}'.includes(query.toLowerCase()) || query === ''"
-                                         :style="hover === {{ $idx + 1 }} && selected !== '{{ addslashes($data[$filter['value']]) }}' ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
-                                         style="display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.75rem;font-size:0.8125rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
-                                        <span class="material-icons" :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'opacity:1;color:var(--color-primary)' : 'opacity:0'" style="font-size:1rem;">check</span>
-                                        <span :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'font-weight:500' : ''">{{ $data[$filter['option']] }}</span>
+                                         :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'color:var(--color-primary);font-weight:500' : hover === {{ $idx + 1 }} ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
+                                         style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
+                                        {{ $data[$filter['option']] }}
                                     </div>
                                 @endforeach
                             </div>
