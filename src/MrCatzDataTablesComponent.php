@@ -127,6 +127,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
     }
 
+    public function setFilterData($id, $data)
+    {
+        foreach ($this->setFilter() as $f => $filter) {
+            if ($filter->getDataFilter()['id'] == $id) {
+                $this->filterData[$f] = is_array($data) ? $data : json_decode(json_encode($data), true);
+                return;
+            }
+        }
+    }
+
     private function findFilterConfigById($id)
     {
         foreach ($this->setFilter() as $filter) {

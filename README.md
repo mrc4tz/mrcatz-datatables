@@ -331,7 +331,6 @@ public function setFilter()
     // Contoh 2: Data option dari query builder
     // ──────────────────────────────────────────────
     $categories = DB::table('categories')
-        ->select('id as value', 'name as label')
         ->orderBy('name')
         ->get()
         ->toArray();
@@ -343,9 +342,9 @@ public function setFilter()
         'filter_category',
         'Kategori',
         $categories,
-        'value',
-        'label',
-        'category_id'
+        'category_id',       // key untuk value option
+        'category_name',     // key untuk label option
+        'category_id'        // kolom database untuk WHERE
     )->get();
 
     // ──────────────────────────────────────────────
@@ -397,11 +396,25 @@ public function setFilter()
 public function onFilterChanged($id, $value)
 {
     if ($id === 'filter_category') {
-        // Tampilkan filter subcategory hanya jika kategori dipilih
-        $this->setFilterShow('filter_subcategory', !empty($value));
+        if (!empty($value)) {
+            // Update data option subcategory berdasarkan kategori yang dipilih
+            $subcategories = DB::table('subcategories')
+                ->where('category_id', $value)
+                ->select('id as value', 'name as label')
+                ->get()->toArray();
+
+            $this->setFilterData('filter_subcategory', json_decode(json_encode($subcategories), true));
+            $this->setFilterShow('filter_subcategory', true);
+        } else {
+            $this->setFilterShow('filter_subcategory', false);
+        }
     }
 }
 ```
+
+Method yang tersedia:
+- `setFilterShow($id, $show)` — tampilkan/sembunyikan filter
+- `setFilterData($id, $data)` — update data option filter (menerima array atau Collection)
 
 ### Relevance Search
 
@@ -637,6 +650,7 @@ $this->dispatch_to_view($success, 'insert');  // 'insert', 'update', 'delete'
 | `onDataLoaded($builder, $data)` | Hook setelah data di-load |
 | `onFilterChanged($id, $value)` | Hook setelah filter berubah — untuk show/hide filter lain |
 | `setFilterShow($id, $show)` | Tampilkan/sembunyikan filter berdasarkan ID |
+| `setFilterData($id, $data)` | Update data option filter berdasarkan ID |
 
 ### MrCatzDataTables (Engine) — Fluent API
 
