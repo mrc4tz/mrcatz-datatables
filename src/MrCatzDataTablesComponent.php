@@ -117,6 +117,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
     }
 
+    public function setFilterShow($id, $show)
+    {
+        foreach ($this->setFilter() as $f => $filter) {
+            if ($filter->getDataFilter()['id'] == $id) {
+                $this->filterShow[$f] = $show;
+                return;
+            }
+        }
+    }
+
     private function findFilterConfigById($id)
     {
         foreach ($this->setFilter() as $filter) {
@@ -253,6 +263,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->findData();
     }
 
+    // Dipanggil dari blade via wire:change
     public function change($id, $value)
     {
         $filter = $this->findFilterById($id);
@@ -280,7 +291,11 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->setPage(1);
         $this->clearSelection();
         $this->findData();
+        $this->onFilterChanged($id, $filterValue);
     }
+
+    // Override di child class untuk react terhadap perubahan filter
+    public function onFilterChanged($id, $value) {}
 
     private function findData()
     {

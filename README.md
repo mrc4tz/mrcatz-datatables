@@ -375,6 +375,34 @@ public function setFilter()
 }
 ```
 
+#### Show/Hide Filter Berdasarkan Filter Lain
+
+Override `onFilterChanged($id, $value)` di child class. Method ini otomatis dipanggil setiap kali user mengubah filter:
+
+```php
+public function setFilter()
+{
+    $categoryFilter = MrCatzDataTableFilter::create(
+        'filter_category', 'Kategori', $categories, 'value', 'label', 'category_id'
+    )->get();
+
+    // Default hidden — akan ditampilkan saat kategori dipilih
+    $subcategoryFilter = MrCatzDataTableFilter::create(
+        'filter_subcategory', 'Sub Kategori', [], 'value', 'label', 'subcategory_id', false
+    )->get();
+
+    return [$categoryFilter, $subcategoryFilter];
+}
+
+public function onFilterChanged($id, $value)
+{
+    if ($id === 'filter_category') {
+        // Tampilkan filter subcategory hanya jika kategori dipilih
+        $this->setFilterShow('filter_subcategory', !empty($value));
+    }
+}
+```
+
 ### Relevance Search
 
 Aktifkan relevance scoring dengan `configTable()`:
@@ -607,6 +635,8 @@ $this->dispatch_to_view($success, 'insert');  // 'insert', 'update', 'delete'
 | `setView()` | Override untuk custom blade view |
 | `setPageName()` | Override jika ada multiple paginator di satu halaman |
 | `onDataLoaded($builder, $data)` | Hook setelah data di-load |
+| `onFilterChanged($id, $value)` | Hook setelah filter berubah — untuk show/hide filter lain |
+| `setFilterShow($id, $show)` | Tampilkan/sembunyikan filter berdasarkan ID |
 
 ### MrCatzDataTables (Engine) — Fluent API
 
