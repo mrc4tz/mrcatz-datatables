@@ -340,6 +340,34 @@ public function setTable()
 }
 ```
 
+#### Search Highlight on Custom Columns
+
+`withColumn()` automatically highlights search keywords in the displayed text. For `withCustomColumn()`, you need to call `$this->setSearchWord()` manually to apply the highlight:
+
+```php
+->withCustomColumn('Category', function ($data, $i) {
+    $category = $this->setSearchWord($data->category_name);
+    $sub = $this->setSearchWord($data->subcategory_name ?? '');
+    return '<span>' . $category . ' / ' . $sub . '</span>';
+}, 'categories.name', true)
+```
+
+`setSearchWord($text)` escapes HTML and wraps matching keywords in `<span class="font-extrabold">`. Without it, search keywords won't be highlighted in custom columns.
+
+#### Table-Prefixed Column Keys (JOIN queries)
+
+When using JOIN queries, column names like `name` can be ambiguous. Use the full table-prefixed key:
+
+```php
+// withColumn — prefix for search/sort, display auto-resolves
+->withColumn('Product', 'products.name')
+
+// withCustomColumn — prefix in the 3rd parameter (search key)
+->withCustomColumn('Category', function ($data, $i) {
+    return $this->setSearchWord($data->category_name);
+}, 'categories.name', true)
+```
+
 ### Filters
 
 Filter options can come from **arrays**, **query builder**, or **custom callbacks**:
