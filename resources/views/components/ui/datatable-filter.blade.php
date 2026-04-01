@@ -61,7 +61,7 @@
                             </div>
 
                             {{-- Options --}}
-                            <div style="max-height:180px;overflow-y:auto;padding:0 6px 6px;display:flex;flex-direction:column;gap:3px;">
+                            <div style="max-height:180px;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:3px;">
                                 <div @click="pick('', 'Semua')" @mouseenter="hover = 0" @mouseleave="hover = -1"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
                                      :style="selected === ''
