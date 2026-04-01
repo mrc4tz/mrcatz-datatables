@@ -1,0 +1,36 @@
+{
+    "name": "mrcatz/datatable",
+    "description": "Livewire DataTable base class for Laravel — CRUD, bulk actions, export, keyboard navigation, expandable rows, URL persistence, and more.",
+    "keywords": ["laravel", "livewire", "datatable", "crud", "daisyui", "tailwind"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ryan N.R.",
+            "email": "mrcatz@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MrCatz\\DataTable\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MrCatz\\DataTable\\MrCatzServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^11.0|^12.0",
+        "livewire/livewire": "^3.0"
+    },
+    "suggest": {
+        "maatwebsite/excel": "Required for Excel export (^3.1)",
+        "barryvdh/laravel-dompdf": "Required for PDF export (^2.0|^3.0)"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
