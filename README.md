@@ -396,11 +396,13 @@ public function setFilter()
 public function onFilterChanged($id, $value)
 {
     if ($id === 'filter_category') {
+        // Reset child filter saat parent berubah — value kembali ke "Semua"
+        $this->resetFilter('filter_subcategory');
+
         if (!empty($value)) {
             // Update data option subcategory berdasarkan kategori yang dipilih
             $subcategories = DB::table('subcategories')
                 ->where('category_id', $value)
-                ->select('id as value', 'name as label')
                 ->get()->toArray();
 
             $this->setFilterData('filter_subcategory', json_decode(json_encode($subcategories), true));
@@ -412,9 +414,12 @@ public function onFilterChanged($id, $value)
 }
 ```
 
+> **Penting:** Selalu panggil `resetFilter()` pada child filter sebelum `setFilterData()` saat parent filter berubah. Ini memastikan value child filter kembali ke "Semua" sehingga tidak menampilkan value lama yang sudah tidak ada di data option baru.
+
 Method yang tersedia:
 - `setFilterShow($id, $show)` — tampilkan/sembunyikan filter
 - `setFilterData($id, $data)` — update data option filter (menerima array atau Collection)
+- `resetFilter($id)` — reset value filter ke "Semua" dan refresh data
 
 ### Relevance Search
 
@@ -651,6 +656,7 @@ $this->dispatch_to_view($success, 'insert');  // 'insert', 'update', 'delete'
 | `onFilterChanged($id, $value)` | Hook setelah filter berubah — untuk show/hide filter lain |
 | `setFilterShow($id, $show)` | Tampilkan/sembunyikan filter berdasarkan ID |
 | `setFilterData($id, $data)` | Update data option filter berdasarkan ID |
+| `resetFilter($id)` | Reset value filter ke "Semua" dan refresh data |
 
 ### MrCatzDataTables (Engine) — Fluent API
 

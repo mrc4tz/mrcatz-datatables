@@ -127,6 +127,18 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
     }
 
+    public function resetFilter($id)
+    {
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $this->activeFilters[$i]['value'] = null;
+                break;
+            }
+        }
+        $this->syncFilterUrl();
+        $this->findData();
+    }
+
     public function setFilterData($id, $data)
     {
         foreach ($this->setFilter() as $f => $filter) {
