@@ -1,6 +1,6 @@
 # MrCatz DataTable
 
-Livewire DataTable base class untuk Laravel — menyediakan CRUD, bulk actions, export, keyboard navigation, expandable rows, URL persistence, dan banyak lagi. Didesain untuk digunakan bersama **Tailwind CSS** dan **DaisyUI**.
+Livewire DataTable base class untuk Laravel — menyediakan CRUD, bulk actions, export, keyboard navigation, expandable rows, URL persistence, dan banyak lagi. Didesain untuk digunakan bersama **Tailwind CSS**, **DaisyUI**, dan **Material Icons** (Google Fonts).
 
 ## Instalasi
 
