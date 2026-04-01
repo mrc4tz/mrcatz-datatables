@@ -39,6 +39,45 @@ Tambahkan include berikut di layout utama (misalnya `admin_layout.blade.php`), s
 
 Ini menyediakan toast notification yang digunakan oleh `show_notif()` dan `dispatch_to_view()`.
 
+### Breadcrumbs (Opsional)
+
+Package menyediakan breadcrumbs component yang terintegrasi dengan property `$breadcrumbs` dan `$title` dari `MrCatzComponent`. Tambahkan di blade page view:
+
+```blade
+@include('mrcatz::components.ui.breadcrumbs')
+```
+
+Breadcrumbs otomatis ter-render berdasarkan data yang di-set di `mount()`:
+
+```php
+public function mount()
+{
+    $this->setTitle('User');
+    $this->breadcrumbs = [
+        ['title' => 'Dashboard', 'url' => route('admin.dashboard')],
+        ['title' => 'User Management', 'url' => null],  // null = tidak ada link (halaman aktif)
+    ];
+}
+```
+
+Jika `$breadcrumbs` kosong, component tidak me-render apapun.
+
+### Page Title (Opsional)
+
+`setTitle()` menyimpan judul halaman ke property `$title`. Gunakan di blade view untuk tag `<title>` atau heading:
+
+```blade
+{{-- Di dalam @push('title') atau langsung di view --}}
+<title>{{ $title ?? 'Default' }} - {{ config('app.name') }}</title>
+
+{{-- Atau sebagai heading halaman --}}
+<h1 class="text-2xl font-bold">{{ $title }}</h1>
+```
+
+Property `$title` juga digunakan secara internal oleh `dispatch_to_view()` untuk pesan notifikasi, misalnya: *"User berhasil ditambahkan!"*.
+
+Breadcrumbs, `setTitle()`, dan page title bersifat **opsional** — halaman tetap berfungsi normal tanpa ketiganya.
+
 ### Dependensi Opsional
 
 ```bash
