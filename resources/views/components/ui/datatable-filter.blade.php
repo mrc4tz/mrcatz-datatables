@@ -61,7 +61,7 @@
                             </div>
 
                             {{-- Options --}}
-                            <div style="max-height:180px;overflow-y:auto;padding:0 6px 6px;display:flex;flex-direction:column;gap:1px;">
+                            <div style="max-height:180px;overflow-y:auto;padding:0 6px 6px;display:flex;flex-direction:column;gap:3px;">
                                 <div @click="pick('', 'Semua')" @mouseenter="hover = 0" @mouseleave="hover = -1"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
                                      :style="selected === ''
@@ -69,7 +69,7 @@
                                         : hover === 0
                                             ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)'
                                             : ''"
-                                     style="padding:0.375rem 0.75rem;font-size:0.75rem;line-height:1.25rem;border-radius:0.375rem;cursor:pointer;">
+                                     style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.25rem;border-radius:0.375rem;cursor:pointer;">
                                     Semua
                                 </div>
 
@@ -82,7 +82,7 @@
                                             : hover === {{ $idx + 1 }}
                                                 ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)'
                                                 : ''"
-                                         style="padding:0.375rem 0.75rem;font-size:0.75rem;line-height:1.25rem;border-radius:0.375rem;cursor:pointer;">
+                                         style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.25rem;border-radius:0.375rem;cursor:pointer;">
                                         {{ $data[$filter['option']] }}
                                     </div>
                                 @endforeach
