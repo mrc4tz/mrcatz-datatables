@@ -368,7 +368,7 @@
 
     {{-- Keyboard navigation hint --}}
     @if($enableKeyboardNav && $posts->hasData())
-        <div class="mt-3 px-3 py-2 rounded-lg bg-base-200/30 hidden md:flex items-center justify-center gap-4 flex-wrap text-[11px] text-base-content/35">
+        <div class="mt-3 px-3 py-2 rounded-lg bg-base-200/30 flex items-center justify-center gap-4 flex-wrap text-[11px] text-base-content/35">
             <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">&#8593;&#8595;</kbd> navigasi</span>
             <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">Enter</kbd> edit</span>
             <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">Del/&#9003;</kbd> hapus</span>
