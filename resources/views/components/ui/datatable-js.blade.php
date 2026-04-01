@@ -368,11 +368,11 @@
 
     {{-- Keyboard navigation hint --}}
     @if($enableKeyboardNav && $posts->hasData())
-        <div class="mt-3 px-3 py-2 rounded-lg bg-base-200/30 flex items-center justify-center gap-4 flex-wrap text-[11px] text-base-content/35">
-            <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">&#8593;&#8595;</kbd> navigasi</span>
-            <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">Enter</kbd> edit</span>
-            <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">Del/&#9003;</kbd> hapus</span>
-            <span class="flex items-center gap-1.5"><kbd class="kbd kbd-xs bg-base-200/60">Esc</kbd> batal</span>
+        <div class="mt-2 flex items-center justify-center gap-3 flex-wrap" style="font-size:10px;color:oklch(var(--bc)/.15);">
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.3);">&#8593;&#8595;</kbd> navigasi</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.3);">Enter</kbd> edit</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.3);">Del/&#9003;</kbd> hapus</span>
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.3);">Esc</kbd> batal</span>
         </div>
     @endif
 
