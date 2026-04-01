@@ -164,6 +164,13 @@ class UserTable extends MrCatzDataTablesComponent
     public function setTable()
     {
         return $this->CreateMrCatzTable()
+            ->enableExpand(function ($data, $i) {
+                return MrCatzDataTables::getExpandView($data, [
+                    'Email' => 'email',
+                    'Dibuat' => 'created_at',
+                    'Diperbarui' => 'updated_at',
+                ]);
+            })
             ->withColumnIndex('No')
             ->withColumn('Nama', 'name')
             ->withColumn('Email', 'email')
@@ -178,6 +185,8 @@ class UserTable extends MrCatzDataTablesComponent
     }
 }
 ```
+
+> **Note:** `getActionView()` dan `getExpandView()` adalah static helper yang me-render blade view. Pola penggunaannya sama — return di dalam callback `withCustomColumn()` atau `enableExpand()`.
 
 ### 3. Buat Blade View
 
@@ -245,10 +254,14 @@ public function setTable()
 
 ### Filter
 
+Data option filter bisa berupa **array manual** atau **query builder** dari database:
+
 ```php
 public function setFilter()
 {
-    // Filter sederhana (WHERE key = value)
+    // ──────────────────────────────────────────────
+    // Contoh 1: Data option dari array manual
+    // ──────────────────────────────────────────────
     $roles = [
         ['value' => 'admin', 'label' => 'Admin'],
         ['value' => 'user', 'label' => 'User'],
@@ -265,13 +278,37 @@ public function setFilter()
         '='               // condition (default '=')
     )->get();
 
-    // Filter dengan callback (logic custom)
+    // ──────────────────────────────────────────────
+    // Contoh 2: Data option dari query builder
+    // ──────────────────────────────────────────────
+    $categories = DB::table('categories')
+        ->select('id as value', 'name as label')
+        ->orderBy('name')
+        ->get()
+        ->toArray();
+
+    // convert stdClass ke array
+    $categories = json_decode(json_encode($categories), true);
+
+    $categoryFilter = MrCatzDataTableFilter::create(
+        'filter_category',
+        'Kategori',
+        $categories,
+        'value',
+        'label',
+        'category_id'
+    )->get();
+
+    // ──────────────────────────────────────────────
+    // Contoh 3: Filter dengan callback (logic custom)
+    // ──────────────────────────────────────────────
     $dateFilter = MrCatzDataTableFilter::createWithCallback(
         'filter_date',
         'Tanggal',
         [
             ['value' => 'today', 'label' => 'Hari Ini'],
             ['value' => 'week', 'label' => 'Minggu Ini'],
+            ['value' => 'month', 'label' => 'Bulan Ini'],
         ],
         'value',
         'label',
@@ -279,12 +316,13 @@ public function setFilter()
             return match ($value) {
                 'today' => $query->whereDate('created_at', today()),
                 'week' => $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]),
+                'month' => $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year),
                 default => $query,
             };
         }
     )->get();
 
-    return [$roleFilter, $dateFilter];
+    return [$roleFilter, $categoryFilter, $dateFilter];
 }
 ```
 
