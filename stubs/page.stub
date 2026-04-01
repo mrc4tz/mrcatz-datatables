@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\{{path}}\{{name}};
+namespace {{namespace}};
 
 use App\Models\{{name}};
 use MrCatz\DataTable\MrCatzComponent;
@@ -14,16 +14,16 @@ class {{name}}Page extends MrCatzComponent
     public function mount()
     {
         $this->setTitle('{{name}}');
-        session()->put('active', '{{pathLower}}-{{kebab}}');
+        session()->put('active', '{{sessionKey}}');
         $this->breadcrumbs = [
-            ['title' => 'Dashboard', 'url' => route('{{pathLower}}.dashboard')],
+            ['title' => 'Dashboard', 'url' => '/'],
             ['title' => '{{name}}', 'url' => null],
         ];
     }
 
     public function render()
     {
-        return view('livewire.{{pathLower}}.{{kebab}}.{{kebab}}-page')
+        return view('livewire.{{viewPath}}.{{kebab}}-page')
             ->layout('components.layouts.admin_layout');
     }
 

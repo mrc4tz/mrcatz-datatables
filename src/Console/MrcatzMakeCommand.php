@@ -8,9 +8,9 @@ use Illuminate\Support\Str;
 class MrcatzMakeCommand extends Command
 {
     protected $signature = 'mrcatz:make
-        {name : Nama resource (contoh: User, Product, Category)}
+        {name : Nama resource (contoh: Product, User, Category)}
         {--table= : Nama tabel database (default: nama resource di-pluralize)}
-        {--path=Admin : Path sub-folder di dalam Livewire (default: Admin)}
+        {--path= : Path sub-folder di dalam Livewire (contoh: Admin, Dashboard)}
         {--force : Overwrite file yang sudah ada}';
 
     protected $description = 'Generate MrCatz DataTable page, table, dan blade views';
@@ -18,42 +18,52 @@ class MrcatzMakeCommand extends Command
     public function handle()
     {
         $name = Str::studly($this->argument('name'));
-        $path = Str::studly($this->option('path'));
+        $path = $this->option('path') ? Str::studly($this->option('path')) : '';
+
         $table = $this->option('table') ?? Str::snake(Str::plural($name));
-        $lower = Str::lower($name);
         $kebab = Str::kebab($name);
         $snake = Str::snake($name);
 
+        $filePath = $path ? "{$path}/{$name}" : $name;
+        $viewDir = $path ? strtolower($path) . "/{$kebab}" : $kebab;
+        $viewPath = $path ? strtolower($path) . ".{$kebab}" : $kebab;
+        $livewireTag = $path ? strtolower($path) . ".{$kebab}" : $kebab;
+        $routeName = $path ? strtolower($path) . ".{$snake}" : $snake;
+        $sessionKey = $path ? strtolower($path) . "-{$kebab}" : $kebab;
+
         $replacements = [
+            '{{namespace}}' => $path ? "App\\Livewire\\{$path}\\{$name}" : "App\\Livewire\\{$name}",
             '{{name}}' => $name,
-            '{{path}}' => $path,
-            '{{lower}}' => $lower,
+            '{{lower}}' => Str::lower($name),
             '{{kebab}}' => $kebab,
             '{{snake}}' => $snake,
             '{{table}}' => $table,
-            '{{pathLower}}' => Str::lower($path),
+            '{{viewPath}}' => $viewPath,
+            '{{livewireTag}}' => $livewireTag,
+            '{{routeName}}' => $routeName,
+            '{{sessionKey}}' => $sessionKey,
         ];
 
         $files = [
             [
                 'stub' => 'page.stub',
-                'dest' => app_path("Livewire/{$path}/{$name}/{$name}Page.php"),
-                'label' => "Livewire/{$path}/{$name}/{$name}Page.php",
+                'dest' => app_path("Livewire/{$filePath}/{$name}Page.php"),
+                'label' => "Livewire/{$filePath}/{$name}Page.php",
             ],
             [
                 'stub' => 'table.stub',
-                'dest' => app_path("Livewire/{$path}/{$name}/{$name}Table.php"),
-                'label' => "Livewire/{$path}/{$name}/{$name}Table.php",
+                'dest' => app_path("Livewire/{$filePath}/{$name}Table.php"),
+                'label' => "Livewire/{$filePath}/{$name}Table.php",
             ],
             [
                 'stub' => 'page-blade.stub',
-                'dest' => resource_path("views/livewire/" . Str::lower($path) . "/{$kebab}/{$kebab}-page.blade.php"),
-                'label' => "views/livewire/" . Str::lower($path) . "/{$kebab}/{$kebab}-page.blade.php",
+                'dest' => resource_path("views/livewire/{$viewDir}/{$kebab}-page.blade.php"),
+                'label' => "views/livewire/{$viewDir}/{$kebab}-page.blade.php",
             ],
             [
                 'stub' => 'form-blade.stub',
-                'dest' => resource_path("views/livewire/" . Str::lower($path) . "/{$kebab}/{$snake}_form.blade.php"),
-                'label' => "views/livewire/" . Str::lower($path) . "/{$kebab}/{$snake}_form.blade.php",
+                'dest' => resource_path("views/livewire/{$viewDir}/{$snake}_form.blade.php"),
+                'label' => "views/livewire/{$viewDir}/{$snake}_form.blade.php",
             ],
         ];
 
@@ -92,7 +102,7 @@ class MrcatzMakeCommand extends Command
             $this->info("{$created} file berhasil di-generate!");
             $this->newLine();
             $this->line("Langkah selanjutnya:");
-            $this->line("  1. Tambahkan route: Route::get('/{$kebab}', {$name}Page::class)->name('{$snake}')");
+            $this->line("  1. Tambahkan route: Route::get('/{$kebab}', {$name}Page::class)->name('{$routeName}')");
             $this->line("  2. Edit baseQuery() di {$name}Table.php sesuai tabel database");
             $this->line("  3. Edit kolom di setTable() dan form fields di {$snake}_form.blade.php");
         } else {

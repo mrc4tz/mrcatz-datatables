@@ -6,9 +6,9 @@
 
     @include('mrcatz::components.ui.breadcrumbs')
 
-    <livewire:{{pathLower}}.{{kebab}}.{{kebab}}-table/>
+    <livewire:{{livewireTag}}.{{kebab}}-table/>
 
-    @include('livewire.{{pathLower}}.{{kebab}}.{{snake}}_form')
+    @include('livewire.{{viewPath}}.{{snake}}_form')
 
 </div>
 

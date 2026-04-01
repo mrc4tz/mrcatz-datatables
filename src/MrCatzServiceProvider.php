@@ -4,6 +4,7 @@ namespace MrCatz\DataTable;
 
 use Illuminate\Support\ServiceProvider;
 use MrCatz\DataTable\Console\MrcatzMakeCommand;
+use MrCatz\DataTable\Console\MrcatzRemoveCommand;
 
 class MrCatzServiceProvider extends ServiceProvider
 {
@@ -18,6 +19,7 @@ class MrCatzServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 MrcatzMakeCommand::class,
+                MrcatzRemoveCommand::class,
             ]);
         }
     }

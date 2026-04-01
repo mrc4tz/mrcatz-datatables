@@ -20,11 +20,22 @@ Generate semua file yang dibutuhkan untuk halaman CRUD baru dalam satu perintah:
 php artisan mrcatz:make Product
 ```
 
-Ini akan membuat 4 file:
+```
+app/Livewire/Product/ProductPage.php
+app/Livewire/Product/ProductTable.php
+resources/views/livewire/product/product-page.blade.php
+resources/views/livewire/product/product_form.blade.php
+```
+
+Dengan `--path` untuk menempatkan di sub-folder:
+
+```bash
+php artisan mrcatz:make Product --path=Admin
+```
 
 ```
-app/Livewire/Admin/Product/ProductPage.php       ← CRUD logic
-app/Livewire/Admin/Product/ProductTable.php       ← DataTable config
+app/Livewire/Admin/Product/ProductPage.php
+app/Livewire/Admin/Product/ProductTable.php
 resources/views/livewire/admin/product/product-page.blade.php
 resources/views/livewire/admin/product/product_form.blade.php
 ```
@@ -33,13 +44,21 @@ resources/views/livewire/admin/product/product_form.blade.php
 
 ```bash
 # Custom nama tabel database (default: plural dari nama resource)
-php artisan mrcatz:make Product --table=my_products
-
-# Custom path folder (default: Admin)
-php artisan mrcatz:make Product --path=Dashboard
+php artisan mrcatz:make Product --path=Admin --table=my_products
 
 # Overwrite file yang sudah ada
-php artisan mrcatz:make Product --force
+php artisan mrcatz:make Product --path=Admin --force
+```
+
+### Hapus File yang Di-generate
+
+```bash
+php artisan mrcatz:remove Product
+
+php artisan mrcatz:remove Product --path=Admin
+
+# Hapus tanpa konfirmasi
+php artisan mrcatz:remove Product --path=Admin --force
 ```
 
 ### Setelah Generate
