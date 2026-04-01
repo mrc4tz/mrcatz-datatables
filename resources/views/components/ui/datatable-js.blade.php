@@ -207,7 +207,7 @@
 
             @if($posts->hasData())
                 <div class="overflow-x-auto">
-                    <table class="table {{ $tableZebraStyle ? 'table-zebra' : '' }} outline-none"
+                    <table class="table outline-none"
                            @if($enableKeyboardNav)
                            tabindex="0"
                            @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
@@ -279,7 +279,7 @@
                         <tbody>
                         @for($i = 0; $i < $posts->countRow(); $i++)
                             <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
-                                :class="focusedRow === {{ $i }} ? 'bg-primary/15' : ''"
+                                :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 15%,transparent)' : '{{ $tableZebraStyle && $i % 2 === 1 ? 'background:color-mix(in srgb,var(--color-base-content) 3%,transparent)' : '' }}'"
                                 @click="focusedRow = {{ $i }}"
                                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
