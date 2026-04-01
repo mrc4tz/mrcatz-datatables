@@ -65,7 +65,7 @@
                                 <div @click="pick('', 'Semua')" @mouseenter="hover = 0" @mouseleave="hover = -1"
                                      x-show="'semua'.includes(query.toLowerCase()) || query === ''"
                                      :style="selected === '' ? 'color:var(--color-primary);font-weight:500' : hover === 0 ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
-                                     style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
+                                     style="padding:0.5rem 0.75rem;font-size:0.75rem !important;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
                                     Semua
                                 </div>
 
@@ -74,7 +74,7 @@
                                          @mouseenter="hover = {{ $idx + 1 }}" @mouseleave="hover = -1"
                                          x-show="'{{ strtolower(addslashes($data[$filter['option']])) }}'.includes(query.toLowerCase()) || query === ''"
                                          :style="selected === '{{ addslashes($data[$filter['value']]) }}' ? 'color:var(--color-primary);font-weight:500' : hover === {{ $idx + 1 }} ? 'background:color-mix(in srgb,var(--color-base-content) 5%,transparent)' : ''"
-                                         style="padding:0.5rem 0.75rem;font-size:0.75rem;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
+                                         style="padding:0.5rem 0.75rem;font-size:0.75rem !important;line-height:1.5;border-radius:0.375rem;cursor:pointer;">
                                         {{ $data[$filter['option']] }}
                                     </div>
                                 @endforeach
