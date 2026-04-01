@@ -281,7 +281,10 @@ class MrCatzDataTables
             if ($this->callbacks[$indexColumn] != null) {
                 return $this->callbacks[$indexColumn]($this->data[$indexRow], $indexRow);
             }
-            $key = $this->data->pluck($this->dataTableSet[$indexColumn]['key'])[$indexRow];
+            $columnKey = $this->dataTableSet[$indexColumn]['key'];
+            // Support table-prefixed keys (e.g. 'products.name' → pluck 'name')
+            $pluckKey = str_contains($columnKey, '.') ? substr($columnKey, strrpos($columnKey, '.') + 1) : $columnKey;
+            $key = $this->data->pluck($pluckKey)[$indexRow];
             return $this->setSearchWord($key);
         }
         if ($this->dataTableSet[$indexColumn]['index'] != null) {
