@@ -19,13 +19,16 @@ return [
     |--------------------------------------------------------------------------
     |
     | Choose the icon set for all MrCatz DataTable UI icons.
-    | Supported: 'material' (default), 'heroicons', 'fontawesome', 'custom'
+    | Supported: 'default', 'heroicons', 'material', 'fontawesome', 'custom'
+    |
+    | For 'default': built-in inline SVG icons — zero dependencies, zero CDN.
+    |   Works out of the box, no setup needed.
+    |
+    | For 'heroicons': requires Blade Heroicons (composer require blade-ui-kit/blade-heroicons)
+    |   Higher quality SVG, but requires package install.
     |
     | For 'material': requires Google Material Icons font in your layout
     |   <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined" rel="stylesheet">
-    |
-    | For 'heroicons': requires Blade Heroicons (composer require blade-ui-kit/blade-heroicons)
-    |   No external font needed — uses inline SVG.
     |
     | For 'fontawesome': requires Font Awesome CSS in your layout
     |   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -34,7 +37,7 @@ return [
     |   Each key maps to raw HTML (SVG, icon font class, etc).
     |
     */
-    'icon_set' => 'heroicons',
+    'icon_set' => 'default',
 
     /*
     |--------------------------------------------------------------------------

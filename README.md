@@ -81,7 +81,7 @@ php artisan mrcatz:make Product --path=Admin
 - Modular traits — HasFilters, HasExport, HasBulkActions
 - Event constants — `MrCatzEvent::REFRESH_DATA` etc.
 - Multi-language — English & Indonesian via Laravel lang files
-- Configurable icon set — Material Icons, Heroicons, Font Awesome, or custom
+- Configurable icon set — Default (inline SVG), Heroicons, Material Icons, Font Awesome, or custom
 - Search debounce validation — auto-corrects invalid format
 - Backward compatible — no strict types on public properties/methods
 - Test suite — 78 tests, 195 assertions
@@ -115,13 +115,9 @@ composer require mrcatz/datatable
 content: ['./vendor/mrcatz/**/*.blade.php']
 ```
 
-**3. Icons** — install Blade Heroicons (default icon set, lightest — inline SVG, zero CDN):
+**3. Icons** — works out of the box with built-in SVG icons. No setup needed.
 
-```bash
-composer require blade-ui-kit/blade-heroicons
-```
-
-Or use Material Icons / Font Awesome instead — see [Icon Set](#icon-set) section.
+Optionally switch to Heroicons, Material Icons, or Font Awesome — see [Icon Set](#icon-set) section.
 
 **4. Optional Dependencies:**
 
@@ -606,26 +602,33 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 
 ### Icon Set
 
-MrCatz DataTable supports 4 icon sets. Set in `config/mrcatz.php`:
+MrCatz DataTable supports 5 icon sets. Set in `config/mrcatz.php`:
 
 ```php
-'icon_set' => 'heroicons',  // 'heroicons' (default), 'material', 'fontawesome', 'custom'
+'icon_set' => 'default',  // 'default', 'heroicons', 'material', 'fontawesome', 'custom'
 ```
 
 | Icon Set | Size | Setup | Best For |
 |---|---|---|---|
-| **Heroicons** (default) | ~0KB (inline SVG) | `composer require blade-ui-kit/blade-heroicons` | Lightest, no CDN needed |
+| **Default** | ~0KB (inline SVG) | Tidak perlu setup | Works out of the box |
+| **Heroicons** | ~0KB (inline SVG) | `composer require blade-ui-kit/blade-heroicons` | Higher quality SVG |
 | **Material Icons** | ~150KB | `<link>` Google Fonts di layout | Familiar, banyak icon |
 | **Font Awesome** | ~300KB | `<link>` CDN di layout | Populer, banyak icon |
 | **Custom** | Varies | Define map di config | Full control |
 
-**Heroicons** (default) — lightest, zero external request:
+**Default** — built-in inline SVG, zero dependencies, zero CDN. Works immediately after install.
+
+**Heroicons** — higher quality SVG via Blade Heroicons package:
 
 ```bash
 composer require blade-ui-kit/blade-heroicons
 ```
 
-> Jika `blade-heroicons` belum di-install, otomatis fallback ke Material Icons.
+```php
+'icon_set' => 'heroicons',
+```
+
+> Jika `blade-heroicons` belum di-install, otomatis fallback ke default (inline SVG).
 
 **Material Icons** — tambah link di layout:
 
@@ -803,7 +806,7 @@ public function saveData(): void { ... }   // salah
 - Laravel >= 11.0
 - Livewire >= 3.0
 - Tailwind CSS + DaisyUI
-- Icon set: Heroicons (default, lightest), Material Icons, Font Awesome, or custom
+- Icon set: Default (inline SVG), Heroicons, Material Icons, Font Awesome, or custom
 
 ## License
 

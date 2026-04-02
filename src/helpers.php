@@ -94,8 +94,8 @@ if (!function_exists('mrcatz_icon')) {
     /**
      * Render an icon for MrCatz DataTable.
      *
-     * Supports 'heroicons' (default), 'material', 'fontawesome', and 'custom'.
-     * Falls back to inline SVG if the selected icon set is unavailable.
+     * Supports 'default', 'heroicons', 'material', 'fontawesome', and 'custom'.
+     * 'default' uses built-in inline SVG — zero dependencies, zero CDN.
      *
      * @param string $name   Icon name (e.g. 'add', 'edit', 'close')
      * @param string $class  Additional CSS classes
@@ -105,16 +105,26 @@ if (!function_exists('mrcatz_icon')) {
     {
         static $heroMap = null;
         static $iconSet = null;
+        static $validSets = ['default', 'heroicons', 'material', 'fontawesome', 'custom'];
 
         if ($iconSet === null) {
             try {
-                $iconSet = config('mrcatz.icon_set', 'heroicons');
+                $iconSet = config('mrcatz.icon_set', 'default');
             } catch (\Throwable $e) {
-                $iconSet = 'heroicons';
+                $iconSet = 'default';
+            }
+            // Invalid icon_set value — use default
+            if (!in_array($iconSet, $validSets)) {
+                $iconSet = 'default';
             }
         }
 
-        // Heroicons (default) — inline SVG via blade-heroicons package
+        // Default — built-in inline SVG, zero dependencies
+        if ($iconSet === 'default') {
+            return mrcatz_icon_svg($name, $class);
+        }
+
+        // Heroicons — inline SVG via blade-heroicons package
         if ($iconSet === 'heroicons') {
             if ($heroMap === null) {
                 $heroMap = [
