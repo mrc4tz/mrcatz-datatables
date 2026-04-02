@@ -610,11 +610,11 @@ MrCatz DataTable supports 5 icon sets. Set in `config/mrcatz.php`:
 
 | Icon Set | Size | Setup | Best For |
 |---|---|---|---|
-| **Default** | ~0KB (inline SVG) | Tidak perlu setup | Works out of the box |
+| **Default** | ~0KB (inline SVG) | No setup needed | Works out of the box |
 | **Heroicons** | ~0KB (inline SVG) | `composer require blade-ui-kit/blade-heroicons` | Higher quality SVG |
-| **Material Icons** | ~150KB | `<link>` Google Fonts di layout | Familiar, banyak icon |
-| **Font Awesome** | ~300KB | `<link>` CDN di layout | Populer, banyak icon |
-| **Custom** | Varies | Define map di config | Full control |
+| **Material Icons** | ~150KB | `<link>` Google Fonts in layout | Familiar, many icons |
+| **Font Awesome** | ~300KB | `<link>` CDN in layout | Popular, many icons |
+| **Custom** | Varies | Define map in config | Full control |
 
 **Default** — built-in inline SVG, zero dependencies, zero CDN. Works immediately after install.
 
@@ -628,9 +628,9 @@ composer require blade-ui-kit/blade-heroicons
 'icon_set' => 'heroicons',
 ```
 
-> Jika `blade-heroicons` belum di-install, otomatis fallback ke default (inline SVG).
+> If `blade-heroicons` is not installed, automatically falls back to default (inline SVG).
 
-**Material Icons** — tambah link di layout:
+**Material Icons** — add link to your layout:
 
 ```html
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined" rel="stylesheet">
@@ -640,7 +640,7 @@ composer require blade-ui-kit/blade-heroicons
 'icon_set' => 'material',
 ```
 
-**Font Awesome 6** — tambah link di layout:
+**Font Awesome 6** — add link to your layout:
 
 ```html
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -650,7 +650,7 @@ composer require blade-ui-kit/blade-heroicons
 'icon_set' => 'fontawesome',
 ```
 
-**Custom** — define icon map, semua 30 key sudah ada di config sebagai template (uncomment dan edit):
+**Custom** — define your own icon map. All 30 keys are pre-filled as comments in config (just uncomment and edit):
 
 ```php
 'icon_set' => 'custom',
@@ -762,20 +762,20 @@ Icons not defined in `custom_icons` fallback to Material Icons.
 
 ## Troubleshooting
 
-### Search tidak bekerja pada query JOIN
+### Search not working on JOIN queries
 
-Gunakan prefix tabel di `withColumn()` dan tambahkan `configTable()`:
+Use table-prefixed column keys in `withColumn()` and add `configTable()`:
 
 ```php
-->withColumn('Name', 'products.name')  // bukan 'name'
+->withColumn('Name', 'products.name')  // not just 'name'
 ```
 
-### Filter tidak muncul
+### Filter not showing
 
-Pastikan `->get()` dipanggil di setiap filter:
+Make sure `->get()` is called on every filter:
 
 ```php
-MrCatzDataTableFilter::create(...)->get();  // jangan lupa ->get()
+MrCatzDataTableFilter::create(...)->get();  // don't forget ->get()
 ```
 
 ### Export error: Class not found
@@ -785,17 +785,17 @@ composer require maatwebsite/excel        # Excel
 composer require barryvdh/laravel-dompdf  # PDF
 ```
 
-### Data tidak refresh setelah save/delete
+### Data not refreshing after save/delete
 
-Pastikan memanggil `dispatch_to_view()` di akhir `saveData()` / `dropData()`.
+Make sure to call `dispatch_to_view()` at the end of `saveData()` / `dropData()`.
 
 ### Override method error "Declaration must be compatible"
 
-Jangan tambahkan return type pada method yang di-override:
+Do not add return types on overridden methods:
 
 ```php
-public function saveData() { ... }         // benar
-public function saveData(): void { ... }   // salah
+public function saveData() { ... }         // correct
+public function saveData(): void { ... }   // wrong
 ```
 
 ---
