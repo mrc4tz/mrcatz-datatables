@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-04-02
+
+### Changed
+- Remove duplicate translation arrays (`en`, `id`) from `config/mrcatz.php` — config now only stores `locale` setting
+- Localization fully handled by Laravel lang files (`lang/vendor/mrcatz/`)
+- `mrcatz_lang()` helper normalizes replacement keys (both `:key` and `key` formats work)
+
+### Fixed
+- `mrcatz_lang()` graceful fallback when translator service is unavailable
+
 ## [1.1.0] - 2026-04-02
 
 ### Added
@@ -66,7 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language support (English, Indonesian)
 - DaisyUI 5 / Tailwind CSS styling
 
-[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.0.0...v1.0.1
