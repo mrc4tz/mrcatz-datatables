@@ -91,10 +91,12 @@ composer require maatwebsite/excel       # Excel export
 composer require barryvdh/laravel-dompdf # PDF export
 ```
 
-### Publish Views (Optional)
+### Publish (Optional)
 
 ```bash
-php artisan vendor:publish --tag=mrcatz-views
+php artisan vendor:publish --tag=mrcatz-views   # Customize blade views
+php artisan vendor:publish --tag=mrcatz-lang    # Customize translations
+php artisan vendor:publish --tag=mrcatz-config  # Customize config
 ```
 
 ---
@@ -653,7 +655,29 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 
 ## Localization
 
-All UI strings are configurable. Publish the config file:
+MrCatz DataTable supports two localization methods: **Laravel lang files** (recommended) and **config fallback**.
+
+### Method 1: Laravel Lang Files (Recommended)
+
+Publish the lang files:
+
+```bash
+php artisan vendor:publish --tag=mrcatz-lang
+```
+
+This creates `lang/vendor/mrcatz/en/mrcatz.php` and `lang/vendor/mrcatz/id/mrcatz.php`. Edit these files to customize strings or add new languages.
+
+Set the app locale in `config/app.php`:
+
+```php
+'locale' => 'id',  // uses lang/vendor/mrcatz/id/mrcatz.php
+```
+
+To add a new language (e.g. Japanese), create `lang/vendor/mrcatz/ja/mrcatz.php` and translate all keys.
+
+### Method 2: Config Fallback
+
+Publish the config file:
 
 ```bash
 php artisan vendor:publish --tag=mrcatz-config
@@ -666,9 +690,7 @@ This creates `config/mrcatz.php`. Change the locale:
 'locale' => 'id',  // 'en' (default) or 'id' (Indonesian)
 ```
 
-All buttons, labels, modals, empty states, and notifications will switch to the selected language.
-
-You can also customize individual strings:
+Customize individual strings:
 
 ```php
 'en' => [
@@ -679,6 +701,8 @@ You can also customize individual strings:
 ```
 
 Or add a new language by adding a new key alongside `'en'` and `'id'`.
+
+> **Priority:** Lang files take precedence over config. If a key exists in `lang/vendor/mrcatz/`, it will be used. Otherwise, falls back to `config/mrcatz.php`.
 
 ---
 
