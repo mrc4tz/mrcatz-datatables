@@ -1,7 +1,7 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
 @if($posts->hasData())
     {{-- Mobile card view --}}
-    <div class="md:hidden space-y-3">
+    <div class="md:hidden space-y-3 pt-3">
         @for($i = 0; $i < $posts->countRow(); $i++)
             <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
                  :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
@@ -350,7 +350,7 @@
 {{-- Loading skeleton --}}
 <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
     {{-- Mobile skeleton --}}
-    <div class="md:hidden space-y-3">
+    <div class="md:hidden space-y-3 pt-3">
         @for($sk = 0; $sk < min($p ?? 5, 3); $sk++)
             <div class="rounded-xl border border-base-content/8 bg-base-100 p-4 space-y-2">
                 <div class="space-y-1">
