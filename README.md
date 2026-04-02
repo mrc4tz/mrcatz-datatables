@@ -572,102 +572,41 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 
 ## Property Reference
 
-### MrCatzComponent (Page)
+### Page Properties
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$title` | string | `''` | Page title, used in notifications |
-| `$form_title` | string | `''` | Modal form title |
-| `$deleted_text` | string | `''` | Delete confirmation text |
-| `$isEdit` | bool | `false` | Edit or add mode |
-| `$id` | mixed | `null` | Current record ID |
-| `$breadcrumbs` | array | `[]` | Breadcrumb data |
-| `$index` | int | `-1` | Current row index |
+| Property | Default | Description |
+|---|---|---|
+| `$title` | `''` | Page title, used in notifications |
+| `$form_title` | `''` | Modal form title |
+| `$deleted_text` | `''` | Delete confirmation text |
+| `$breadcrumbs` | `[]` | Breadcrumb navigation data |
 
-### MrCatzDataTablesComponent (Table)
+### Table Properties
 
-**Display**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$tableTitle` | string | `''` | Table title (used in aria-label) |
-| `$showSearch` | bool | `true` | Show search input |
-| `$showAddButton` | bool | `true` | Show add button |
-| `$showExportButton` | bool | `true` | Show export button |
-| `$exportTitle` | string | `'Data Export'` | Export file title |
-| `$usePagination` | bool | `true` | Enable pagination |
-| `$cardContainer` | bool | `true` | Table inside card |
-| `$borderContainer` | bool | `false` | Table with border |
-| `$withLoading` | bool | `false` | Fullscreen loading overlay |
-| `$tableZebraStyle` | bool | `true` | Zebra stripe rows |
-
-**Search**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$search` | string | `''` | Search keyword (URL synced) |
-| `$typeSearch` | bool | `false` | Realtime search on typing |
-| `$typeSearchWithDelay` | bool | `false` | Realtime search with debounce |
-| `$typeSearchDelay` | string | `'500ms'` | Debounce delay (auto-validated, e.g. `'500ms'`, `'1s'`) |
-
-**Sorting**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$key` | string | `''` | Active sort column key (URL synced) |
-| `$value` | string | `''` | Active sort direction (URL synced) |
-| `$multiSort` | array | `[]` | Multi-sort state, e.g. `[['key'=>'name','dir'=>'asc'], ...]` (URL synced) |
-| `$enableColumnSorting` | bool | `true` | Enable column sorting |
-
-**Columns**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$columnOrder` | array | `[]` | Column order indices (URL synced via `col_order`) |
-| `$hiddenColumns` | array | `[]` | Hidden column indices (URL synced via `col_hidden`) |
-| `$enableColumnVisibility` | bool | `true` | Show column visibility toggle button |
-| `$enableColumnResize` | bool | `true` | Enable column resize |
-| `$enableColumnReorder` | bool | `true` | Enable column drag & drop reorder |
-
-**Keyboard & UX**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$enableKeyboardNav` | bool | `true` | Keyboard navigation (Arrow, Enter, Delete, Esc) |
-| `$showKeyboardNavNote` | bool | `false` | Show keyboard shortcut hints below table |
-| `$expandableRows` | bool | `false` | Enable expandable row detail |
-| `$stickyHeader` | bool | `false` | Sticky thead on scroll (max-height 70vh) |
-
-**Bulk Actions**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$bulkPrimaryKey` | string\|null | `null` | Primary key for bulk select, `null` = disabled |
-| `$showBulkButton` | bool | `false` | Show bulk select toggle button |
-| `$bulkActive` | bool | `false` | Bulk mode active |
-| `$selectedRows` | array | `[]` | Selected row IDs |
-| `$selectAll` | bool | `false` | Select all state |
-
-**Filters (HasFilters)**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$filterUrlParams` | array | `[]` | Active filter URL params (URL synced) |
-| `$activeFilters` | array | `[]` | Active filter key-value pairs |
-| `$filterShow` | array | `[]` | Filter visibility state |
-| `$filterData` | array | `[]` | Filter dropdown options |
-| `$dataFilters` | array | `[]` | All filter definitions |
-| `$default_filter_value` | string | `''` | Default "All" filter value |
-
-**Export (HasExport)**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `$showExportButton` | bool | `true` | Show export button |
-| `$exportTitle` | string | `'Data Export'` | Export file/sheet title |
-| `$exportSearch` | string | `''` | Export search keyword |
-| `$exportFilterValues` | array | `[]` | Export filter selections |
-| `$exportCount` | int | `0` | Preview count of rows to export |
+| Property | Default | Description |
+|---|---|---|
+| `$showSearch` | `true` | Show search input |
+| `$showAddButton` | `true` | Show add button |
+| `$showExportButton` | `true` | Show export button |
+| `$exportTitle` | `'Data Export'` | Export file/sheet title |
+| `$usePagination` | `true` | Enable pagination |
+| `$cardContainer` | `true` | Table inside card |
+| `$borderContainer` | `false` | Table with border |
+| `$withLoading` | `false` | Fullscreen loading overlay |
+| `$tableZebraStyle` | `true` | Zebra stripe rows |
+| `$typeSearch` | `false` | Realtime search on typing |
+| `$typeSearchWithDelay` | `false` | Realtime search with debounce |
+| `$typeSearchDelay` | `'500ms'` | Debounce delay (e.g. `'500ms'`, `'1s'`) |
+| `$enableColumnSorting` | `true` | Enable column sorting |
+| `$enableColumnVisibility` | `true` | Show column visibility toggle |
+| `$enableColumnResize` | `true` | Enable column resize |
+| `$enableColumnReorder` | `true` | Enable column drag & drop reorder |
+| `$enableKeyboardNav` | `true` | Keyboard navigation |
+| `$showKeyboardNavNote` | `false` | Show keyboard shortcut hints |
+| `$expandableRows` | `false` | Enable expandable row detail |
+| `$stickyHeader` | `false` | Sticky header on scroll |
+| `$bulkPrimaryKey` | `null` | Primary key for bulk select, `null` = disabled |
+| `$showBulkButton` | `false` | Show bulk select toggle button |
 
 ## Method Reference
 
@@ -682,21 +621,14 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `dropData()` | Called on delete confirmation |
 | `dropBulkData($selectedRows)` | Called on bulk delete confirmation |
 | `onInlineUpdate($rowData, $columnKey, $newValue)` | Called when inline cell edit is saved |
-
-### Page — Helper Methods
-
-| Method | Description |
-|---|---|
 | `dispatch_to_view($condition, $type)` | Dispatch success/failure notification (`$type`: `'insert'`, `'update'`, `'delete'`) |
-| `show_notif($type, $text)` | Show custom notification (`$type`: `'success'`, `'error'`, `'warning'`, `'info'`) |
-| `notice($type, $text)` | Show toast notification |
-| `setTitle($title)` | Set page title |
+| `show_notif($type, $text)` | Show notification (`$type`: `'success'`, `'error'`, `'warning'`, `'info'`) |
 
 ### Table — Override Methods
 
 | Method | Description |
 |---|---|
-| `baseQuery()` | Return query builder (default: `DB::table('users')`) |
+| `baseQuery()` | Return query builder |
 | `setTable()` | Return `MrCatzDataTables` instance with column definitions |
 | `configTable()` | Return config for relevance search, e.g. `['table_name' => 'x', 'table_id' => 'id']` |
 | `setFilter()` | Return array of `MrCatzDataTableFilter` |
@@ -706,36 +638,10 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `onDataLoaded($builder, $data)` | Hook after data is loaded |
 | `onFilterChanged($id, $value)` | Hook after filter changes (for dependent filters) |
 | `onRowClick($data)` | Hook when a row is clicked |
-| `beforeExport($headers, $rows, $format, $scope)` | Hook before export — must return `['headers' => ..., 'rows' => ...]` |
+| `beforeExport($headers, $rows, $format, $scope)` | Hook before export — return `['headers' => ..., 'rows' => ...]` |
 | `afterExport($format, $scope)` | Hook after export completes |
-| `showLoading()` | Hook called on `wire:init` |
-
-### Table — Callable Methods
-
-| Method | Description |
-|---|---|
-| `addData()` | Dispatch add-data event |
-| `editData($data)` | Dispatch edit-data event |
-| `deleteData($data)` | Dispatch delete-data event |
-| `inlineUpdate($rowData, $columnKey, $newValue)` | Dispatch inline update event to Page |
-| `searchData()` | Trigger search |
-| `resetData()` | Reset all state (search, sort, multi-sort, filters, column order, hidden columns) |
-| `orderData($key, $order)` | Sort by single column (click) |
-| `addSort($key, $order)` | Add secondary sort (Shift+click) |
-| `paginate($perPage)` | Change rows per page |
-| `goToP($page, $pageName)` | Navigate to specific page |
-| `toggleBulk()` | Toggle bulk mode on/off |
-| `toggleSelectAll()` | Toggle select all rows |
-| `clearSelection()` | Clear all selected rows |
-| `bulkDelete()` | Trigger bulk delete |
-| `toggleColumn($columnIndex)` | Toggle column visibility |
-| `reorderColumn($from, $to, $totalColumns)` | Reorder columns |
-| `openExportModal()` | Open export modal |
-| `updateExportCount($scope)` | Update export preview count |
-| `exportData($format, $scope)` | Execute export (`$format`: `'excel'`/`'pdf'`, `$scope`: `'all'`/`'filtered'`) |
-| `refreshData()` | Refresh table data |
-| `setFilterShow($id, $show)` | Show/hide a filter by ID |
-| `setFilterData($id, $data)` | Update filter dropdown options by ID |
+| `setFilterShow($id, $show)` | Show/hide a filter dynamically |
+| `setFilterData($id, $data)` | Update filter dropdown options dynamically |
 | `resetFilter($id)` | Reset a filter value to "All" |
 
 ### Engine — Fluent API (`MrCatzDataTables`)
@@ -749,10 +655,8 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `enableExpand($callback)` | Enable expandable row with content callback |
 | `setDefaultOrder($key, $dir)` | Set default sort column and direction |
 | `addOrderBy($key, $dir)` | Add additional sort order |
-| `setMultiSort($multiSort)` | Set multi-column sort from array |
 | `getActionView($data, $i, $editable, $deletable)` | Static: render edit/delete action buttons |
 | `getExpandView($data, $fields)` | Static: render expandable row grid |
-| `applySearchWhere($query, $search, $columns)` | Static: apply search WHERE to any query |
 
 ### Filter Factory (`MrCatzDataTableFilter`)
 
@@ -761,26 +665,6 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `create($id, $label, $data, $value, $option, $key, $show, $condition)` | Create standard filter |
 | `createWithCallback($id, $label, $data, $value, $option, $callback, $show)` | Create filter with custom query callback |
 | `->get()` | Finalize filter (must call before returning) |
-
-### Event Constants (`MrCatzEvent`)
-
-| Constant | Value | Description |
-|---|---|---|
-| `ADD_DATA` | `'add-data'` | Add button clicked |
-| `EDIT_DATA` | `'edit-data'` | Edit button clicked |
-| `DELETE_DATA` | `'delete-data'` | Delete button clicked |
-| `REFRESH_DATA` | `'refresh-data'` | Data refresh after CRUD |
-| `SHOW_NOTIF` | `'show-notif'` | Show notification |
-| `NOTICE` | `'notice'` | Show toast |
-| `RESET_SELECT` | `'reset-select'` | Reset filter selects |
-| `OPEN_EXPORT_MODAL` | `'open-export-modal'` | Open export modal |
-| `SEARCH_TYPING` | `'search-typing'` | Realtime search input |
-| `PREPARE_ADD` | `'prepareAddData'` | Prepare add form |
-| `PREPARE_EDIT` | `'prepareEditData'` | Prepare edit form |
-| `PREPARE_DELETE` | `'prepareDeleteData'` | Prepare delete confirmation |
-| `BULK_DELETE` | `'bulkDeleteData'` | Bulk delete dispatch |
-| `REFRESH_TABLE` | `'refreshDataTable'` | Refresh table |
-| `INLINE_UPDATE` | `'inlineUpdateData'` | Inline cell edit saved |
 
 ---
 
