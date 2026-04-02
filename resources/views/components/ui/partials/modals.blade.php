@@ -158,6 +158,27 @@
     </dialog>
 @endif
 
+{{-- Mobile preset bottom-sheet --}}
+@if(count($filters) > 0 || $showSearch)
+    <dialog id="modal-mobile-preset" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-preset-title">
+        <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
+            <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
+                <h3 id="modal-preset-title" class="text-sm font-bold text-base-content flex items-center gap-2">
+                    {!! mrcatz_icon('bookmarks', 'text-primary') !!}
+                    {{ mrcatz_lang('filter_preset') }}
+                </h3>
+                <form method="dialog">
+                    <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200">{!! mrcatz_icon('close') !!}</button>
+                </form>
+            </div>
+            <div class="px-5 py-4 space-y-2">
+                @include('mrcatz::components.ui.partials.preset-content')
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+@endif
+
 {{-- Loading overlay --}}
 @if($withLoading)
     @if($load_start)
