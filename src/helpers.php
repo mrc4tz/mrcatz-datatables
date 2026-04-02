@@ -4,18 +4,27 @@ if (!function_exists('mrcatz_lang')) {
     /**
      * Get a MrCatz DataTable translated string.
      *
-     * Priority: Laravel lang files → config fallback
+     * Uses Laravel lang files (lang/vendor/mrcatz/) with locale from
+     * app locale or config('mrcatz.locale') fallback.
+     *
+     * Replacement keys accept both ':key' and 'key' formats.
      *
      * @param string $key
-     * @param array  $replace  e.g. [':query' => 'ryan']
+     * @param array  $replace  e.g. [':query' => 'ryan'] or ['query' => 'ryan']
      * @return string
      */
     function mrcatz_lang(string $key, array $replace = []): string
     {
-        // Try Laravel lang files first (supports lang/vendor/mrcatz override)
+        // Normalize replacement keys: strip leading colon for trans() compatibility
+        $normalized = [];
+        foreach ($replace as $k => $v) {
+            $normalized[ltrim($k, ':')] = $v;
+        }
+
         try {
+            $locale = app()->getLocale() ?? config('mrcatz.locale', 'en');
             $langKey = "mrcatz::mrcatz.{$key}";
-            $translated = trans($langKey, $replace);
+            $translated = trans($langKey, $normalized, $locale);
 
             if ($translated !== $langKey) {
                 return $translated;
@@ -24,14 +33,6 @@ if (!function_exists('mrcatz_lang')) {
             // translator not available (e.g. unit tests without full app)
         }
 
-        // Fall back to config
-        $locale = config('mrcatz.locale', 'en');
-        $text = config("mrcatz.{$locale}.{$key}", config("mrcatz.en.{$key}", $key));
-
-        foreach ($replace as $k => $v) {
-            $text = str_replace($k, $v, $text);
-        }
-
-        return $text;
+        return $key;
     }
 }
