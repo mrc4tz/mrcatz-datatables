@@ -39,7 +39,7 @@
                                              $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($firstDataCol) }}', this.val, {{ $i }});
                                          }
                                      }"
-                                     x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($firstDataCol) }}' && $event.detail.rowIndex === {{ $i }}) { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }">
+                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }">
                                     <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold flex items-center gap-1">{{ $posts->getHead($firstDataCol) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <p x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus())"
                                        class="text-sm font-semibold text-base-content truncate cursor-text px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
@@ -88,7 +88,7 @@
                                              $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($ci) }}', this.val, {{ $i }});
                                          }
                                      }"
-                                     x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}' && $event.detail.rowIndex === {{ $i }}) { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
+                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
                                     <span class="text-[11px] text-base-content/40 mb-0.5 flex items-center gap-1">{{ $posts->getHead($ci) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
                                           class="text-sm text-base-content/80 cursor-text block truncate px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
@@ -279,7 +279,7 @@
                                         $wire.inlineUpdate(JSON.parse($el.closest('tr').dataset.row), '{{ $posts->getKey($ci) }}', this.val, {{ $i }});
                                     }
                                 }"
-                                x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}' && $event.detail.rowIndex === {{ $i }}) { error = $event.detail.error; editing = true; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }"
+                                x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }"
                                 @dblclick.stop="editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus())"
                                 @click.stop="if (window.innerWidth < 768 && !editing) { editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }">
                                 <span x-show="!editing" class="group/edit inline-flex items-center gap-1.5 cursor-text px-2 py-0.5 -mx-2 rounded bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/20 hover:border-primary/40 transition-all duration-150">

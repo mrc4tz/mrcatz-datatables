@@ -203,7 +203,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
             if ($validator->fails()) {
                 $error = $validator->errors()->first($validationKey);
-                $this->dispatch('inline-validation-error', columnKey: $columnKey, rowIndex: $rowIndex, error: $error);
+                $this->dispatch('inline-validation-error', cellId: $rowIndex . '_' . $columnKey, error: $error);
                 $this->notice('error', $error);
                 return;
             }
