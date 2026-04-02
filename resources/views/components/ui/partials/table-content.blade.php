@@ -113,7 +113,7 @@
                 @endif
 
                 {{-- Expand: open modal on mobile --}}
-                @if($showExpandMobile)
+                @if($showExpandMobile && $posts->isExpandEnabled($i))
                     <div class="px-4 pb-3">
                         <button @click.stop="$dispatch('open-mobile-expand', { index: {{ $i }} })"
                                 class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-base-200/30 hover:bg-base-200/60 text-base-content/40 hover:text-base-content/60 transition-colors text-xs">
@@ -244,9 +244,11 @@
                     data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
                     @if($showExpandDesktop)
-                        <td class="w-8 text-center" @click.stop="toggleExpand({{ $i }})">
-                            <span class="transition-transform duration-200"
-                                  :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
+                        <td class="w-8 text-center">
+                            @if($posts->isExpandEnabled($i))
+                                <span class="transition-transform duration-200 cursor-pointer" @click.stop="toggleExpand({{ $i }})"
+                                      :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
+                            @endif
                         </td>
                     @endif
 
@@ -305,7 +307,7 @@
                         @endif
                     @endforeach
                 </tr>
-                @if($showExpandDesktop)
+                @if($showExpandDesktop && $posts->isExpandEnabled($i))
                     <tr x-show="expandedRows.includes({{ $i }})" class="bg-base-200/20">
                         <td colspan="{{ $totalColspan }}" class="p-0">
                             <div class="px-6 py-4 text-sm" x-show="expandedRows.includes({{ $i }})"

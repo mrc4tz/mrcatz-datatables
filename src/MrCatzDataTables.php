@@ -410,11 +410,18 @@ class MrCatzDataTables
 
     public function hasExpand(): bool { return $this->expandCallback !== null; }
 
+    public function isExpandEnabled(int $indexRow): bool
+    {
+        $this->validateRowIndex($indexRow);
+        if (!$this->expandCallback) return false;
+        return ($this->expandCallback)($this->data[$indexRow], $indexRow) !== null;
+    }
+
     public function getExpandContent(int $indexRow): string
     {
         $this->validateRowIndex($indexRow);
         if (!$this->expandCallback) return '';
-        return ($this->expandCallback)($this->data[$indexRow], $indexRow);
+        return ($this->expandCallback)($this->data[$indexRow], $indexRow) ?? '';
     }
 
     public function getRowRawData(int $indexRow): mixed { $this->validateRowIndex($indexRow); return $this->data[$indexRow]; }
