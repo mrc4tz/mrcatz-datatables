@@ -32,6 +32,14 @@ trait HasFilters
                     ];
                 }
             }
+
+            // Trigger onFilterChanged for each active filter from URL
+            // so dependent filters (show/hide, data loading) are initialized
+            foreach ($this->filterUrlParams as $id => $value) {
+                if (!empty($value)) {
+                    $this->onFilterChanged($id, $value);
+                }
+            }
         }
     }
 
