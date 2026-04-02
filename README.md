@@ -646,8 +646,8 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | Method | Description |
 |---|---|
 | `withColumnIndex($head)` | Row number column |
-| `withColumn($head, $key, ...)` | Data column |
-| `withCustomColumn($head, $callback, ...)` | Custom column |
+| `withColumn($head, $key, ..., editable, visible)` | Data column (supports inline edit & visibility) |
+| `withCustomColumn($head, $callback, ..., visible)` | Custom column (supports visibility) |
 | `enableBulk($callback)` | Per-row bulk select |
 | `enableExpand($callback)` | Expandable row |
 | `setDefaultOrder($key, $dir)` | Default sorting |
@@ -780,13 +780,33 @@ When data is loading (search, filter, pagination, sort), skeleton placeholder ro
 
 ## Column Visibility
 
-Enable column visibility toggle in your Table component:
+Column visibility toggle is **enabled by default** (`$enableColumnVisibility = true`). A "Columns" button appears in the toolbar with checkboxes for each column. Hidden columns are persisted in the URL (`col_hidden` parameter) — shareable and bookmarkable.
+
+To disable:
 
 ```php
-public $enableColumnVisibility = true;
+public $enableColumnVisibility = false; // all columns always visible, button hidden
 ```
 
-A "Columns" button appears in the toolbar with checkboxes for each column. Hidden columns are persisted in the URL (`col_hidden` parameter) — shareable and bookmarkable.
+### Default Visibility per Column
+
+Set default visibility via the `visible` parameter on `withColumn()` or `withCustomColumn()`:
+
+```php
+->withColumn('Name', 'name')                     // visible by default
+->withColumn('Email', 'email', visible: false)    // hidden by default
+->withColumn('Phone', 'phone', visible: false)    // hidden by default
+->withCustomColumn('Actions', fn(...) => ..., visible: true)
+```
+
+Columns with `visible: false` are hidden on first load. Users can toggle them back via the Columns dropdown. URL params (`col_hidden`) always take precedence over defaults — so if a user reveals a hidden column, it stays visible on refresh.
+
+| Setting | Behavior |
+|---|---|
+| `$enableColumnVisibility = true` (default) | Columns button shown, user can hide/show |
+| `$enableColumnVisibility = false` | Button hidden, all columns always visible |
+| `visible: false` on column | Column hidden by default on first load |
+| URL `?col_hidden[0]=3` | Overrides defaults — URL always wins |
 
 ---
 
