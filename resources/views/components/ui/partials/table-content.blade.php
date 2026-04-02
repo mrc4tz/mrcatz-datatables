@@ -40,9 +40,9 @@
                                          }
                                      }"
                                      x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($firstDataCol) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }">
-                                    <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold">{{ $posts->getHead($firstDataCol) }}</span>
+                                    <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold flex items-center gap-1">{{ $posts->getHead($firstDataCol) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <p x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus())"
-                                       class="text-sm font-semibold text-base-content truncate cursor-text @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
+                                       class="text-sm font-semibold text-base-content truncate cursor-text px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
                                     <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
                                         <input x-ref="mc_{{ $i }}_{{ $firstDataCol }}" x-model="val"
                                                @keydown.enter.prevent="submit()"
@@ -89,9 +89,9 @@
                                          }
                                      }"
                                      x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
-                                    <span class="text-[11px] text-base-content/40 block mb-0.5">{{ $posts->getHead($ci) }}</span>
+                                    <span class="text-[11px] text-base-content/40 mb-0.5 flex items-center gap-1">{{ $posts->getHead($ci) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
-                                          class="text-sm text-base-content/80 cursor-text block truncate @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
+                                          class="text-sm text-base-content/80 cursor-text block truncate px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
                                     <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
                                         <input x-ref="mc_{{ $i }}_{{ $ci }}" x-model="val"
                                                @keydown.enter.prevent="submit()"
@@ -160,10 +160,10 @@
                tabindex="0"
                @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
                @keydown.arrow-down.prevent="navDown(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
-               @keydown.escape.prevent="focusedRow = -1"
-               @keydown.enter.prevent="editFocused($el, $event)"
-               @keydown.delete.prevent="deleteFocused($el)"
-               @keydown.backspace.prevent="deleteFocused($el)"
+               @keydown.escape="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); focusedRow = -1"
+               @keydown.enter="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); editFocused($el, $event)"
+               @keydown.delete="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); deleteFocused($el)"
+               @keydown.backspace="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); deleteFocused($el)"
                @endif>
             <thead>
             <tr class="bg-base-200/50 border-b border-base-content/10 @if($stickyHeader) sticky top-0 z-10 bg-base-200 @endif">
@@ -282,7 +282,10 @@
                                 x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }"
                                 @dblclick.stop="editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus())"
                                 @click.stop="if (window.innerWidth < 768 && !editing) { editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }">
-                                <span x-show="!editing" class="cursor-text border-b border-dashed border-base-content/20">{!! $posts->getData($i, $ci) !!}</span>
+                                <span x-show="!editing" class="group/edit inline-flex items-center gap-1.5 cursor-text px-2 py-0.5 -mx-2 rounded bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/20 hover:border-primary/40 transition-all duration-150">
+                                    <span>{!! $posts->getData($i, $ci) !!}</span>
+                                    <svg class="w-3 h-3 text-primary/30 group-hover/edit:text-primary/60 shrink-0 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg>
+                                </span>
                                 <div x-show="editing" class="inline-flex flex-col" @click.stop>
                                     <input x-ref="ie_{{ $i }}_{{ $ci }}"
                                            x-model="val"
