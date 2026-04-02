@@ -554,7 +554,7 @@ public function dropBulkData($selectedRows)
 ### Expandable Rows
 
 ```php
-public $expandableRows = true;
+public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 
 ->enableExpand(function ($data, $i) {
     return MrCatzDataTables::getExpandView($data, [
@@ -562,6 +562,17 @@ public $expandableRows = true;
     ]);
 })
 ```
+
+Control where expand is available:
+
+| Value | Mobile | Desktop |
+|---|---|---|
+| `false` | Disabled | Disabled |
+| `true` / `'both'` | Bottom-sheet modal | Inline expand |
+| `'mobile'` | Bottom-sheet modal | Disabled |
+| `'desktop'` | Disabled | Inline expand |
+
+On mobile, expand content opens in a bottom-sheet modal instead of inline — better UX for small screens.
 
 ### Relevance Search
 
@@ -697,7 +708,7 @@ Icons not defined in `custom_icons` fallback to Material Icons.
 | `$enableColumnReorder` | `true` | Enable column drag & drop reorder |
 | `$enableKeyboardNav` | `true` | Keyboard navigation |
 | `$showKeyboardNavNote` | `false` | Show keyboard shortcut hints |
-| `$expandableRows` | `false` | Enable expandable row detail |
+| `$expandableRows` | `false` | Expandable rows: `false`, `true`/`'both'`, `'mobile'`, `'desktop'` |
 | `$stickyHeader` | `false` | Sticky header on scroll |
 | `$enableRowClick` | `false` | Enable row click dispatch to Page |
 | `$bulkPrimaryKey` | `null` | Primary key for bulk select, `null` = disabled |
