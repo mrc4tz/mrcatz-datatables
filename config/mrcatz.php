@@ -34,7 +34,7 @@ return [
     |   Each key maps to raw HTML (SVG, icon font class, etc).
     |
     */
-    'icon_set' => 'material',
+    'icon_set' => 'heroicons',
 
     /*
     |--------------------------------------------------------------------------

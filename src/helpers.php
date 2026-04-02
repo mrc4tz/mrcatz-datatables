@@ -109,7 +109,13 @@ if (!function_exists('mrcatz_icon')) {
             }
             $mapped = $heroMap[$name] ?? $name;
             $svgClass = 'inline-block w-5 h-5' . ($class ? ' ' . $class : '');
-            return svg('heroicon-o-' . $mapped, $svgClass)->toHtml();
+            try {
+                return svg('heroicon-o-' . $mapped, $svgClass)->toHtml();
+            } catch (\Throwable $e) {
+                // blade-heroicons not installed — fallback to material
+                $tag = in_array($name, ['home', 'unfold_more']) ? 'material-symbols-outlined' : 'material-icons';
+                return '<span class="' . $tag . ($class ? ' ' . $class : '') . '">' . $name . '</span>';
+            }
         }
 
         // Font Awesome

@@ -115,7 +115,15 @@ composer require mrcatz/datatable
 content: ['./vendor/mrcatz/**/*.blade.php']
 ```
 
-**3. Optional Dependencies:**
+**3. Icons** — install Blade Heroicons (default icon set, lightest — inline SVG, zero CDN):
+
+```bash
+composer require blade-ui-kit/blade-heroicons
+```
+
+Or use Material Icons / Font Awesome instead — see [Icon Set](#icon-set) section.
+
+**4. Optional Dependencies:**
 
 ```bash
 composer require maatwebsite/excel       # Excel export
@@ -598,29 +606,38 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 
 ### Icon Set
 
-MrCatz DataTable supports configurable icon sets. Set in `config/mrcatz.php`:
+MrCatz DataTable supports 4 icon sets. Set in `config/mrcatz.php`:
 
 ```php
-'icon_set' => 'material',  // 'material' (default), 'heroicons', 'fontawesome', 'custom'
+'icon_set' => 'heroicons',  // 'heroicons' (default), 'material', 'fontawesome', 'custom'
 ```
 
-**Material Icons** (default) — requires Google Fonts link in your layout:
+| Icon Set | Size | Setup | Best For |
+|---|---|---|---|
+| **Heroicons** (default) | ~0KB (inline SVG) | `composer require blade-ui-kit/blade-heroicons` | Lightest, no CDN needed |
+| **Material Icons** | ~150KB | `<link>` Google Fonts di layout | Familiar, banyak icon |
+| **Font Awesome** | ~300KB | `<link>` CDN di layout | Populer, banyak icon |
+| **Custom** | Varies | Define map di config | Full control |
 
-```html
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined" rel="stylesheet">
-```
-
-**Heroicons** — requires Blade Heroicons package, no external font needed:
+**Heroicons** (default) — lightest, zero external request:
 
 ```bash
 composer require blade-ui-kit/blade-heroicons
 ```
 
-```php
-'icon_set' => 'heroicons',
+> Jika `blade-heroicons` belum di-install, otomatis fallback ke Material Icons.
+
+**Material Icons** — tambah link di layout:
+
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined" rel="stylesheet">
 ```
 
-**Font Awesome** — requires Font Awesome CSS in your layout:
+```php
+'icon_set' => 'material',
+```
+
+**Font Awesome 6** — tambah link di layout:
 
 ```html
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -630,24 +647,13 @@ composer require blade-ui-kit/blade-heroicons
 'icon_set' => 'fontawesome',
 ```
 
-**Custom** — define your own icon map with any icon library:
+**Custom** — define icon map, semua 30 key sudah ada di config sebagai template (uncomment dan edit):
 
 ```php
 'icon_set' => 'custom',
-'custom_icons' => [
-    'add' => '<i class="fas fa-plus"></i>',
-    'edit' => '<i class="fas fa-pen"></i>',
-    'delete' => '<i class="fas fa-trash"></i>',
-    'close' => '<i class="fas fa-times"></i>',
-    'search' => '<i class="fas fa-search"></i>',
-    'download' => '<i class="fas fa-download"></i>',
-    // ... define all icons you need
-],
 ```
 
 Icons not defined in `custom_icons` fallback to Material Icons.
-
-All 30 icon names used: `add`, `edit`, `edit_note`, `delete`, `delete_forever`, `delete_sweep`, `close`, `cancel`, `check_circle`, `check_box`, `check_box_outline_blank`, `search`, `search_off`, `save`, `download`, `tune`, `filter_alt`, `bookmarks`, `restart_alt`, `info`, `warning`, `error`, `inbox`, `home`, `chevron_left`, `chevron_right`, `keyboard_arrow_up`, `keyboard_arrow_down`, `unfold_more`, `add_circle`, `table_view`, `picture_as_pdf`, `select_all`, `view_column`.
 
 ---
 
@@ -797,7 +803,7 @@ public function saveData(): void { ... }   // salah
 - Laravel >= 11.0
 - Livewire >= 3.0
 - Tailwind CSS + DaisyUI
-- Icon set: Material Icons (default), Heroicons, Font Awesome, or custom (configurable)
+- Icon set: Heroicons (default, lightest), Material Icons, Font Awesome, or custom
 
 ## License
 
