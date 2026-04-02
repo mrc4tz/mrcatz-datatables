@@ -246,8 +246,8 @@
                     @if($showExpandDesktop)
                         <td class="w-8 text-center">
                             @if($posts->isExpandEnabled($i))
-                                <span class="transition-transform duration-200 cursor-pointer" @click.stop="toggleExpand({{ $i }})"
-                                      :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
+                                <span class="inline-flex items-center justify-center transition-transform duration-300 ease-in-out cursor-pointer" @click.stop="toggleExpand({{ $i }})"
+                                      :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : 'rotate-0'">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
                             @endif
                         </td>
                     @endif
