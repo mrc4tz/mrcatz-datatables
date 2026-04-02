@@ -30,21 +30,21 @@
         @endif
 
         @if(count($filters) > 0 || $showSearch)
-            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('filter_preset') }}"
                     @click="document.getElementById('modal-mobile-preset')?.showModal()">
                 {!! mrcatz_icon('bookmarks', 'text-lg') !!}
             </button>
         @endif
 
         @if($enableColumnVisibility)
-            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('col_visibility') }}"
                     @click="document.getElementById('modal-mobile-columns')?.showModal()">
                 {!! mrcatz_icon('view_column', 'text-lg') !!}
             </button>
         @endif
 
         @if(count($filters) > 0 || $showSearch)
-            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
                     x-on:click="
                         if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
                             document.getElementById('modal-reset-confirm')?.showModal()
@@ -60,17 +60,18 @@
         <div class="flex-1"></div>
 
         @if($showExportButton)
-            <button class="btn btn-sm btn-ghost border border-base-content/15 btn-square" wire:click="openExportModal">
+            <button class="btn btn-sm btn-ghost border border-base-content/15 btn-square tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_export') }}" wire:click="openExportModal">
                 {!! mrcatz_icon('download', 'text-lg') !!}
             </button>
         @endif
         @if($bulkEnabled && $showBulkButton)
-            <button class="btn btn-sm btn-square {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}" wire:click="toggleBulk">
+            <button class="btn btn-sm btn-square tooltip tooltip-bottom {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
+                    data-tip="{{ mrcatz_lang('btn_select') }}" wire:click="toggleBulk">
                 {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-lg') !!}
             </button>
         @endif
         @if($showAddButton)
-            <button class="btn btn-sm btn-primary btn-square shadow-sm" wire:click="addData()">
+            <button class="btn btn-sm btn-primary btn-square shadow-sm tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-lg') !!}
             </button>
         @endif
