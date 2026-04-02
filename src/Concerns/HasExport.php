@@ -75,6 +75,15 @@ trait HasExport
 
     public function exportData(string $format, string $scope = 'filtered'): mixed
     {
+        if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $this->notice('error', 'PDF export requires barryvdh/laravel-dompdf. Run: composer require barryvdh/laravel-dompdf');
+            return null;
+        }
+        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
+            $this->notice('error', 'Excel export requires maatwebsite/excel. Run: composer require maatwebsite/excel');
+            return null;
+        }
+
         $exportData = $this->buildExportData($scope);
         $processed = $this->beforeExport($exportData['headers'], $exportData['rows'], $format, $scope);
         $headers = $processed['headers'];

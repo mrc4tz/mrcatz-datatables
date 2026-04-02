@@ -29,30 +29,19 @@
                     <div class="flex-1 min-w-0 overflow-hidden">
                         @if($firstDataCol !== null)
                             @if($posts->isEditable($firstDataCol) && $posts->isEditableRow($i, $posts->getKey($firstDataCol)))
-                                <div x-data="{
-                                         editing: false,
-                                         val: '{{ e(strip_tags($posts->getData($i, $firstDataCol))) }}',
-                                         error: '',
-                                         submit() {
-                                             this.editing = false;
-                                             this.error = '';
-                                             $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($firstDataCol) }}', this.val, {{ $i }});
-                                         }
-                                     }"
-                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }">
-                                    <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold flex items-center gap-1">{{ $posts->getHead($firstDataCol) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
-                                    <p x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus())"
-                                       class="text-sm font-semibold text-base-content truncate cursor-text px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
-                                    <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
-                                        <input x-ref="mc_{{ $i }}_{{ $firstDataCol }}" x-model="val"
-                                               @keydown.enter.prevent="submit()"
-                                               @keydown.escape.prevent="editing = false; error = ''"
-                                               @blur="if (!error) { editing = false }"
-                                               class="input input-sm input-bordered w-full text-sm font-semibold"
-                                               :class="error ? 'input-error' : ''"/>
-                                        <span x-show="error" x-text="error" class="text-error text-xs mt-0.5"></span>
-                                    </div>
-                                </div>
+                                @include('mrcatz::components.ui.partials.inline-edit', [
+                                    'variant' => 'mobile-header',
+                                    'cellId' => $i . '_' . $posts->getKey($firstDataCol),
+                                    'ref' => 'mc_' . $i . '_' . $firstDataCol,
+                                    'value' => strip_tags($posts->getData($i, $firstDataCol)),
+                                    'display' => $posts->getData($i, $firstDataCol),
+                                    'columnKey' => $posts->getKey($firstDataCol),
+                                    'rowIndex' => $i,
+                                    'rowDataJson' => "JSON.parse('" . json_encode($posts->getRowRawData($i)) . "')",
+                                    'inputSize' => 'input-sm',
+                                    'head' => $posts->getHead($firstDataCol),
+                                    'uppercaseClass' => $posts->isUppercase($firstDataCol) ? 'uppercase' : '',
+                                ])
                             @else
                                 <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold">{{ $posts->getHead($firstDataCol) }}</span>
                                 <p class="text-sm font-semibold text-base-content truncate @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
@@ -77,30 +66,20 @@
                     <div class="px-4 pb-3 grid grid-cols-2 gap-1.5">
                         @foreach($restCols as $ci)
                             @if($posts->isEditable($ci) && $posts->isEditableRow($i, $posts->getKey($ci)))
-                                <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden"
-                                     x-data="{
-                                         editing: false,
-                                         val: '{{ e(strip_tags($posts->getData($i, $ci))) }}',
-                                         error: '',
-                                         submit() {
-                                             this.editing = false;
-                                             this.error = '';
-                                             $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($ci) }}', this.val, {{ $i }});
-                                         }
-                                     }"
-                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
-                                    <span class="text-[11px] text-base-content/40 mb-0.5 flex items-center gap-1">{{ $posts->getHead($ci) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
-                                    <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
-                                          class="text-sm text-base-content/80 cursor-text block truncate px-1.5 py-0.5 -mx-1.5 rounded bg-primary/5 border border-dashed border-primary/20 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
-                                    <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
-                                        <input x-ref="mc_{{ $i }}_{{ $ci }}" x-model="val"
-                                               @keydown.enter.prevent="submit()"
-                                               @keydown.escape.prevent="editing = false; error = ''"
-                                               @blur="if (!error) { editing = false }"
-                                               class="input input-xs input-bordered w-full text-sm"
-                                               :class="error ? 'input-error' : ''"/>
-                                        <span x-show="error" x-text="error" class="text-error text-xs mt-0.5"></span>
-                                    </div>
+                                <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden">
+                                    @include('mrcatz::components.ui.partials.inline-edit', [
+                                        'variant' => 'mobile-pill',
+                                        'cellId' => $i . '_' . $posts->getKey($ci),
+                                        'ref' => 'mc_' . $i . '_' . $ci,
+                                        'value' => strip_tags($posts->getData($i, $ci)),
+                                        'display' => $posts->getData($i, $ci),
+                                        'columnKey' => $posts->getKey($ci),
+                                        'rowIndex' => $i,
+                                        'rowDataJson' => "JSON.parse('" . json_encode($posts->getRowRawData($i)) . "')",
+                                        'inputSize' => 'input-xs',
+                                        'head' => $posts->getHead($ci),
+                                        'uppercaseClass' => $posts->isUppercase($ci) ? 'uppercase' : '',
+                                    ])
                                 </div>
                             @else
                                 <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden">
@@ -268,34 +247,20 @@
                             <td class="text-sm @if($posts->isUppercase($ci)) uppercase @endif
                                 @if($posts->gravity($ci)=='center') text-center
                                 @elseif($posts->gravity($ci)=='right') text-right
-                                @else text-left @endif"
-                                x-data="{
-                                    editing: false,
-                                    val: '{{ e(strip_tags($posts->getData($i, $ci))) }}',
-                                    error: '',
-                                    submit() {
-                                        this.editing = false;
-                                        this.error = '';
-                                        $wire.inlineUpdate(JSON.parse($el.closest('tr').dataset.row), '{{ $posts->getKey($ci) }}', this.val, {{ $i }});
-                                    }
-                                }"
-                                x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }"
-                                @dblclick.stop="editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus())"
-                                @click.stop="if (window.innerWidth < 768 && !editing) { editing = true; error = ''; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus()) }">
-                                <span x-show="!editing" class="group/edit inline-flex items-center gap-1.5 cursor-text px-2 py-0.5 -mx-2 rounded bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/20 hover:border-primary/40 transition-all duration-150">
-                                    <span>{!! $posts->getData($i, $ci) !!}</span>
-                                    <svg class="w-3 h-3 text-primary/30 group-hover/edit:text-primary/60 shrink-0 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg>
-                                </span>
-                                <div x-show="editing" class="inline-flex flex-col" @click.stop>
-                                    <input x-ref="ie_{{ $i }}_{{ $ci }}"
-                                           x-model="val"
-                                           @keydown.enter.prevent="submit()"
-                                           @keydown.escape.prevent="editing = false; error = ''"
-                                           @blur="if (!error) { editing = false }"
-                                           class="input input-xs input-bordered w-full max-w-[200px] text-sm"
-                                           :class="error ? 'input-error' : ''"/>
-                                    <span x-show="error" x-text="error" class="text-error text-xs mt-0.5 max-w-[200px]"></span>
-                                </div>
+                                @else text-left @endif">
+                                @include('mrcatz::components.ui.partials.inline-edit', [
+                                    'variant' => 'desktop',
+                                    'cellId' => $i . '_' . $posts->getKey($ci),
+                                    'ref' => 'ie_' . $i . '_' . $ci,
+                                    'value' => strip_tags($posts->getData($i, $ci)),
+                                    'display' => $posts->getData($i, $ci),
+                                    'columnKey' => $posts->getKey($ci),
+                                    'rowIndex' => $i,
+                                    'rowDataJson' => "JSON.parse(\$el.closest('tr').dataset.row)",
+                                    'inputSize' => 'input-xs',
+                                    'head' => $posts->getHead($ci),
+                                    'uppercaseClass' => $posts->isUppercase($ci) ? 'uppercase' : '',
+                                ])
                             </td>
                         @elseif($posts->isTH($ci))
                             <th class="text-sm @if($posts->isUppercase($ci)) uppercase @endif

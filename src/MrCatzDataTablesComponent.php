@@ -130,7 +130,31 @@ class MrCatzDataTablesComponent extends MrCatzComponent
             }
         }
 
+        $this->sanitizeUrlParams();
         $this->bootFilters();
+    }
+
+    private function sanitizeUrlParams(): void
+    {
+        $dt = $this->setTable();
+        $maxIndex = $dt->countColumn() - 1;
+
+        // Validate col_hidden — remove invalid indices
+        $this->hiddenColumns = array_values(array_filter($this->hiddenColumns, fn($v) => is_numeric($v) && $v >= 0 && $v <= $maxIndex));
+
+        // Validate col_order — reset if any index is invalid
+        if (!empty($this->columnOrder)) {
+            $valid = true;
+            foreach ($this->columnOrder as $v) {
+                if (!is_numeric($v) || $v < 0 || $v > $maxIndex) { $valid = false; break; }
+            }
+            if (!$valid) $this->columnOrder = [];
+        }
+
+        // Validate col_widths — remove invalid keys
+        if (!empty($this->columnWidths)) {
+            $this->columnWidths = array_filter($this->columnWidths, fn($v, $k) => is_numeric($k) && $k >= 0 && $k <= $maxIndex && is_numeric($v), ARRAY_FILTER_USE_BOTH);
+        }
     }
 
     public function render(): mixed
@@ -210,6 +234,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
 
         $this->dispatch(MrCatzEvent::INLINE_UPDATE, rowData: $rowData, columnKey: $columnKey, newValue: $newValue);
+        $this->dispatch('inline-save-done', cellId: $rowIndex . '_' . $columnKey);
     }
 
     public function addData(): void { $this->dispatch(MrCatzEvent::ADD_DATA); }

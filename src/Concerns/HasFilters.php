@@ -13,6 +13,7 @@ trait HasFilters
     public $filterData = [];
 
     public $default_filter_value = '';
+    private array $filterChangeStack = [];
 
     protected function bootFilters(): void
     {
@@ -131,7 +132,18 @@ trait HasFilters
         $this->setPage(1);
         $this->clearSelection();
         $this->findData();
-        $this->onFilterChanged($id, $filterValue);
+        $this->safeFilterChanged($id, $filterValue);
+    }
+
+    private function safeFilterChanged(string $id, mixed $value): void
+    {
+        if (in_array($id, $this->filterChangeStack)) {
+            $this->filterChangeStack = [];
+            return; // Circular dependency detected — break the loop
+        }
+        $this->filterChangeStack[] = $id;
+        $this->onFilterChanged($id, $value);
+        array_pop($this->filterChangeStack);
     }
 
     public function onFilterChanged($id, $value) {}

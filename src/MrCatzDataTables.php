@@ -34,6 +34,7 @@ class MrCatzDataTables
     private ?\Closure $bulkCallback = null;
     private ?\Closure $expandCallback = null;
     private ?\Closure $editableCallback = null;
+    private array $pluckCache = [];
 
     public static function with(
         EloquentBuilder|QueryBuilder|array $data,
@@ -119,6 +120,7 @@ class MrCatzDataTables
 
     public function build(): self
     {
+        $this->pluckCache = [];
         $this->dataBuilder = clone $this->getBaseDataBuilder();
         $this->applyFilters();
         $this->applySearch();
@@ -353,7 +355,10 @@ class MrCatzDataTables
             $columnKey = $this->dataTableSet[$indexColumn]['key'];
             // Support table-prefixed keys (e.g. 'products.name' → pluck 'name')
             $pluckKey = str_contains($columnKey, '.') ? substr($columnKey, strrpos($columnKey, '.') + 1) : $columnKey;
-            $key = $this->data->pluck($pluckKey)[$indexRow];
+            if (!isset($this->pluckCache[$pluckKey])) {
+                $this->pluckCache[$pluckKey] = $this->data->pluck($pluckKey)->all();
+            }
+            $key = $this->pluckCache[$pluckKey][$indexRow];
             return $this->setSearchWord($key);
         }
         if ($this->dataTableSet[$indexColumn]['index'] != null) {
@@ -366,8 +371,8 @@ class MrCatzDataTables
 
     public function setSearchWord(string $words): string
     {
-        $start = "{-------------##*##*------------}";
-        $end = "{-------------##!##!------------}";
+        $start = "\x00\x01MRCATZ_HL_START\x02\x00";
+        $end = "\x00\x01MRCATZ_HL_END\x02\x00";
         $escapedWords = e($words);
         $newWords = $escapedWords;
 
