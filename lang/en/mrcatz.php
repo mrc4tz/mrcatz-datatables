@@ -85,4 +85,9 @@ return [
     // Loading
     'loading' => 'Loading data...',
     'processing' => 'Processing...',
+
+    // Inline edit
+    'inline_edit_hint' => 'Double-click to edit',
+    'inline_edit_hint_mobile' => 'Tap to edit',
+    'inline_validation_failed' => 'Validation failed',
 ];

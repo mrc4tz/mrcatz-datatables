@@ -85,4 +85,9 @@ return [
     // Loading
     'loading' => 'Memuat data...',
     'processing' => 'Memproses...',
+
+    // Inline edit
+    'inline_edit_hint' => 'Klik dua kali untuk edit',
+    'inline_edit_hint_mobile' => 'Ketuk untuk edit',
+    'inline_validation_failed' => 'Validasi gagal',
 ];

@@ -2,6 +2,7 @@
 
 namespace MrCatz\DataTable\Tests;
 
+use Livewire\LivewireServiceProvider;
 use MrCatz\DataTable\MrCatzServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -10,6 +11,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app): array
     {
         return [
+            LivewireServiceProvider::class,
             MrCatzServiceProvider::class,
         ];
     }
@@ -21,6 +23,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function defineEnvironment($app): void
     {
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
             'driver' => 'sqlite',

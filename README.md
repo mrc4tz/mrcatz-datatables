@@ -28,7 +28,8 @@ php artisan mrcatz:make Product --path=Admin
 | Filter state lost on reload | **URL persistence** — all state in URL, shareable & bookmarkable |
 | Export requires manual coding | **Excel & PDF export** built-in with preview |
 | No bulk delete | **Bulk actions** with per-row control |
-| Editing requires opening a modal | **Inline editing** — double-click to edit cells |
+| Editing requires opening a modal | **Inline editing** — double-click to edit cells, with validation |
+| Table unusable on mobile | **Responsive card view** — auto card layout on small screens |
 | No keyboard navigation | **Keyboard nav** — Arrow, Enter, Delete, Escape |
 | Too many columns cluttering the view | **Column visibility** — hide/show columns |
 | Column headers disappear on scroll | **Sticky header** — always visible |
@@ -38,7 +39,7 @@ php artisan mrcatz:make Product --path=Admin
 
 **CRUD & Data**
 - CRUD lifecycle hooks — prepareAdd, prepareEdit, save, delete, bulk delete
-- Inline editing — double-click cells to edit, Enter to save
+- Inline editing — double-click cells to edit, Enter to save, with server-side validation
 - Row click hook — custom action when row is clicked
 - Fluent DataTable API — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
 
@@ -62,8 +63,9 @@ php artisan mrcatz:make Product --path=Admin
 - Export hooks — `beforeExport()` / `afterExport()` for data manipulation
 
 **UX & Display**
+- Responsive mobile view — auto card layout on small screens, tap-to-edit
 - Sticky header — keeps thead visible on scroll
-- Loading skeleton — placeholder rows during data fetch
+- Loading skeleton — placeholder rows during data fetch (responsive)
 - Expandable rows — inline detail without modal
 - Keyboard navigation — Arrow Up/Down, Enter, Delete/Backspace, Escape
 - Zebra table styling
@@ -84,7 +86,7 @@ php artisan mrcatz:make Product --path=Admin
 - Configurable icon set — Default (inline SVG), Heroicons, Material Icons, Font Awesome, or custom
 - Search debounce validation — auto-corrects invalid format
 - Backward compatible — no strict types on public properties/methods
-- Test suite — 78 tests, 195 assertions
+- Test suite — 103 tests, 243 assertions (incl. Livewire render tests)
 - CI/CD — GitHub Actions (PHP 8.1–8.4)
 
 ---
@@ -361,7 +363,7 @@ public function setTable()
 }
 ```
 
-**`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`
+**`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`, `$rules`
 
 **`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`
 
@@ -447,9 +449,9 @@ public function onFilterChanged($id, $value)
 ### Inline Editing
 
 ```php
-// Table: mark columns as editable
-->withColumn('Name', 'name', editable: true)
-->withColumn('Price', 'price', editable: true)
+// Table: mark columns as editable, with optional validation rules
+->withColumn('Name', 'name', editable: true, rules: 'required|max:255')
+->withColumn('Price', 'price', editable: true, rules: 'required|numeric|min:0')
 
 // Page: handle the update
 public function onInlineUpdate($rowData, $columnKey, $newValue)
@@ -459,7 +461,9 @@ public function onInlineUpdate($rowData, $columnKey, $newValue)
 }
 ```
 
-Double-click to edit, **Enter** to save, **Escape** to cancel.
+Double-click to edit (tap on mobile), **Enter** to save, **Escape** to cancel.
+
+Validation uses standard Laravel rules. If validation fails, the input shows a red border with the error message — no data is saved until the value is valid.
 
 ### Column Visibility
 
@@ -741,7 +745,7 @@ Icons not defined in `custom_icons` fallback to Material Icons.
 | Method | Description |
 |---|---|
 | `withColumnIndex($head)` | Auto-numbered row column |
-| `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`) |
+| `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`, `$rules`) |
 | `withCustomColumn($head, $callback, ...)` | Custom column (`$key`, `$sort`, `$visible`) |
 | `enableBulk($callback)` | Bulk select with per-row callback |
 | `enableExpand($callback)` | Expandable row content |

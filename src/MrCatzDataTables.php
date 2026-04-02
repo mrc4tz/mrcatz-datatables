@@ -272,9 +272,10 @@ class MrCatzDataTables
         bool $sort = true,
         string $gravity = 'left',
         bool $editable = false,
-        bool $visible = true
+        bool $visible = true,
+        ?string $rules = null
     ): self {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity, 'editable' => $editable, 'visible' => $visible];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity, 'editable' => $editable, 'visible' => $visible, 'rules' => $rules];
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
@@ -324,6 +325,18 @@ class MrCatzDataTables
     public function gravity(int $i): string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['gravity']; }
     public function isEditable(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['editable'] ?? false; }
     public function isVisible(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['visible'] ?? true; }
+    public function getRules(int $i): ?string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['rules'] ?? null; }
+
+    public function getInlineValidationRules(): array
+    {
+        $rules = [];
+        foreach ($this->dataTableSet as $col) {
+            if (($col['editable'] ?? false) && !empty($col['rules']) && $col['key'] !== null) {
+                $rules[$col['key']] = $col['rules'];
+            }
+        }
+        return $rules;
+    }
 
     public function getData(int $indexRow, int $indexColumn): mixed
     {

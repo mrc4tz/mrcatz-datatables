@@ -3,6 +3,7 @@
 namespace MrCatz\DataTable;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -187,6 +188,23 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public function inlineUpdate($rowData, $columnKey, $newValue): void
     {
+        $dt = $this->setTable();
+        $allRules = $dt->getInlineValidationRules();
+
+        if (isset($allRules[$columnKey])) {
+            $validator = Validator::make(
+                [$columnKey => $newValue],
+                [$columnKey => $allRules[$columnKey]]
+            );
+
+            if ($validator->fails()) {
+                $error = $validator->errors()->first($columnKey);
+                $this->dispatch('inline-validation-error', columnKey: $columnKey, error: $error);
+                $this->notice('error', $error);
+                return;
+            }
+        }
+
         $this->dispatch(MrCatzEvent::INLINE_UPDATE, rowData: $rowData, columnKey: $columnKey, newValue: $newValue);
     }
 
