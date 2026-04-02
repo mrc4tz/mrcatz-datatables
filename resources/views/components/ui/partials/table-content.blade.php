@@ -365,7 +365,7 @@
     </div>
 @endif
 
-@if($usePagination)
+@if($usePagination && $posts->hasData())
     <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif">
         {{ $posts->links('mrcatz::components.ui.pagination') }}
     </div>
