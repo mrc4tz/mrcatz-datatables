@@ -71,21 +71,21 @@
 
     <div class="flex items-center gap-2 justify-end">
         @if($showAddButton)
-            <button class="btn btn-sm md:btn-md btn-primary gap-2 shadow-sm" wire:click="addData()">
+            <button class="btn btn-sm md:btn-md btn-primary gap-2 shadow-sm sm:tooltip sm:tooltip-bottom tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-lg') !!}
                 <span class="hidden sm:inline">{{ mrcatz_lang('btn_add') }}</span>
             </button>
         @endif
         @if($bulkEnabled && $showBulkButton)
-            <button class="btn btn-sm md:btn-md gap-1 {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
-                    wire:click="toggleBulk">
+            <button class="btn btn-sm md:btn-md gap-1 tooltip tooltip-bottom {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
+                    data-tip="{{ mrcatz_lang('btn_select') }}" wire:click="toggleBulk">
                 {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-lg') !!}
                 <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_select') }}</span>
             </button>
         @endif
         @if($showExportButton)
-            <button class="btn btn-sm md:btn-md btn-ghost border border-base-content/15 gap-1"
-                    wire:click="openExportModal">
+            <button class="btn btn-sm md:btn-md btn-ghost border border-base-content/15 gap-1 tooltip tooltip-bottom"
+                    data-tip="{{ mrcatz_lang('btn_export') }}" wire:click="openExportModal">
                 {!! mrcatz_icon('download', 'text-lg') !!}
                 <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_export') }}</span>
             </button>

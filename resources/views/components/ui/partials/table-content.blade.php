@@ -3,7 +3,7 @@
     {{-- Mobile card view --}}
     <div class="md:hidden space-y-3 p-3">
         @for($i = 0; $i < $posts->countRow(); $i++)
-            <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm overflow-hidden transition-all duration-150"
+            <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
                  :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
                  @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}')); @endif"
                  data-row="{{ json_encode($posts->getRowRawData($i)) }}">
