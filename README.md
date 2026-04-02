@@ -25,34 +25,66 @@ php artisan mrcatz:make Product --path=Admin
 |---|---|
 | Building CRUD pages over and over | `mrcatz:make` generates 4 files at once |
 | Search is just basic LIKE | Multi-keyword search with **relevance scoring** |
-| Filter state lost on reload | **URL persistence** — search, sort, filter, page all in URL |
-| Export requires manual coding | **Excel & PDF export** built-in with count preview |
-| No bulk delete | **Bulk actions** with per-row control and confirmation modal |
-| No keyboard navigation for tables | **Keyboard nav** — Arrow, Enter, Delete, Escape |
-| Viewing details requires opening a modal | **Expandable rows** — click chevron, details appear inline |
-| UI only in one language | **Multi-language** — English (default) & Indonesian, configurable |
+| Filter state lost on reload | **URL persistence** — all state in URL, shareable & bookmarkable |
+| Export requires manual coding | **Excel & PDF export** built-in with preview |
+| No bulk delete | **Bulk actions** with per-row control |
+| Editing requires opening a modal | **Inline editing** — double-click to edit cells |
+| No keyboard navigation | **Keyboard nav** — Arrow, Enter, Delete, Escape |
+| Too many columns cluttering the view | **Column visibility** — hide/show columns |
+| Column headers disappear on scroll | **Sticky header** — always visible |
+| Can only sort by one column | **Multi-sort** — Shift+click for secondary sort |
 
 ## Features
 
-- **CRUD Lifecycle** — prepareAdd, prepareEdit, save, delete hooks
-- **Fluent DataTable API** — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
-- **Multi-keyword Search** with relevance scoring and highlight
-- **Filters** — simple, callback, dependent (parent-child), dynamic show/hide
-- **Export** — Excel (.xlsx) & PDF (.pdf) with filter scope
-- **URL Persistence** — search, sort, filter, per_page, page
-- **Filter Presets** — save/load filter combinations (localStorage)
-- **Bulk Actions** — select all, per-row control, confirmation modal
-- **Keyboard Navigation** — Arrow Up/Down, Enter, Delete/Backspace, Escape
-- **Column Resize** — drag handle on column headers
-- **Column Reorder** — drag & drop column headers
-- **Column Sorting** — click header to sort, visual indicator
-- **Expandable Rows** — inline detail without modal
-- **Zebra Table** — alternating row colors
-- **Breadcrumbs & Page Title** — optional, built-in
-- **Toast Notifications** — success, error, warning, info
-- **Loading Overlay** — fullscreen loading state
-- **Multi-language** — English (default) & Indonesian via config
-- **Artisan Generator** — `mrcatz:make` and `mrcatz:remove`
+**CRUD & Data**
+- CRUD lifecycle hooks — prepareAdd, prepareEdit, save, delete, bulk delete
+- Inline editing — double-click cells to edit, Enter to save
+- Row click hook — custom action when row is clicked
+- Fluent DataTable API — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
+
+**Search & Filter**
+- Multi-keyword search with relevance scoring and highlight
+- Filters — simple, callback, dependent (parent-child), dynamic show/hide
+- Filter presets — save/load filter combinations (localStorage)
+- Dependent filters auto-initialize from URL/presets
+
+**Sorting & Columns**
+- Column sorting — click header, visual indicator
+- Multi-sort — Shift+click for multiple sort columns with numbered badges
+- Column visibility toggle — hide/show columns, persistent in URL
+- Column resize — drag handle on headers
+- Column reorder — drag & drop headers, persistent in URL
+- Default column visibility — `visible: false` to hide columns by default
+
+**Export**
+- Excel (.xlsx) & PDF (.pdf) with filter scope and preview count
+- Built-in PDF template and Excel export class
+- Export hooks — `beforeExport()` / `afterExport()` for data manipulation
+
+**UX & Display**
+- Sticky header — keeps thead visible on scroll
+- Loading skeleton — placeholder rows during data fetch
+- Expandable rows — inline detail without modal
+- Keyboard navigation — Arrow Up/Down, Enter, Delete/Backspace, Escape
+- Zebra table styling
+- Toast notifications — success, error, warning, info
+- Loading overlay — fullscreen loading state
+- URL persistence — search, sort, multi-sort, filter, pagination, column order, hidden columns
+
+**Accessibility**
+- `aria-sort` on sortable headers, `aria-modal` + `aria-labelledby` on modals
+- Focus trap on all modals, `aria-label` on checkboxes
+- `aria-live` on toast container, `role="grid"` on table
+
+**Developer Experience**
+- Artisan generator — `mrcatz:make` and `mrcatz:remove`
+- Modular traits — HasFilters, HasExport, HasBulkActions
+- Event constants — `MrCatzEvent::REFRESH_DATA` etc.
+- Multi-language — English & Indonesian via Laravel lang files
+- Search debounce validation — auto-corrects invalid format
+- Backward compatible — no strict types on public properties/methods
+- Test suite — 78 tests, 195 assertions
+- CI/CD — GitHub Actions (PHP 8.1–8.4)
 
 ---
 
@@ -61,8 +93,6 @@ php artisan mrcatz:make Product --path=Admin
 ```bash
 composer require mrcatz/datatable
 ```
-
-Laravel will automatically register the service provider via package discovery.
 
 ### Setup
 
@@ -112,8 +142,8 @@ php artisan mrcatz:make Product --path=Admin
 Generates 4 ready-to-use files:
 
 ```
-app/Livewire/Admin/Product/ProductPage.php       ← CRUD logic
-app/Livewire/Admin/Product/ProductTable.php       ← DataTable config
+app/Livewire/Admin/Product/ProductPage.php       <- CRUD logic
+app/Livewire/Admin/Product/ProductTable.php       <- DataTable config
 resources/views/livewire/admin/product/product-page.blade.php
 resources/views/livewire/admin/product/product_form.blade.php
 ```
@@ -121,18 +151,10 @@ resources/views/livewire/admin/product/product_form.blade.php
 Add a route, edit columns and form — done.
 
 ```bash
-# Without path
-php artisan mrcatz:make Product
-
-# Custom database table name
-php artisan mrcatz:make Product --path=Admin --table=my_products
-
-# Overwrite existing files
-php artisan mrcatz:make Product --path=Admin --force
-
-# Remove generated files
-php artisan mrcatz:remove Product --path=Admin
-php artisan mrcatz:remove Product --path=Admin --force
+php artisan mrcatz:make Product                           # Without path
+php artisan mrcatz:make Product --path=Admin --table=my_products  # Custom table
+php artisan mrcatz:make Product --path=Admin --force       # Overwrite existing
+php artisan mrcatz:remove Product --path=Admin             # Remove generated files
 ```
 
 ### Manual Way
@@ -312,7 +334,7 @@ class UserTable extends MrCatzDataTablesComponent
 
 ---
 
-## Feature Documentation
+## Feature Guide
 
 ### Columns
 
@@ -320,81 +342,54 @@ class UserTable extends MrCatzDataTablesComponent
 public function setTable()
 {
     return $this->CreateMrCatzTable()
-        // Auto-incrementing row number
         ->withColumnIndex('No')
-
-        // Simple data column
         ->withColumn('Name', 'name')
-
-        // Column with full options
-        ->withColumn('Email', 'email', uppercase: false, th: false, sort: true, gravity: 'left')
-
-        // Custom column (return HTML)
+        ->withColumn('Email', 'email', visible: false)        // hidden by default
+        ->withColumn('Price', 'price', editable: true)         // inline editable
+        ->withColumn('Code', 'code', uppercase: true, gravity: 'center')
         ->withCustomColumn('Status', function ($data, $i) {
-            $color = $data->active ? 'badge-success' : 'badge-error';
-            return '<span class="badge ' . $color . ' badge-sm">' . ($data->active ? 'Active' : 'Inactive') . '</span>';
-        }, 'active', false)  // key (for search), sortable
-
-        // Action column
+            return '<span class="badge badge-sm">' . $data->status . '</span>';
+        }, 'status', false)
         ->withCustomColumn('Actions', function ($data, $i) {
-            return MrCatzDataTables::getActionView($data, $i, editable: true, deletable: true);
+            return MrCatzDataTables::getActionView($data, $i);
         });
 }
 ```
 
+**`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`
+
+**`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`
+
 #### Search Highlight on Custom Columns
 
-`withColumn()` automatically highlights search keywords in the displayed text. For `withCustomColumn()`, you need to call `$this->setSearchWord()` manually to apply the highlight:
+`withColumn()` highlights search keywords automatically. For `withCustomColumn()`, call `$this->setSearchWord()`:
 
 ```php
-->withCustomColumn('Category', function ($data, $i) {
-    $category = $this->setSearchWord($data->category_name);
-    $sub = $this->setSearchWord($data->subcategory_name ?? '');
-    return '<span>' . $category . ' / ' . $sub . '</span>';
-}, 'categories.name', true)
-```
-
-`setSearchWord($text)` escapes HTML and wraps matching keywords in `<span class="font-extrabold">`. Without it, search keywords won't be highlighted in custom columns.
-
-#### Table-Prefixed Column Keys (JOIN queries)
-
-When using JOIN queries, column names like `name` can be ambiguous. Use the full table-prefixed key:
-
-```php
-// withColumn — prefix for search/sort, display auto-resolves
-->withColumn('Product', 'products.name')
-
-// withCustomColumn — prefix in the 3rd parameter (search key)
 ->withCustomColumn('Category', function ($data, $i) {
     return $this->setSearchWord($data->category_name);
 }, 'categories.name', true)
 ```
 
-### Filters
+#### Table-Prefixed Keys (JOIN queries)
 
-Filter options can come from **arrays**, **query builder**, or **custom callbacks**:
+```php
+->withColumn('Product', 'products.name')
+->withCustomColumn('Category', fn($data, $i) => $this->setSearchWord($data->category_name), 'categories.name', true)
+```
+
+### Filters
 
 ```php
 public function setFilter()
 {
-    // Manual array
+    // Simple array filter
     $roleFilter = MrCatzDataTableFilter::create(
         'filter_role', 'Role',
         [['value' => 'admin', 'label' => 'Admin'], ['value' => 'user', 'label' => 'User']],
         'value', 'label', 'role'
     )->get();
 
-    // Query builder
-    $categories = json_decode(json_encode(
-        DB::table('categories')->orderBy('name')->get()->toArray()
-    ), true);
-
-    $categoryFilter = MrCatzDataTableFilter::create(
-        'filter_category', 'Category', $categories,
-        'category_id', 'category_name', 'category_id'
-    )->get();
-
-    // Custom callback
+    // Custom callback filter
     $dateFilter = MrCatzDataTableFilter::createWithCallback(
         'filter_date', 'Date',
         [['value' => 'today', 'label' => 'Today'], ['value' => 'week', 'label' => 'This Week']],
@@ -408,13 +403,11 @@ public function setFilter()
         }
     )->get();
 
-    return [$roleFilter, $categoryFilter, $dateFilter];
+    return [$roleFilter, $dateFilter];
 }
 ```
 
-### Dependent Filters (Parent-Child)
-
-Override `onFilterChanged()` to create filters that depend on each other:
+### Dependent Filters
 
 ```php
 public function setFilter()
@@ -423,79 +416,111 @@ public function setFilter()
         'filter_category', 'Category', $categories, 'value', 'label', 'category_id'
     )->get();
 
-    // Hidden by default
-    $subcategoryFilter = MrCatzDataTableFilter::create(
-        'filter_subcategory', 'Subcategory', [], 'value', 'label', 'subcategory_id', false
+    // Hidden by default (last param = false)
+    $subFilter = MrCatzDataTableFilter::create(
+        'filter_sub', 'Subcategory', [], 'value', 'label', 'subcategory_id', false
     )->get();
 
-    return [$categoryFilter, $subcategoryFilter];
+    return [$categoryFilter, $subFilter];
 }
 
 public function onFilterChanged($id, $value)
 {
     if ($id === 'filter_category') {
-        $this->resetFilter('filter_subcategory');
-
+        $this->resetFilter('filter_sub');
         if (!empty($value)) {
-            $subs = json_decode(json_encode(
-                DB::table('subcategories')->where('category_id', $value)->get()->toArray()
-            ), true);
-            $this->setFilterData('filter_subcategory', $subs);
-            $this->setFilterShow('filter_subcategory', true);
+            $subs = DB::table('subcategories')->where('category_id', $value)->get()->toArray();
+            $this->setFilterData('filter_sub', json_decode(json_encode($subs), true));
+            $this->setFilterShow('filter_sub', true);
         } else {
-            $this->setFilterShow('filter_subcategory', false);
+            $this->setFilterShow('filter_sub', false);
         }
     }
 }
 ```
 
-> **Important:** Always call `resetFilter()` before `setFilterData()` when the parent changes — this ensures the child filter resets to "All" so it doesn't display a stale value.
-
-### Relevance Search
-
-Enable with `configTable()` — search results are ranked by keyword match count:
+### Inline Editing
 
 ```php
-public function configTable()
+// Table: mark columns as editable
+->withColumn('Name', 'name', editable: true)
+->withColumn('Price', 'price', editable: true)
+
+// Page: handle the update
+public function onInlineUpdate($rowData, $columnKey, $newValue)
 {
-    return ['table_name' => 'users', 'table_id' => 'id'];
+    DB::table('products')->where('id', $rowData['id'])->update([$columnKey => $newValue]);
+    $this->dispatch_to_view(true, 'update');
 }
 ```
 
-### Export (Excel & PDF)
+Double-click to edit, **Enter** to save, **Escape** to cancel.
+
+### Column Visibility
+
+Enabled by default. Set default visibility per column:
 
 ```php
-public $showExportButton = true;
-public $exportTitle = 'User Data';
+->withColumn('Name', 'name')                    // visible
+->withColumn('Email', 'email', visible: false)   // hidden by default
 ```
 
-Users can choose format, scope (all/filtered), and see a data count preview before exporting.
+Users toggle columns via the "Columns" button. State persisted in URL (`col_hidden`). Disable with `$enableColumnVisibility = false`.
+
+### Multi-Sort
+
+Click header = single sort. **Shift+click** = add secondary sort. Numbered badges show sort priority. State persisted in URL (`sort_multi`).
+
+### Export Hooks
+
+```php
+// Table component
+public function beforeExport($headers, $rows, $format, $scope)
+{
+    foreach ($rows as &$row) {
+        $row[2] = 'Rp ' . number_format($row[2], 0, ',', '.');
+    }
+    return ['headers' => $headers, 'rows' => $rows];
+}
+
+public function afterExport($format, $scope)
+{
+    logger("Exported {$format} with scope: {$scope}");
+}
+```
+
+### Row Click Hook
+
+```php
+// Page component
+public function onRowClick($data)
+{
+    return redirect()->route('product.show', $data['id']);
+}
+```
+
+### Sticky Header
+
+```php
+public $stickyHeader = true;  // thead stays visible on scroll
+```
 
 ### Bulk Actions
 
 ```php
-// Table Component
-public $bulkPrimaryKey = 'id';   // null = off
+// Table
+public $bulkPrimaryKey = 'id';
 public $showBulkButton = true;
 
-public function setTable()
-{
-    return $this->CreateMrCatzTable()
-        ->enableBulk(function ($data, $i) {
-            return Auth::id() !== $data->id; // can't select own account
-        })
-        // ...
-}
-```
+->enableBulk(function ($data, $i) {
+    return Auth::id() !== $data->id; // can't select own account
+})
 
-```php
-// Page Component
+// Page
 public function dropBulkData($selectedRows)
 {
     $count = User::whereIn('id', $selectedRows)->delete();
-    $this->dispatch('refresh-data', [
-        'status' => true, 'text' => $count . ' users deleted!'
-    ]);
+    $this->dispatch('refresh-data', ['status' => true, 'text' => $count . ' deleted!']);
 }
 ```
 
@@ -504,69 +529,53 @@ public function dropBulkData($selectedRows)
 ```php
 public $expandableRows = true;
 
-public function setTable()
-{
-    return $this->CreateMrCatzTable()
-        ->enableExpand(function ($data, $i) {
-            // Built-in helper — responsive grid
-            return MrCatzDataTables::getExpandView($data, [
-                'Email' => 'email',
-                'Created' => 'created_at',
-            ]);
-        })
-        // ...
-}
-```
-
-Or use a custom blade view:
-
-```php
 ->enableExpand(function ($data, $i) {
-    return view('partials.user-detail', ['user' => $data])->render();
+    return MrCatzDataTables::getExpandView($data, [
+        'Email' => 'email', 'Created' => 'created_at',
+    ]);
 })
 ```
 
-### Keyboard Navigation
+### Relevance Search
 
-| Key | Action |
-|---|---|
-| `Arrow Up/Down` | Navigate between rows |
-| `Enter` | Open edit modal |
-| `Delete` / `Backspace` | Open delete modal |
-| `Escape` | Cancel focus |
+```php
+public function configTable()
+{
+    return ['table_name' => 'users', 'table_id' => 'id'];
+}
+```
 
 ### URL Persistence
 
 All state is automatically saved to the URL:
 
 ```
-/users?search=ryan&sort=name&dir=asc&per_page=20&filter[filter_role]=admin&page=2
-```
-
-### Breadcrumbs & Page Title (Optional)
-
-```blade
-@include('mrcatz::components.ui.breadcrumbs')
-```
-
-```php
-public function mount()
-{
-    $this->setTitle('User');  // used in <title> and notifications
-    $this->breadcrumbs = [
-        ['title' => 'Dashboard', 'url' => route('dashboard')],
-        ['title' => 'User', 'url' => null],
-    ];
-}
+/users?search=ryan&sort=name&dir=asc&per_page=20&filter[role]=admin&col_hidden[0]=3&sort_multi[0][key]=name&sort_multi[0][dir]=asc
 ```
 
 ### Notifications
 
 ```php
-$this->show_notif('success', 'Success!');
-$this->show_notif('error', 'Something went wrong!');
-$this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
+$this->dispatch_to_view($success, 'insert');  // auto: "User successfully added!"
+$this->show_notif('success', 'Custom message');
+$this->show_notif('error', 'Something went wrong');
 ```
+
+### Localization
+
+Publish translations:
+
+```bash
+php artisan vendor:publish --tag=mrcatz-lang
+```
+
+Set locale in `config/mrcatz.php`:
+
+```php
+'locale' => 'id',  // 'en' (default) or 'id'
+```
+
+Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 
 ---
 
@@ -594,6 +603,7 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `$borderContainer` | `false` | Table with border |
 | `$withLoading` | `false` | Fullscreen loading overlay |
 | `$tableZebraStyle` | `true` | Zebra stripe rows |
+| `$stickyHeader` | `false` | Sticky header on scroll |
 | `$typeSearch` | `false` | Realtime search on typing |
 | `$typeSearchWithDelay` | `false` | Realtime search with debounce |
 | `$typeSearchDelay` | `'500ms'` | Debounce delay (e.g. `'500ms'`, `'1s'`) |
@@ -604,7 +614,6 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `$enableKeyboardNav` | `true` | Keyboard navigation |
 | `$showKeyboardNavNote` | `false` | Show keyboard shortcut hints |
 | `$expandableRows` | `false` | Enable expandable row detail |
-| `$stickyHeader` | `false` | Sticky header on scroll |
 | `$bulkPrimaryKey` | `null` | Primary key for bulk select, `null` = disabled |
 | `$showBulkButton` | `false` | Show bulk select toggle button |
 
@@ -614,369 +623,97 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 
 | Method | Description |
 |---|---|
-| `prepareAddData()` | Called when add button is clicked |
-| `prepareEditData($data)` | Called when edit button is clicked |
-| `prepareDeleteData($data)` | Called when delete button is clicked |
-| `saveData()` | Called on form submit |
-| `dropData()` | Called on delete confirmation |
-| `dropBulkData($selectedRows)` | Called on bulk delete confirmation |
-| `onInlineUpdate($rowData, $columnKey, $newValue)` | Called when inline cell edit is saved |
-| `onRowClick($data)` | Called when a row is clicked |
-| `dispatch_to_view($condition, $type)` | Dispatch success/failure notification (`$type`: `'insert'`, `'update'`, `'delete'`) |
-| `show_notif($type, $text)` | Show notification (`$type`: `'success'`, `'error'`, `'warning'`, `'info'`) |
+| `prepareAddData()` | Prepare add form |
+| `prepareEditData($data)` | Prepare edit form |
+| `prepareDeleteData($data)` | Prepare delete confirmation |
+| `saveData()` | Handle form submit |
+| `dropData()` | Handle delete |
+| `dropBulkData($selectedRows)` | Handle bulk delete |
+| `onInlineUpdate($rowData, $columnKey, $newValue)` | Handle inline cell edit |
+| `onRowClick($data)` | Handle row click |
+| `dispatch_to_view($condition, $type)` | Send success/failure notification |
+| `show_notif($type, $text)` | Show custom notification |
 
 ### Table — Override Methods
 
 | Method | Description |
 |---|---|
 | `baseQuery()` | Return query builder |
-| `setTable()` | Return `MrCatzDataTables` instance with column definitions |
-| `configTable()` | Return config for relevance search, e.g. `['table_name' => 'x', 'table_id' => 'id']` |
-| `setFilter()` | Return array of `MrCatzDataTableFilter` |
-| `getRowPerPageOption()` | Return rows per page options (default: `[5, 10, 15, 20]`) |
-| `setView()` | Return custom blade view path |
-| `setPageName()` | Return page name for multiple paginators |
-| `onDataLoaded($builder, $data)` | Hook after data is loaded |
-| `onFilterChanged($id, $value)` | Hook after filter changes (for dependent filters) |
-| `beforeExport($headers, $rows, $format, $scope)` | Hook before export — return `['headers' => ..., 'rows' => ...]` |
-| `afterExport($format, $scope)` | Hook after export completes |
-| `setFilterShow($id, $show)` | Show/hide a filter dynamically |
-| `setFilterData($id, $data)` | Update filter dropdown options dynamically |
-| `resetFilter($id)` | Reset a filter value to "All" |
+| `setTable()` | Define columns via fluent API |
+| `configTable()` | Config for relevance search |
+| `setFilter()` | Define filters |
+| `getRowPerPageOption()` | Rows per page options |
+| `setView()` | Custom blade view |
+| `setPageName()` | Custom page name |
+| `onDataLoaded($builder, $data)` | Hook after data loaded |
+| `onFilterChanged($id, $value)` | Hook for dependent filters |
+| `beforeExport($headers, $rows, $format, $scope)` | Manipulate export data |
+| `afterExport($format, $scope)` | Post-export logic |
+| `setFilterShow($id, $show)` | Show/hide filter dynamically |
+| `setFilterData($id, $data)` | Update filter options dynamically |
+| `resetFilter($id)` | Reset filter to "All" |
 
-### Engine — Fluent API (`MrCatzDataTables`)
+### Engine — Fluent API
 
 | Method | Description |
 |---|---|
 | `withColumnIndex($head)` | Auto-numbered row column |
-| `withColumn($head, $key, ...)` | Data column. Options: `$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible` |
-| `withCustomColumn($head, $callback, ...)` | Custom rendered column. Options: `$key`, `$sort`, `$visible` |
-| `enableBulk($callback)` | Enable bulk select with optional per-row callback |
-| `enableExpand($callback)` | Enable expandable row with content callback |
-| `setDefaultOrder($key, $dir)` | Set default sort column and direction |
-| `addOrderBy($key, $dir)` | Add additional sort order |
-| `getActionView($data, $i, $editable, $deletable)` | Static: render edit/delete action buttons |
-| `getExpandView($data, $fields)` | Static: render expandable row grid |
+| `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`) |
+| `withCustomColumn($head, $callback, ...)` | Custom column (`$key`, `$sort`, `$visible`) |
+| `enableBulk($callback)` | Bulk select with per-row callback |
+| `enableExpand($callback)` | Expandable row content |
+| `setDefaultOrder($key, $dir)` | Default sort |
+| `addOrderBy($key, $dir)` | Additional sort |
+| `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons |
+| `getExpandView($data, $fields)` | Render expand grid |
 
-### Filter Factory (`MrCatzDataTableFilter`)
+### Filter Factory
 
 | Method | Description |
 |---|---|
-| `create($id, $label, $data, $value, $option, $key, $show, $condition)` | Create standard filter |
-| `createWithCallback($id, $label, $data, $value, $option, $callback, $show)` | Create filter with custom query callback |
-| `->get()` | Finalize filter (must call before returning) |
+| `MrCatzDataTableFilter::create($id, $label, $data, $value, $option, $key, $show, $condition)` | Standard filter |
+| `MrCatzDataTableFilter::createWithCallback($id, $label, $data, $value, $option, $callback, $show)` | Callback filter |
+| `->get()` | Finalize (required) |
 
 ---
 
-## Localization
-
-MrCatz DataTable supports two localization methods: **Laravel lang files** (recommended) and **config fallback**.
-
-### Method 1: Laravel Lang Files (Recommended)
-
-Publish the lang files:
-
-```bash
-php artisan vendor:publish --tag=mrcatz-lang
-```
-
-This creates `lang/vendor/mrcatz/en/mrcatz.php` and `lang/vendor/mrcatz/id/mrcatz.php`. Edit these files to customize strings or add new languages.
-
-Set the app locale in `config/app.php`:
-
-```php
-'locale' => 'id',  // uses lang/vendor/mrcatz/id/mrcatz.php
-```
-
-To add a new language (e.g. Japanese), create `lang/vendor/mrcatz/ja/mrcatz.php` and translate all keys.
-
-### Method 2: Config Fallback
-
-Publish the config file:
-
-```bash
-php artisan vendor:publish --tag=mrcatz-config
-```
-
-This creates `config/mrcatz.php`. Change the locale:
-
-```php
-// config/mrcatz.php
-'locale' => 'id',  // 'en' (default) or 'id' (Indonesian)
-```
-
-Customize individual strings:
-
-```php
-'en' => [
-    'btn_add' => 'Create New',          // default: 'Add'
-    'no_data' => 'Nothing here yet',    // default: 'No data yet'
-    // ...
-],
-```
-
-Or add a new language by adding a new key alongside `'en'` and `'id'`.
-
-> **Priority:** Lang files take precedence over config. If a key exists in `lang/vendor/mrcatz/`, it will be used. Otherwise, falls back to `config/mrcatz.php`.
-
----
-
-## Export Hooks
-
-Override `beforeExport()` to manipulate headers/rows before export (e.g., format currency, add summary):
-
-```php
-public function beforeExport($headers, $rows, $format, $scope)
-{
-    // Format price column
-    foreach ($rows as &$row) {
-        $row[2] = 'Rp ' . number_format($row[2], 0, ',', '.');
-    }
-
-    // Add summary row
-    $rows[] = ['', 'Total', 'Rp 1.000.000'];
-
-    return ['headers' => $headers, 'rows' => $rows];
-}
-```
-
-Override `afterExport()` to run logic after export (e.g., log, notify):
-
-```php
-public function afterExport($format, $scope)
-{
-    logger("Exported {$format} with scope: {$scope}");
-}
-```
-
----
-
-## Column Reorder Persistence
-
-Column reorder is automatically persisted in the URL via `#[Url]` (query parameter `col_order`). When users drag-and-drop column headers, the new order is reflected in the URL — shareable, bookmarkable, and survives page refresh just like search, sort, and filter state.
-
----
-
-## PDF Export
-
-PDF export uses a built-in template. To customize, publish the view:
-
-```bash
-php artisan vendor:publish --tag=mrcatz-views
-```
-
-Then edit `resources/views/vendor/mrcatz/exports/datatable-pdf.blade.php`. If you already have `resources/views/exports/datatable-pdf.blade.php`, that will be used instead.
-
----
-
-## Accessibility
-
-MrCatz DataTable includes built-in accessibility support:
-
-- **`aria-sort`** on sortable column headers (ascending/descending/none)
-- **`aria-modal`** and **`aria-labelledby`** on all modals
-- **Focus trap** (`x-trap`) on modals to prevent keyboard users from tabbing outside
-- **`aria-label`** on bulk selection checkboxes (header + per-row)
-- **`aria-live="polite"`** on toast notification container
-- **`role="alert"`** on individual toast notifications
-- **`role="grid"`** and **`aria-label`** on the data table
-
----
-
-## Loading Skeleton
-
-When data is loading (search, filter, pagination, sort), skeleton placeholder rows are shown instead of a spinner. This reduces layout shift and provides a more responsive feel.
-
----
-
-## Column Visibility
-
-Column visibility toggle is **enabled by default** (`$enableColumnVisibility = true`). A "Columns" button appears in the toolbar with checkboxes for each column. Hidden columns are persisted in the URL (`col_hidden` parameter) — shareable and bookmarkable.
-
-To disable:
-
-```php
-public $enableColumnVisibility = false; // all columns always visible, button hidden
-```
-
-### Default Visibility per Column
-
-Set default visibility via the `visible` parameter on `withColumn()` or `withCustomColumn()`:
-
-```php
-->withColumn('Name', 'name')                     // visible by default
-->withColumn('Email', 'email', visible: false)    // hidden by default
-->withColumn('Phone', 'phone', visible: false)    // hidden by default
-->withCustomColumn('Actions', fn(...) => ..., visible: true)
-```
-
-Columns with `visible: false` are hidden on first load. Users can toggle them back via the Columns dropdown. URL params (`col_hidden`) always take precedence over defaults — so if a user reveals a hidden column, it stays visible on refresh.
-
-| Setting | Behavior |
-|---|---|
-| `$enableColumnVisibility = true` (default) | Columns button shown, user can hide/show |
-| `$enableColumnVisibility = false` | Button hidden, all columns always visible |
-| `visible: false` on column | Column hidden by default on first load |
-| URL `?col_hidden[0]=3` | Overrides defaults — URL always wins |
-
----
-
-## Inline Editing
-
-Mark columns as editable in `setTable()`:
-
-```php
-->withColumn('Name', 'name', editable: true)
-->withColumn('Price', 'price', editable: true)
-```
-
-Users can **double-click** a cell to edit. Press **Enter** to save, **Escape** to cancel. The `inlineUpdateData` event is dispatched to the Page component.
-
-Handle the update in your Page component:
-
-```php
-public function onInlineUpdate($rowData, $columnKey, $newValue)
-{
-    DB::table('products')
-        ->where('id', $rowData['id'])
-        ->update([$columnKey => $newValue]);
-
-    $this->dispatch_to_view(true, 'update');
-}
-```
-
----
-
-## Multi-Sort
-
-Click a column header to sort by that column (single sort). **Shift+click** to add additional sort columns. Each sorted column shows a numbered badge indicating sort priority.
-
-Multi-sort state is persisted in the URL (`sort_multi` parameter).
-
----
-
-## Sticky Header
-
-Enable sticky header to keep column headers visible when scrolling long tables:
-
-```php
-public $stickyHeader = true;
-```
-
-The table container gets a max height of 70vh with the header pinned at the top.
-
----
-
-## Row Click Hook
-
-Override `onRowClick()` in your **Page component** to handle row click events:
-
-```php
-// In ProductPage.php (Page component)
-public function onRowClick($data)
-{
-    // Navigate to detail page
-    return redirect()->route('product.show', $data['id']);
-}
-```
-
----
-
-## Troubleshooting / FAQ
+## Troubleshooting
 
 ### Search tidak bekerja pada query JOIN
 
-Jika menggunakan `JOIN` di `baseQuery()`, pastikan kolom di `withColumn()` menggunakan prefix tabel:
+Gunakan prefix tabel di `withColumn()` dan tambahkan `configTable()`:
 
 ```php
-->withColumn('Name', 'products.name')  // ✅ dengan prefix tabel
-->withColumn('Name', 'name')           // ❌ ambiguous column
+->withColumn('Name', 'products.name')  // bukan 'name'
 ```
 
-Dan tambahkan `configTable()` untuk relevance search:
+### Filter tidak muncul
+
+Pastikan `->get()` dipanggil di setiap filter:
 
 ```php
-public function configTable() {
-    return ['table_name' => 'products', 'table_id' => 'id'];
-}
-```
-
-### Filter tidak muncul / tidak terlihat
-
-1. Pastikan method `setFilter()` return array yang sudah memanggil `->get()`:
-```php
-public function setFilter() {
-    return [
-        MrCatzDataTableFilter::create('status', 'Status', $data, 'id', 'name', 'status')->get(),
-        //                                                                                ^^^^
-    ];
-}
-```
-
-2. Untuk dependent filter yang hidden, pastikan `$show` parameter diset `false`:
-```php
-MrCatzDataTableFilter::create('sub', 'Sub', [], 'id', 'name', 'sub_id', false)->get()
-//                                                                        ^^^^^
+MrCatzDataTableFilter::create(...)->get();  // jangan lupa ->get()
 ```
 
 ### Export error: Class not found
 
-**Excel export** membutuhkan `maatwebsite/excel`:
 ```bash
-composer require maatwebsite/excel
+composer require maatwebsite/excel        # Excel
+composer require barryvdh/laravel-dompdf  # PDF
 ```
-
-**PDF export** membutuhkan `barryvdh/laravel-dompdf`:
-```bash
-composer require barryvdh/laravel-dompdf
-```
-Package sudah menyediakan template PDF bawaan. Untuk customize, publish views lalu edit `exports/datatable-pdf.blade.php`.
-
-Untuk **Excel export**, package menyediakan `MrCatzExport` class bawaan. Jika sebelumnya menggunakan `App\Exports\DatatableExport`, class tersebut tetap akan digunakan (fallback otomatis).
-
-### Pagination menampilkan data yang sama di halaman berbeda
-
-Pastikan `baseQuery()` memiliki ordering yang konsisten. Tambahkan `setDefaultOrder()` di `setTable()`:
-
-```php
-public function setTable() {
-    return $this->CreateMrCatzTable()
-        ->withColumn('Name', 'name')
-        ->setDefaultOrder('id', 'desc');  // order yang konsisten
-}
-```
-
-### Keyboard navigation tidak berfungsi
-
-Pastikan `$enableKeyboardNav = true` di Table component (default sudah `true`). Keyboard navigation hanya aktif saat tabel dalam fokus — klik pada tabel terlebih dahulu.
 
 ### Data tidak refresh setelah save/delete
 
-Pastikan memanggil `dispatch_to_view()` di akhir `saveData()` / `dropData()`:
+Pastikan memanggil `dispatch_to_view()` di akhir `saveData()` / `dropData()`.
+
+### Override method error "Declaration must be compatible"
+
+Jangan tambahkan return type pada method yang di-override:
 
 ```php
-public function saveData() {
-    $result = DB::table('products')->insert([...]);
-    $this->dispatch_to_view($result, 'insert');
-}
+public function saveData() { ... }         // benar
+public function saveData(): void { ... }   // salah
 ```
-
-### Override method menyebabkan "Declaration must be compatible" error
-
-Jangan tambahkan return type atau parameter type yang lebih strict dari parent class:
-
-```php
-public function saveData() { ... }          // ✅ tanpa return type
-public function saveData(): void { ... }    // ❌ akan error
-```
-
-### Cara publish dan override lokalisasi
-
-```bash
-php artisan vendor:publish --tag=mrcatz-lang
-```
-
-File akan di-copy ke `lang/vendor/mrcatz/`. Edit file tersebut untuk override atau tambah bahasa baru.
 
 ---
 
