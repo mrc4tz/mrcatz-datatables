@@ -633,6 +633,8 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `setPageName()` | Custom page name (multiple paginators) |
 | `onDataLoaded($builder, $data)` | Hook after data is loaded |
 | `onFilterChanged($id, $value)` | Hook after filter changes |
+| `beforeExport($headers, $rows, $format, $scope)` | Hook before export — return `['headers' => ..., 'rows' => ...]` |
+| `afterExport($format, $scope)` | Hook after export completes |
 | `setFilterShow($id, $show)` | Show/hide filter by ID |
 | `setFilterData($id, $data)` | Update filter option data by ID |
 | `resetFilter($id)` | Reset filter value to "All" |
@@ -706,6 +708,68 @@ Or add a new language by adding a new key alongside `'en'` and `'id'`.
 
 ---
 
+## Export Hooks
+
+Override `beforeExport()` to manipulate headers/rows before export (e.g., format currency, add summary):
+
+```php
+public function beforeExport($headers, $rows, $format, $scope)
+{
+    // Format price column
+    foreach ($rows as &$row) {
+        $row[2] = 'Rp ' . number_format($row[2], 0, ',', '.');
+    }
+
+    // Add summary row
+    $rows[] = ['', 'Total', 'Rp 1.000.000'];
+
+    return ['headers' => $headers, 'rows' => $rows];
+}
+```
+
+Override `afterExport()` to run logic after export (e.g., log, notify):
+
+```php
+public function afterExport($format, $scope)
+{
+    logger("Exported {$format} with scope: {$scope}");
+}
+```
+
+---
+
+## Column Reorder Persistence
+
+Column reorder is automatically saved to `localStorage`. When users drag-and-drop column headers, the new order persists across page refreshes. This works alongside the existing filter presets localStorage — both gracefully fallback when storage is unavailable (private browsing).
+
+---
+
+## PDF Export
+
+PDF export uses a built-in template. To customize, publish the view:
+
+```bash
+php artisan vendor:publish --tag=mrcatz-views
+```
+
+Then edit `resources/views/vendor/mrcatz/exports/datatable-pdf.blade.php`. If you already have `resources/views/exports/datatable-pdf.blade.php`, that will be used instead.
+
+---
+
+## Accessibility
+
+MrCatz DataTable includes built-in accessibility support:
+
+- **`aria-sort`** on sortable column headers (ascending/descending/none)
+- **`aria-modal`** and **`aria-labelledby`** on all modals
+- **Focus trap** (`x-trap`) on modals to prevent keyboard users from tabbing outside
+- **`aria-label`** on bulk selection checkboxes (header + per-row)
+- **`aria-live="polite"`** on toast notification container
+- **`role="alert"`** on individual toast notifications
+- **`role="grid"`** and **`aria-label`** on the data table
+
+---
+
 ## Troubleshooting / FAQ
 
 ### Search tidak bekerja pada query JOIN
@@ -750,13 +814,13 @@ MrCatzDataTableFilter::create('sub', 'Sub', [], 'id', 'name', 'sub_id', false)->
 composer require maatwebsite/excel
 ```
 
-**PDF export** membutuhkan `barryvdh/laravel-dompdf` dan view template:
+**PDF export** membutuhkan `barryvdh/laravel-dompdf`:
 ```bash
 composer require barryvdh/laravel-dompdf
 ```
-Buat view `resources/views/exports/datatable-pdf.blade.php` untuk template PDF.
+Package sudah menyediakan template PDF bawaan. Untuk customize, publish views lalu edit `exports/datatable-pdf.blade.php`.
 
-Sejak v1.1.0, package sudah menyediakan `MrCatzExport` class bawaan. Jika sebelumnya menggunakan `App\Exports\DatatableExport`, class tersebut tetap akan digunakan (fallback otomatis).
+Untuk **Excel export**, package menyediakan `MrCatzExport` class bawaan. Jika sebelumnya menggunakan `App\Exports\DatatableExport`, class tersebut tetap akan digunakan (fallback otomatis).
 
 ### Pagination menampilkan data yang sama di halaman berbeda
 

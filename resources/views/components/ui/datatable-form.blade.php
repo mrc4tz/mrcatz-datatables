@@ -1,13 +1,13 @@
-<dialog id="modal-data" class="modal modal-bottom sm:modal-middle" wire:ignore.self>
-    <div class="modal-box w-full max-w-3xl lg:max-w-4xl bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl">
+<dialog id="modal-data" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-data-title">
+    <div class="modal-box w-full max-w-3xl lg:max-w-4xl bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data')?.open">
         {{-- Header --}}
         <div class="flex items-center justify-between pb-4 mb-4 border-b border-base-content/10">
-            <h3 class="text-lg font-bold text-base-content flex items-center gap-2">
+            <h3 id="modal-data-title" class="text-lg font-bold text-base-content flex items-center gap-2">
                 <span class="material-icons text-primary">{{ $isEdit ? 'edit_note' : 'add_circle' }}</span>
                 {{ $form_title ?: mrcatz_lang('default_form_title') }}
             </h3>
             <form method="dialog">
-                <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors">
+                <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors" aria-label="{{ mrcatz_lang('btn_cancel') }}">
                     <span class="material-icons">close</span>
                 </button>
             </form>
@@ -36,8 +36,8 @@
     </form>
 </dialog>
 
-<dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self>
-    <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl">
+<dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title">
+    <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data-delete')?.open">
         {{-- Icon --}}
         <div class="flex justify-center mb-4">
             <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <h3 class="text-lg font-bold text-center text-base-content">{{ mrcatz_lang('confirm_delete') }}</h3>
+        <h3 id="modal-delete-title" class="text-lg font-bold text-center text-base-content">{{ mrcatz_lang('confirm_delete') }}</h3>
         <p class="py-4 text-center text-base-content/60 text-sm">
             {{ mrcatz_lang('confirm_delete_text') }}<br>
             <span class="font-semibold text-base-content mt-1 inline-block">{{ $deleted_text }}</span>

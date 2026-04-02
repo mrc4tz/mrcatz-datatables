@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-02
+
+### Added
+- Default PDF export blade view (`mrcatz::exports.datatable-pdf`) — no longer requires user to create template
+- Accessibility: `aria-sort` on sortable column headers, `aria-modal` + `aria-labelledby` on all modals
+- Accessibility: focus trap (`x-trap`) on all modals (export, reset, bulk delete, form, delete confirm)
+- Accessibility: `aria-label` on bulk checkboxes (header + per-row), `aria-live` on toast container
+- Accessibility: `role="grid"` + `aria-label` on data table
+- Export hooks: `beforeExport($headers, $rows, $format, $scope)` and `afterExport($format, $scope)`
+- Column reorder persistence via localStorage (survives page refresh)
+- New README sections: Export Hooks, Column Reorder Persistence, PDF Export, Accessibility
+
+### Changed
+- PDF export now falls back to package view if `exports.datatable-pdf` doesn't exist in user's project
+
+## [1.1.3] - 2026-04-02
+
+### Fixed
+- `mrcatz_lang()` now uses `config('mrcatz.locale')` instead of `app()->getLocale()`
+
+## [1.1.2] - 2026-04-02
+
+### Fixed
+- Remove strict types from all public properties for backward compatibility — child classes can override properties without type declaration
+
 ## [1.1.1] - 2026-04-02
 
 ### Changed
@@ -76,7 +101,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language support (English, Indonesian)
 - DaisyUI 5 / Tailwind CSS styling
 
-[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.3...v1.2.0
+[1.1.3]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.0.1...v1.0.2

@@ -69,18 +69,29 @@ trait HasExport
         return $query;
     }
 
+    // Override-able export hooks
+    public function beforeExport(array $headers, array $rows, string $format, string $scope) { return ['headers' => $headers, 'rows' => $rows]; }
+    public function afterExport(string $format, string $scope) {}
+
     public function exportData(string $format, string $scope = 'filtered'): mixed
     {
         $exportData = $this->buildExportData($scope);
-        $headers = $exportData['headers'];
-        $rows = $exportData['rows'];
+        $processed = $this->beforeExport($exportData['headers'], $exportData['rows'], $format, $scope);
+        $headers = $processed['headers'];
+        $rows = $processed['rows'];
         $title = $this->exportTitle ?: $this->title ?: 'Export';
         $filename = str_replace(' ', '_', strtolower($title)) . '_' . now()->format('Ymd_His');
 
         if ($format === 'pdf') {
-            $pdf = Pdf::loadView('exports.datatable-pdf', [
+            $pdfView = view()->exists('exports.datatable-pdf')
+                ? 'exports.datatable-pdf'
+                : 'mrcatz::exports.datatable-pdf';
+
+            $pdf = Pdf::loadView($pdfView, [
                 'title' => $title, 'headers' => $headers, 'rows' => $rows,
             ])->setPaper('a4', 'landscape');
+
+            $this->afterExport($format, $scope);
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
@@ -90,6 +101,8 @@ trait HasExport
         $exportClass = class_exists(\App\Exports\DatatableExport::class)
             ? new \App\Exports\DatatableExport($title, $headers, $rows)
             : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
+
+        $this->afterExport($format, $scope);
 
         return Excel::download($exportClass, $filename . '.xlsx');
     }

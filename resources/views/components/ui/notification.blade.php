@@ -1,5 +1,5 @@
 {{-- MrCatz DataTable Notification Toast --}}
-<div x-data="noticesHandler()" class="fixed z-50 inset-0 flex flex-col-reverse items-end justify-start h-screen w-screen" @notice.window="add($event.detail)" style="pointer-events:none">
+<div x-data="noticesHandler()" class="fixed z-50 inset-0 flex flex-col-reverse items-end justify-start h-screen w-screen" aria-live="polite" aria-atomic="false" @notice.window="add($event.detail)" style="pointer-events:none">
     <template x-for="notice of notices" :key="notice.id">
         <div role="alert" class="alert w-auto m-16 text-white"
              :class="{

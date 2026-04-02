@@ -61,8 +61,30 @@
     deletePreset(i) {
         this.presets.splice(i, 1);
         if (this._storageAvailable) { localStorage.setItem(this.presetKey, JSON.stringify(this.presets)); }
+    },
+
+    colOrderKey: 'mrcatz_colorder_' + window.location.pathname,
+    initColOrder() {
+        if (!this._storageAvailable) return;
+        const saved = localStorage.getItem(this.colOrderKey);
+        if (saved) {
+            try {
+                const order = JSON.parse(saved);
+                if (Array.isArray(order) && order.length === {{ $posts->countColumn() }}) {
+                    $wire.columnOrder = order;
+                }
+            } catch(e) {}
+        }
+    },
+    saveColOrder(from, to, total) {
+        $wire.reorderColumn(from, to, total);
+        this.$nextTick(() => {
+            if (this._storageAvailable && $wire.columnOrder.length > 0) {
+                localStorage.setItem(this.colOrderKey, JSON.stringify($wire.columnOrder));
+            }
+        });
     }
-}" x-init="initPresets()">
+}" x-init="initPresets(); initColOrder()">
     @php
         $activeFilterCount = collect($activeFilters ?? [])->filter(fn($f) => !empty($f['value']))->count();
         $bulkEnabled = $bulkPrimaryKey !== null;
@@ -207,7 +229,7 @@
 
             @if($posts->hasData())
                 <div class="overflow-x-auto">
-                    <table class="table outline-none"
+                    <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                            @if($enableKeyboardNav)
                            tabindex="0"
                            @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
@@ -225,6 +247,7 @@
                             @if($bulkShow)
                                 <th class="w-10 text-center">
                                     <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                           aria-label="{{ mrcatz_lang('btn_select') }} all"
                                            @checked($selectAll)
                                            wire:click="toggleSelectAll"/>
                                 </th>
@@ -235,11 +258,15 @@
                                     @if($posts->gravity($ci)=='center') text-center
                                     @elseif($posts->gravity($ci)=='right') text-right
                                     @else text-left @endif"
+                                    @if($posts->getOrder($ci) === 'asc') aria-sort="ascending"
+                                    @elseif($posts->getOrder($ci) === 'desc') aria-sort="descending"
+                                    @elseif($posts->getSort($ci) && $posts->getKey($ci)) aria-sort="none"
+                                    @endif
                                     @if($enableColumnReorder)
                                     draggable="true"
                                     @dragstart="dragCol = {{ $pos }}"
                                     @dragover.prevent="dragOverCol = {{ $pos }}"
-                                    @drop.prevent="$wire.reorderColumn(dragCol, {{ $pos }}, {{ $totalCols }}); dragCol = -1; dragOverCol = -1"
+                                    @drop.prevent="saveColOrder(dragCol, {{ $pos }}, {{ $totalCols }}); dragCol = -1; dragOverCol = -1"
                                     @dragend="dragCol = -1; dragOverCol = -1"
                                     :style="dragOverCol === {{ $pos }} && dragCol !== {{ $pos }} && dragCol >= 0 ? 'box-shadow: inset 3px 0 0 0 var(--color-primary)' : ''"
                                     @endif>
@@ -293,6 +320,7 @@
                                     <td class="w-10 text-center" @click.stop>
                                         @if($posts->isBulkEnabled($i))
                                             <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                                   aria-label="{{ mrcatz_lang('btn_select') }} row {{ $i + 1 }}"
                                                    value="{{ $posts->getRowRawData($i)->{$bulkPrimaryKey} }}"
                                                    wire:model.live="selectedRows"/>
                                         @endif
@@ -373,10 +401,10 @@
     @endif
 
     @if($showExportButton)
-        <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self x-data="{ format: 'excel', scope: 'filtered' }">
-            <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg">
+        <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self x-data="{ format: 'excel', scope: 'filtered' }" aria-modal="true" aria-labelledby="modal-export-title">
+            <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg" x-trap.noscroll="document.getElementById('modal-export')?.open">
                 <div class="flex items-center justify-between pb-4 mb-5 border-b border-base-content/10">
-                    <h3 class="text-lg font-bold text-base-content flex items-center gap-2">
+                    <h3 id="modal-export-title" class="text-lg font-bold text-base-content flex items-center gap-2">
                         <span class="material-icons text-primary">download</span>
                         {{ mrcatz_lang('export_title') }}
                     </h3>
@@ -481,12 +509,12 @@
         </dialog>
     @endif
 
-    <dialog id="modal-reset-confirm" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center">
+    <dialog id="modal-reset-confirm" class="modal modal-bottom sm:modal-middle" aria-modal="true" aria-labelledby="modal-reset-title">
+        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-reset-confirm')?.open">
             <div class="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
                 <span class="material-icons text-warning text-2xl">restart_alt</span>
             </div>
-            <h3 class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
+            <h3 id="modal-reset-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
             <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('reset_desc') }}</p>
             <div class="flex gap-2 justify-center">
                 <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
@@ -500,12 +528,12 @@
     </dialog>
 
     @if($bulkPrimaryKey !== null)
-        <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self>
-            <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center">
+        <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-bulk-delete-title">
+            <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-bulk-delete')?.open">
                 <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
                     <span class="material-icons text-error text-2xl">delete_sweep</span>
                 </div>
-                <h3 class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
+                <h3 id="modal-bulk-delete-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
                 <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('bulk_delete_desc') }}</p>
                 <div class="flex gap-2 justify-center">
                     <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
