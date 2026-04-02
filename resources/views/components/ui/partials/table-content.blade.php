@@ -25,7 +25,7 @@
                     }
                 @endphp
 
-                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2 overflow-hidden">
+                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
                     <div class="flex-1 min-w-0 overflow-hidden">
                         @if($firstDataCol !== null)
                             @if($posts->isEditable($firstDataCol))
