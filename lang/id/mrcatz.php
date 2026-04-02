@@ -91,4 +91,8 @@ return [
     'inline_edit_hint' => 'Klik dua kali untuk edit',
     'inline_edit_hint_mobile' => 'Ketuk untuk edit',
     'inline_validation_failed' => 'Validasi gagal',
+
+    // Load more
+    'showing_rows' => 'Menampilkan :count baris',
+    'btn_load_more' => 'Muat Lebih Banyak',
 ];

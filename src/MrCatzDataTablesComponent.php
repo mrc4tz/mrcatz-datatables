@@ -74,6 +74,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $tableZebraStyle = true;
     public $stickyHeader = false;
     public $enableRowClick = false;
+    public $maxRows = 500;
+    public $loadedRows = 0;
+    public $hasMoreRows = false;
 
     public function CreateMrCatzTable(): MrCatzDataTables
     {
@@ -160,11 +163,19 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function render(): mixed
     {
         $this->dataFilters = $this->getDataFilter();
+        $posts = $this->getData();
+        $this->hasMoreRows = $posts->hasMoreRows();
         return view($this->setView(), [
-            'posts' => $this->getData(),
+            'posts' => $posts,
             'filters' => $this->dataFilters,
             'emptyStateView' => $this->emptyStateView(),
         ]);
+    }
+
+    public function loadMore(): void
+    {
+        $this->loadedRows += $this->maxRows;
+        $this->mrCatzDataTables = null;
     }
 
     public function setSearchWord(string $words): string
@@ -208,6 +219,10 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
         $dt->setPaginate($this->p);
         $dt->setCurrentPage($this->getPage($this->setPageName()));
+
+        if (!$this->usePagination && $this->maxRows > 0) {
+            $dt->setMaxRows($this->loadedRows > 0 ? $this->loadedRows : $this->maxRows);
+        }
     }
 
     public function inlineUpdate($rowData, $columnKey, $newValue, $rowIndex = null): void
@@ -245,6 +260,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function searchData(): void
     {
         $this->setPage(1);
+        $this->loadedRows = 0;
         $this->clearSelection();
         $this->findData();
     }
@@ -261,6 +277,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->columnOrder = [];
         $this->hiddenColumns = [];
         $this->columnWidths = [];
+        $this->loadedRows = 0;
         $this->clearSelection();
         $this->dispatch(MrCatzEvent::RESET_SELECT, $this->getDataFilter(), $this->prefix);
         $this->mrCatzDataTables = $this->setData();

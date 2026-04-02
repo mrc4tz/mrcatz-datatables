@@ -354,6 +354,17 @@
     </div>
 </div>
 
+@if(!$usePagination && $hasMoreRows)
+    <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-xs text-base-content/40">{{ mrcatz_lang('showing_rows', [':count' => $posts->countRow()]) }}</p>
+        <button wire:click="loadMore" wire:loading.attr="disabled"
+                class="btn btn-sm btn-outline btn-primary gap-1.5">
+            <span wire:loading.remove wire:target="loadMore">{{ mrcatz_lang('btn_load_more') }}</span>
+            <span wire:loading wire:target="loadMore" class="loading loading-spinner loading-xs"></span>
+        </button>
+    </div>
+@endif
+
 @if($usePagination)
     <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif">
         {{ $posts->links('mrcatz::components.ui.pagination') }}

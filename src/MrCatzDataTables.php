@@ -35,6 +35,8 @@ class MrCatzDataTables
     private ?\Closure $expandCallback = null;
     private ?\Closure $editableCallback = null;
     private array $pluckCache = [];
+    private ?int $maxRows = null;
+    private bool $hasMoreRows = false;
 
     public static function with(
         EloquentBuilder|QueryBuilder|array $data,
@@ -116,6 +118,8 @@ class MrCatzDataTables
     }
 
     public function setPaginate(int $perPage): self { $this->paginate = $perPage; return $this; }
+    public function setMaxRows(?int $maxRows): self { $this->maxRows = $maxRows; return $this; }
+    public function hasMoreRows(): bool { return $this->hasMoreRows; }
     public function hasData(): bool { return count($this->data) > 0; }
 
     public function build(): self
@@ -211,7 +215,17 @@ class MrCatzDataTables
         if ($this->usePagination) {
             $this->data = $this->dataBuilder->paginate($this->paginate, ['*'], $this->pageName);
         } else {
-            $this->data = $this->dataBuilder->get();
+            if ($this->maxRows !== null) {
+                $this->data = $this->dataBuilder->limit($this->maxRows + 1)->get();
+                if ($this->data->count() > $this->maxRows) {
+                    $this->hasMoreRows = true;
+                    $this->data = $this->data->slice(0, $this->maxRows)->values();
+                } else {
+                    $this->hasMoreRows = false;
+                }
+            } else {
+                $this->data = $this->dataBuilder->get();
+            }
         }
         $this->data->paginateOptions = $this->paginateOptions;
         $this->data->hasData = $this->hasData();
@@ -442,6 +456,12 @@ class MrCatzDataTables
         $this->validateRowIndex($indexRow);
         if (!$this->expandCallback) return '';
         return ($this->expandCallback)($this->data[$indexRow], $indexRow) ?? '';
+    }
+
+    public function setExportData(mixed $data): void
+    {
+        $this->pluckCache = [];
+        $this->data = $data;
     }
 
     public function getRowRawData(int $indexRow): mixed { $this->validateRowIndex($indexRow); return $this->data[$indexRow]; }

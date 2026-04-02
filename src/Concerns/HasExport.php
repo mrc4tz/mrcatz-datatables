@@ -116,6 +116,8 @@ trait HasExport
         return Excel::download($exportClass, $filename . '.xlsx');
     }
 
+    protected int $exportChunkSize = 500;
+
     protected function buildExportData(string $scope): array
     {
         $dt = $this->setTable();
@@ -128,26 +130,27 @@ trait HasExport
             $exportableColumns[] = $i;
         }
 
-        // Build engine with export query data (no pagination) so callbacks work
-        $dt->setBaseDataBuilder($this->buildExportQuery($scope)->orderBy('created_at', 'desc'));
-        $dt->setSearch('');
-        $dt->setFilters([], []);
-        $dt->usePagination = false;
-        $dt->build();
-
+        $baseQuery = $this->buildExportQuery($scope)->orderBy('created_at', 'desc');
         $rows = [];
-        for ($rowIndex = 0; $rowIndex < $dt->countRow(); $rowIndex++) {
-            $row = [];
-            foreach ($exportableColumns as $colIndex) {
-                $col = $dataTableSet[$colIndex];
-                if ($col['index'] !== null) {
-                    $row[] = $rowIndex + 1;
-                } else {
-                    $row[] = strip_tags($dt->getData($rowIndex, $colIndex) ?? '');
+        $globalIndex = 0;
+
+        $baseQuery->chunk($this->exportChunkSize, function ($chunk) use (&$rows, &$globalIndex, $dataTableSet, $exportableColumns) {
+            $chunkDt = $this->setTable();
+            $chunkDt->setExportData($chunk);
+
+            for ($rowIndex = 0; $rowIndex < $chunkDt->countRow(); $rowIndex++) {
+                $row = [];
+                foreach ($exportableColumns as $colIndex) {
+                    $col = $dataTableSet[$colIndex];
+                    if ($col['index'] !== null) {
+                        $row[] = ++$globalIndex;
+                    } else {
+                        $row[] = strip_tags($chunkDt->getData($rowIndex, $colIndex) ?? '');
+                    }
                 }
+                $rows[] = $row;
             }
-            $rows[] = $row;
-        }
+        });
 
         return ['headers' => $headers, 'rows' => $rows];
     }

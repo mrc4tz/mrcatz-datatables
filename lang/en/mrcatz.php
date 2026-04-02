@@ -91,4 +91,8 @@ return [
     'inline_edit_hint' => 'Double-click to edit',
     'inline_edit_hint_mobile' => 'Tap to edit',
     'inline_validation_failed' => 'Validation failed',
+
+    // Load more
+    'showing_rows' => 'Showing :count rows',
+    'btn_load_more' => 'Load More',
 ];
