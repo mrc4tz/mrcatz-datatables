@@ -577,11 +577,16 @@ public function dropBulkData($selectedRows)
 public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 
 ->enableExpand(function ($data, $i) {
+    // Return null to disable expand for this specific row
+    if (!$data->has_details) return null;
+
     return MrCatzDataTables::getExpandView($data, [
         'Email' => 'email', 'Created' => 'created_at',
     ]);
 })
 ```
+
+Return `null` from the callback to disable expand for a specific row — the chevron (desktop) and Details button (mobile) will be hidden for that row.
 
 Control where expand is available:
 
