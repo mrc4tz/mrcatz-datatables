@@ -11,6 +11,7 @@ return [
     'btn_select' => 'Pilih',
     'btn_yes_reset' => 'Ya, Reset',
     'btn_yes_delete' => 'Ya, Hapus',
+    'btn_details' => 'Detail',
 
     // CRUD
     'default_form_title' => 'Tambah Data',

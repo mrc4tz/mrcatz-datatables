@@ -65,7 +65,7 @@
                 @if($showExpand)
                     <div @click.stop="toggleExpand({{ $i }})" class="flex items-center gap-1 cursor-pointer text-base-content/40 pt-1">
                         <span class="transition-transform duration-200" :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm') !!}</span>
-                        <span class="text-xs">{{ mrcatz_lang('btn_details', 'Details') }}</span>
+                        <span class="text-xs">{{ mrcatz_lang('btn_details') }}</span>
                     </div>
                     <div x-show="expandedRows.includes({{ $i }})" class="text-sm pt-2"
                          x-transition:enter="transition ease-out duration-200"

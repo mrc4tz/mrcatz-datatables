@@ -11,6 +11,7 @@ return [
     'btn_select' => 'Select',
     'btn_yes_reset' => 'Yes, Reset',
     'btn_yes_delete' => 'Yes, Delete',
+    'btn_details' => 'Details',
 
     // CRUD
     'default_form_title' => 'Add Data',
