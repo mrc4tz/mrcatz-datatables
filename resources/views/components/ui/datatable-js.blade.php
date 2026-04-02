@@ -94,8 +94,8 @@
 
     @include('mrcatz::components.ui.partials.toolbar')
 
-    <div class="@if($cardContainer) card shadow-md @endif @if($borderContainer) border rounded-xl border-base-content/10 @endif bg-base-100 w-full overflow-hidden">
-        <div @if($cardContainer) class="card-body p-0" @endif>
+    <div class="@if($cardContainer) md:card md:shadow-md @endif @if($borderContainer) md:border md:rounded-xl md:border-base-content/10 @endif md:bg-base-100 w-full md:overflow-hidden">
+        <div @if($cardContainer) class="md:card-body md:p-0" @endif>
             @include('mrcatz::components.ui.partials.table-content')
         </div>
     </div>

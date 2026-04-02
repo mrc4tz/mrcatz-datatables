@@ -1,10 +1,10 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
 @if($posts->hasData())
     {{-- Mobile card view --}}
-    <div class="md:hidden space-y-3 p-3">
+    <div class="md:hidden divide-y divide-base-content/8">
         @for($i = 0; $i < $posts->countRow(); $i++)
-            <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
-                 :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
+            <div class="transition-all duration-150"
+                 :class="focusedRow === {{ $i }} ? 'bg-primary/5' : ''"
                  @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}')); @endif"
                  data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
@@ -350,9 +350,9 @@
 {{-- Loading skeleton --}}
 <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
     {{-- Mobile skeleton --}}
-    <div class="md:hidden space-y-3 p-3">
+    <div class="md:hidden divide-y divide-base-content/8">
         @for($sk = 0; $sk < min($p ?? 5, 3); $sk++)
-            <div class="rounded-xl border border-base-content/8 bg-base-100 p-4 space-y-2">
+            <div class="px-4 py-3 space-y-2">
                 <div class="space-y-1">
                     <div class="skeleton h-2.5 w-12 rounded"></div>
                     <div class="skeleton h-4 w-3/4 rounded"></div>
@@ -385,7 +385,7 @@
 </div>
 
 @if($usePagination)
-    <div class="px-4 py-3 border-t border-base-content/5 @if($borderContainer) p-4 @endif">
+    <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif">
         {{ $posts->links('mrcatz::components.ui.pagination') }}
     </div>
 @endif
