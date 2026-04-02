@@ -2,73 +2,81 @@
 
 namespace MrCatz\DataTable;
 
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class MrCatzDataTables
 {
-    private $index = 0;
-    public $dataTableSet = [];
-    private $data = [];
-    private $callbacks = [];
-    private $search = '';
-    private $keyValue = [];
-    private $callbackFilters = [];
-    private $paginate = 5;
-    private $defaultOrderBy = 'created_at';
-    private $defaultOrderDirection = 'desc';
-    private $order = [];
-    public $dataBuilder;
-    private $baseDataBuilder;
-    public $paginateOptions = [5, 10, 15, 20];
-    public $usePagination = true;
-    private $tables = null;
-    private $tableFindName = "table_find_765678912";
-    private $pageName = 'page';
-    private $onDataLoaded = null;
-    private $currentPage = 1;
-    private $bulkCallback = null;
-    private $expandCallback = null;
+    private int $index = 0;
+    public array $dataTableSet = [];
+    private mixed $data = [];
+    private array $callbacks = [];
+    private string $search = '';
+    private array $keyValue = [];
+    private array $callbackFilters = [];
+    private int $paginate = 5;
+    private string $defaultOrderBy = 'created_at';
+    private string $defaultOrderDirection = 'desc';
+    private array $order = [];
+    public EloquentBuilder|QueryBuilder|array $dataBuilder;
+    private EloquentBuilder|QueryBuilder|array $baseDataBuilder;
+    public array $paginateOptions = [5, 10, 15, 20];
+    public bool $usePagination = true;
+    private ?array $tables = null;
+    private string $tableFindName = "table_find_765678912";
+    private string $pageName = 'page';
+    private ?\Closure $onDataLoaded = null;
+    private int $currentPage = 1;
+    private ?\Closure $bulkCallback = null;
+    private ?\Closure $expandCallback = null;
 
-    public static function with($data, $paginateOptions = [5, 10, 15, 20], $paginate = null, $usePagination = true, $pageName = 'page', $onDataLoaded = null)
-    {
-        $dt = new MrCatzDataTables();
+    public static function with(
+        EloquentBuilder|QueryBuilder|array $data,
+        array $paginateOptions = [5, 10, 15, 20],
+        ?int $paginate = null,
+        bool $usePagination = true,
+        string $pageName = 'page',
+        ?callable $onDataLoaded = null
+    ): self {
+        $dt = new self();
         $dt->setBaseDataBuilder($data);
         $dt->paginateOptions = $paginateOptions;
         $dt->paginate = $paginate ?? $paginateOptions[0];
         $dt->usePagination = $usePagination;
         $dt->pageName = $pageName;
-        $dt->onDataLoaded = $onDataLoaded;
+        $dt->onDataLoaded = $onDataLoaded ? \Closure::fromCallable($onDataLoaded) : null;
         return $dt;
     }
 
-    public function setDefaultOrder($defaultOrderBy, $defaultOrderDirection)
+    public function setDefaultOrder(string $defaultOrderBy, string $defaultOrderDirection): self
     {
         $this->defaultOrderBy = $defaultOrderBy;
         $this->defaultOrderDirection = $defaultOrderDirection;
         return $this;
     }
 
-    public function getPageName() { return $this->pageName; }
+    public function getPageName(): string { return $this->pageName; }
 
-    public function addOrderBy($orderBy, $orderDirection)
+    public function addOrderBy(string $orderBy, string $orderDirection): self
     {
         $this->order[] = ['orderBy' => $orderBy, 'direction' => $orderDirection];
         return $this;
     }
 
-    public function getPaginate() { return $this->paginate; }
-    public function setBaseDataBuilder($baseDataBuilder) { $this->baseDataBuilder = $baseDataBuilder; }
-    public function getBaseDataBuilder() { return $this->baseDataBuilder; }
+    public function getPaginate(): int { return $this->paginate; }
+    public function setBaseDataBuilder(mixed $baseDataBuilder): void { $this->baseDataBuilder = $baseDataBuilder; }
+    public function getBaseDataBuilder(): mixed { return $this->baseDataBuilder; }
 
-    public function setCurrentPage($page)
+    public function setCurrentPage(int $page): self
     {
         $this->currentPage = $page;
         return $this;
     }
 
-    public function setOrderByKey($key, $order)
+    public function setOrderByKey(string $key, string $order): self
     {
         for ($i = 0; $i < count($this->dataTableSet); $i++) {
             $this->dataTableSet[$i]['order'] = ($this->dataTableSet[$i]['key'] == $key) ? $order : null;
@@ -76,25 +84,25 @@ class MrCatzDataTables
         return $this;
     }
 
-    public function setSearch($search) { $this->search = $search; return $this; }
+    public function setSearch(string $search): self { $this->search = $search; return $this; }
 
-    public function setFilters($keyValue, $callbackFilters)
+    public function setFilters(array $keyValue, array $callbackFilters): self
     {
         $this->keyValue = $keyValue;
         $this->callbackFilters = $callbackFilters;
         return $this;
     }
 
-    public function setConfig($tables)
+    public function setConfig(?array $tables): self
     {
         if ($tables != null) $this->tables = $tables;
         return $this;
     }
 
-    public function setPaginate($perPage) { $this->paginate = (int) $perPage; return $this; }
-    public function hasData() { return count($this->data) > 0; }
+    public function setPaginate(int $perPage): self { $this->paginate = $perPage; return $this; }
+    public function hasData(): bool { return count($this->data) > 0; }
 
-    public function build()
+    public function build(): self
     {
         $this->dataBuilder = clone $this->getBaseDataBuilder();
         $this->applyFilters();
@@ -105,7 +113,7 @@ class MrCatzDataTables
         return $this;
     }
 
-    private function applyFilters()
+    private function applyFilters(): void
     {
         foreach ($this->keyValue as $x => $kv) {
             if (!empty($kv['value'])) {
@@ -124,7 +132,7 @@ class MrCatzDataTables
         }
     }
 
-    private function applySearch()
+    private function applySearch(): void
     {
         if ($this->search == '') return;
 
@@ -148,7 +156,7 @@ class MrCatzDataTables
         }
     }
 
-    private function applyOrdering()
+    private function applyOrdering(): void
     {
         if ($this->dataBuilder instanceof EloquentBuilder) {
             $this->dataBuilder->getQuery()->orders = null;
@@ -175,13 +183,13 @@ class MrCatzDataTables
         }
     }
 
-    private function notifyDataLoaded()
+    private function notifyDataLoaded(): void
     {
         $load = $this->onDataLoaded;
         if (isset($load)) { $load($this->dataBuilder, $this->data); }
     }
 
-    private function executeQuery()
+    private function executeQuery(): void
     {
         if ($this->usePagination) {
             $this->data = $this->dataBuilder->paginate($this->paginate, ['*'], $this->pageName);
@@ -192,8 +200,11 @@ class MrCatzDataTables
         $this->data->hasData = $this->hasData();
     }
 
-    public static function applySearchWhere($query, string $search, array $searchableColumns)
-    {
+    public static function applySearchWhere(
+        EloquentBuilder|QueryBuilder $query,
+        string $search,
+        array $searchableColumns
+    ): EloquentBuilder|QueryBuilder {
         $words = array_filter(explode(' ', $search), fn($s) => !empty($s));
         if (empty($words)) return $query;
 
@@ -209,7 +220,7 @@ class MrCatzDataTables
         });
     }
 
-    private function buildRelevanceSubquery(array $keywords, array $searchableColumns)
+    private function buildRelevanceSubquery(array $keywords, array $searchableColumns): QueryBuilder
     {
         $tableName = $this->tables['table_name'];
         $tableId = $this->tables['table_id'];
@@ -239,15 +250,21 @@ class MrCatzDataTables
 
     // Column definitions
 
-    public function withColumn($head, $key, $uppercase = false, $th = false, $sort = true, $gravity = 'left')
-    {
+    public function withColumn(
+        string $head,
+        string $key,
+        bool $uppercase = false,
+        bool $th = false,
+        bool $sort = true,
+        string $gravity = 'left'
+    ): self {
         $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity];
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
     }
 
-    public function withCustomColumn($head, ?callable $callback = null, $key = null, $sort = true)
+    public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true): self
     {
         $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left'];
         $this->callbacks[$this->index] = $callback;
@@ -255,7 +272,7 @@ class MrCatzDataTables
         return $this;
     }
 
-    public function withColumnIndex($head)
+    public function withColumnIndex(string $head): self
     {
         $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => null, 'index' => 'index', 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => false, 'gravity' => 'left'];
         $this->callbacks[$this->index] = null;
@@ -263,19 +280,19 @@ class MrCatzDataTables
         return $this;
     }
 
-    public function getDataTableSet() { return $this->dataTableSet; }
-    public function countColumn() { return count($this->dataTableSet); }
-    public function countRow() { return count($this->data); }
-    public function getHead($i) { return $this->dataTableSet[$i]['head']; }
-    public function getKey($i) { return $this->dataTableSet[$i]['key']; }
-    public function getIndex($i) { return $this->dataTableSet[$i]['index']; }
-    public function getSort($i) { return $this->dataTableSet[$i]['sort']; }
-    public function getOrder($i) { return $this->dataTableSet[$i]['order']; }
-    public function isUppercase($i) { return $this->dataTableSet[$i]['uppercase']; }
-    public function isTH($i) { return $this->dataTableSet[$i]['th']; }
-    public function gravity($i) { return $this->dataTableSet[$i]['gravity']; }
+    public function getDataTableSet(): array { return $this->dataTableSet; }
+    public function countColumn(): int { return count($this->dataTableSet); }
+    public function countRow(): int { return count($this->data); }
+    public function getHead(int $i): string { return $this->dataTableSet[$i]['head']; }
+    public function getKey(int $i): ?string { return $this->dataTableSet[$i]['key']; }
+    public function getIndex(int $i): ?string { return $this->dataTableSet[$i]['index']; }
+    public function getSort(int $i): bool { return $this->dataTableSet[$i]['sort']; }
+    public function getOrder(int $i): ?string { return $this->dataTableSet[$i]['order']; }
+    public function isUppercase(int $i): bool { return $this->dataTableSet[$i]['uppercase']; }
+    public function isTH(int $i): bool { return $this->dataTableSet[$i]['th']; }
+    public function gravity(int $i): string { return $this->dataTableSet[$i]['gravity']; }
 
-    public function getData($indexRow, $indexColumn)
+    public function getData(int $indexRow, int $indexColumn): mixed
     {
         if ($this->dataTableSet[$indexColumn]['key'] != null) {
             if ($this->callbacks[$indexColumn] != null) {
@@ -295,7 +312,7 @@ class MrCatzDataTables
         }
     }
 
-    public function setSearchWord($words)
+    public function setSearchWord(string $words): string
     {
         $start = "{-------------##*##*------------}";
         $end = "{-------------##!##!------------}";
@@ -322,41 +339,41 @@ class MrCatzDataTables
 
     // Bulk & Expand
 
-    public function enableBulk(?callable $callback = null)
+    public function enableBulk(?callable $callback = null): self
     {
-        $this->bulkCallback = $callback ?? fn($data, $i) => true;
+        $this->bulkCallback = $callback ? \Closure::fromCallable($callback) : fn($data, $i) => true;
         return $this;
     }
 
-    public function isBulkEnabled($indexRow)
+    public function isBulkEnabled(int $indexRow): bool
     {
         if ($this->bulkCallback === null) return true;
         return ($this->bulkCallback)($this->data[$indexRow], $indexRow);
     }
 
-    public function enableExpand(callable $callback)
+    public function enableExpand(callable $callback): self
     {
-        $this->expandCallback = $callback;
+        $this->expandCallback = \Closure::fromCallable($callback);
         return $this;
     }
 
-    public function hasExpand() { return $this->expandCallback !== null; }
+    public function hasExpand(): bool { return $this->expandCallback !== null; }
 
-    public function getExpandContent($indexRow)
+    public function getExpandContent(int $indexRow): string
     {
         if (!$this->expandCallback) return '';
         return ($this->expandCallback)($this->data[$indexRow], $indexRow);
     }
 
-    public function getRowRawData($indexRow) { return $this->data[$indexRow]; }
-    public function getDatas() { return $this->data; }
+    public function getRowRawData(int $indexRow): mixed { return $this->data[$indexRow]; }
+    public function getDatas(): mixed { return $this->data; }
 
-    public function links($view = null)
+    public function links(?string $view = null): mixed
     {
         return $this->data->links($view);
     }
 
-    public static function getActionView($data, $i, $editable = true, $deletable = true)
+    public static function getActionView(mixed $data, int $i, bool $editable = true, bool $deletable = true): View
     {
         return view('mrcatz::components.ui.datatable-action', [
             'data' => json_encode($data),
@@ -366,7 +383,7 @@ class MrCatzDataTables
         ]);
     }
 
-    public static function getExpandView($data, array $fields)
+    public static function getExpandView(mixed $data, array $fields): string
     {
         $mapped = [];
         foreach ($fields as $label => $key) {

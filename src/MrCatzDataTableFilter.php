@@ -4,20 +4,28 @@ namespace MrCatz\DataTable;
 
 class MrCatzDataTableFilter
 {
-    private $id;
-    private $data;
-    private $value;
-    private $option;
-    private $key;
-    private $label;
-    private $condition;
-    private $callback;
-    private $dataFilter;
-    private $show;
+    private string $id;
+    private array|string $data;
+    private string $value;
+    private string $option;
+    private string $key;
+    private string $label;
+    private string $condition;
+    private ?\Closure $callback = null;
+    private ?array $dataFilter = null;
+    private bool $show;
 
-    public static function create($id, $label, $data, $value, $option, $key, $show = true, $condition = '=')
-    {
-        $dataFilter = new MrCatzDataTableFilter();
+    public static function create(
+        string $id,
+        string $label,
+        array|string $data,
+        string $value,
+        string $option,
+        string $key,
+        bool $show = true,
+        string $condition = '='
+    ): self {
+        $dataFilter = new self();
         $dataFilter->id = $id;
         $dataFilter->data = $data;
         $dataFilter->value = $value;
@@ -30,9 +38,16 @@ class MrCatzDataTableFilter
         return $dataFilter;
     }
 
-    public static function createWithCallback($id, $label, $data, $value, $option, callable $callback, $show = true)
-    {
-        $dataFilter = new MrCatzDataTableFilter();
+    public static function createWithCallback(
+        string $id,
+        string $label,
+        array|string $data,
+        string $value,
+        string $option,
+        callable $callback,
+        bool $show = true
+    ): self {
+        $dataFilter = new self();
         $dataFilter->id = $id;
         $dataFilter->data = $data;
         $dataFilter->value = $value;
@@ -40,12 +55,12 @@ class MrCatzDataTableFilter
         $dataFilter->key = '-';
         $dataFilter->label = $label;
         $dataFilter->condition = '-';
-        $dataFilter->callback = $callback;
+        $dataFilter->callback = \Closure::fromCallable($callback);
         $dataFilter->show = $show;
         return $dataFilter;
     }
 
-    public function get()
+    public function get(): self
     {
         if (is_array($this->data)) {
             $data = $this->data;
@@ -65,6 +80,6 @@ class MrCatzDataTableFilter
         return $this;
     }
 
-    public function getDataFilter() { return $this->dataFilter; }
-    public function getCallback() { return $this->callback; }
+    public function getDataFilter(): ?array { return $this->dataFilter; }
+    public function getCallback(): ?callable { return $this->callback; }
 }

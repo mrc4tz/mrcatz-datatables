@@ -18,6 +18,11 @@
             "src/helpers.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "MrCatz\\DataTable\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
@@ -30,9 +35,15 @@
         "laravel/framework": "^11.0|^12.0|^13.0",
         "livewire/livewire": "^3.0|^4.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
     "suggest": {
         "maatwebsite/excel": "Required for Excel export (^3.1)",
         "barryvdh/laravel-dompdf": "Required for PDF export (^2.0|^3.0)"
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
