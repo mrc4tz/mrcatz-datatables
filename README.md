@@ -621,6 +621,7 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `dropData()` | Called on delete confirmation |
 | `dropBulkData($selectedRows)` | Called on bulk delete confirmation |
 | `onInlineUpdate($rowData, $columnKey, $newValue)` | Called when inline cell edit is saved |
+| `onRowClick($data)` | Called when a row is clicked |
 | `dispatch_to_view($condition, $type)` | Dispatch success/failure notification (`$type`: `'insert'`, `'update'`, `'delete'`) |
 | `show_notif($type, $text)` | Show notification (`$type`: `'success'`, `'error'`, `'warning'`, `'info'`) |
 
@@ -637,7 +638,6 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `setPageName()` | Return page name for multiple paginators |
 | `onDataLoaded($builder, $data)` | Hook after data is loaded |
 | `onFilterChanged($id, $value)` | Hook after filter changes (for dependent filters) |
-| `onRowClick($data)` | Hook when a row is clicked |
 | `beforeExport($headers, $rows, $format, $scope)` | Hook before export — return `['headers' => ..., 'rows' => ...]` |
 | `afterExport($format, $scope)` | Hook after export completes |
 | `setFilterShow($id, $show)` | Show/hide a filter dynamically |
@@ -869,9 +869,10 @@ The table container gets a max height of 70vh with the header pinned at the top.
 
 ## Row Click Hook
 
-Override `onRowClick()` to handle row click events:
+Override `onRowClick()` in your **Page component** to handle row click events:
 
 ```php
+// In ProductPage.php (Page component)
 public function onRowClick($data)
 {
     // Navigate to detail page

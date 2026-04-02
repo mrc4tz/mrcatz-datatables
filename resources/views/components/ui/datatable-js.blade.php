@@ -320,7 +320,7 @@
                         @for($i = 0; $i < $posts->countRow(); $i++)
                             <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
                                 :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 25%,transparent)' : '{{ $tableZebraStyle && $i % 2 === 1 ? 'background:color-mix(in srgb,var(--color-base-content) 3%,transparent)' : '' }}'"
-                                @click="focusedRow = {{ $i }}; $wire.onRowClick(JSON.parse($el.dataset.row))"
+                                @click="focusedRow = {{ $i }}; $wire.rowClicked(JSON.parse($el.dataset.row))"
                                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
                                 @if($showExpand)

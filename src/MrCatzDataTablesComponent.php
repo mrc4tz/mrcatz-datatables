@@ -96,7 +96,11 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function setTable() { return MrCatzDataTables::with([]); }
     public function getRowPerPageOption() { return [5, 10, 15, 20]; }
     public function showLoading() {}
-    public function onRowClick($data) {}
+
+    public function rowClicked($data): void
+    {
+        $this->dispatch(MrCatzEvent::ROW_CLICK, data: $data);
+    }
 
     public function mount(): void
     {

@@ -70,6 +70,14 @@ class MrCatzComponent extends Component
 
     public function onInlineUpdate($rowData, $columnKey, $newValue) {}
 
+    #[On(MrCatzEvent::ROW_CLICK)]
+    public function listenRowClick($data): void
+    {
+        $this->onRowClick($data);
+    }
+
+    public function onRowClick($data) {}
+
     public function dispatch_to_view(bool $condition, string $type): void
     {
         if (!$condition) {
