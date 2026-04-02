@@ -84,7 +84,11 @@
             ? array_values(array_filter($colOrder, fn($ci) => !in_array($ci, $hiddenColumns ?? [])))
             : $colOrder;
         $totalCols = $posts->countColumn();
-        $showExpand = $expandableRows && $posts->hasExpand();
+        $expandMode = $expandableRows === true ? 'both' : ($expandableRows ?: false);
+        $hasExpand = $expandMode && $posts->hasExpand();
+        $showExpandMobile = $hasExpand && in_array($expandMode, ['both', 'mobile']);
+        $showExpandDesktop = $hasExpand && in_array($expandMode, ['both', 'desktop']);
+        $showExpand = $showExpandDesktop; // for desktop table colspan
         $totalColspan = $totalCols + ($bulkShow ? 1 : 0) + ($showExpand ? 1 : 0);
     @endphp
 

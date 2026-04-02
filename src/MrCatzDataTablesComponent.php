@@ -68,7 +68,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public $enableColumnVisibility = true;
     public $enableColumnReorder = true;
-    public $expandableRows = false;
+    public $expandableRows = false; // false, true/'both', 'mobile', 'desktop'
     public $enableColumnSorting = true;
     public $showKeyboardNavNote = false;
     public $tableZebraStyle = true;

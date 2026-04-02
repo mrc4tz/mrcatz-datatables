@@ -113,7 +113,7 @@
                 @endif
 
                 {{-- Expand: open modal on mobile --}}
-                @if($showExpand)
+                @if($showExpandMobile)
                     <div class="px-4 pb-3">
                         <button @click.stop="$dispatch('open-mobile-expand', { index: {{ $i }} })"
                                 class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-base-200/30 hover:bg-base-200/60 text-base-content/40 hover:text-base-content/60 transition-colors text-xs">
@@ -127,7 +127,7 @@
     </div>
 
     {{-- Mobile expand modal --}}
-    @if($showExpand)
+    @if($showExpandMobile)
         <dialog id="modal-mobile-expand" class="modal modal-bottom md:hidden" aria-modal="true" aria-labelledby="modal-expand-title"
                 x-data="{ expandIndex: -1 }"
                 x-on:open-mobile-expand.window="expandIndex = $event.detail.index; $el.showModal()">
@@ -167,7 +167,7 @@
                @endif>
             <thead>
             <tr class="bg-base-200/50 border-b border-base-content/10 @if($stickyHeader) sticky top-0 z-10 bg-base-200 @endif">
-                @if($showExpand)
+                @if($showExpandDesktop)
                     <th class="w-8"></th>
                 @endif
                 @if($bulkShow)
@@ -243,7 +243,7 @@
                     @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse($el.dataset.row)); @endif"
                     data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
-                    @if($showExpand)
+                    @if($showExpandDesktop)
                         <td class="w-8 text-center" @click.stop="toggleExpand({{ $i }})">
                             <span class="transition-transform duration-200"
                                   :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
@@ -305,7 +305,7 @@
                         @endif
                     @endforeach
                 </tr>
-                @if($showExpand)
+                @if($showExpandDesktop)
                     <tr x-show="expandedRows.includes({{ $i }})" class="bg-base-200/20">
                         <td colspan="{{ $totalColspan }}" class="p-0">
                             <div class="px-6 py-4 text-sm" x-show="expandedRows.includes({{ $i }})"
