@@ -1,82 +1,157 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
 @if($posts->hasData())
     {{-- Mobile card view --}}
-    <div class="md:hidden divide-y divide-base-content/5">
+    <div class="md:hidden space-y-3 p-3">
         @for($i = 0; $i < $posts->countRow(); $i++)
-            <div class="p-4 space-y-2 transition-colors duration-150"
-                 :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 15%,transparent)' : ''"
+            <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm overflow-hidden transition-all duration-150"
+                 :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
                  @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}')); @endif"
                  data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
-                @if($bulkShow)
-                    <div class="flex items-center justify-end">
-                        @if($posts->isBulkEnabled($i))
-                            <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                {{-- Card header: first data column as title --}}
+                @php
+                    $firstDataCol = null;
+                    $restCols = [];
+                    $actionCols = [];
+                    foreach ($visibleColOrder as $ci) {
+                        if ($posts->getIndex($ci) != null) continue;
+                        if ($posts->getKey($ci) == null && !$posts->isEditable($ci)) {
+                            $actionCols[] = $ci;
+                        } elseif ($firstDataCol === null) {
+                            $firstDataCol = $ci;
+                        } else {
+                            $restCols[] = $ci;
+                        }
+                    }
+                @endphp
+
+                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        @if($firstDataCol !== null)
+                            @if($posts->isEditable($firstDataCol))
+                                <div x-data="{
+                                         editing: false,
+                                         val: '{{ e(strip_tags($posts->getData($i, $firstDataCol))) }}',
+                                         error: '',
+                                         submit() {
+                                             this.editing = false;
+                                             this.error = '';
+                                             $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($firstDataCol) }}', this.val);
+                                         }
+                                     }"
+                                     x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($firstDataCol) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }">
+                                    <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold">{{ $posts->getHead($firstDataCol) }}</span>
+                                    <p x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus())"
+                                       class="text-sm font-semibold text-base-content truncate cursor-text @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
+                                    <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
+                                        <input x-ref="mc_{{ $i }}_{{ $firstDataCol }}" x-model="val"
+                                               @keydown.enter.prevent="submit()"
+                                               @keydown.escape.prevent="editing = false; error = ''"
+                                               @blur="if (!error) { editing = false }"
+                                               class="input input-sm input-bordered w-full text-sm font-semibold"
+                                               :class="error ? 'input-error' : ''"/>
+                                        <span x-show="error" x-text="error" class="text-error text-xs mt-0.5"></span>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold">{{ $posts->getHead($firstDataCol) }}</span>
+                                <p class="text-sm font-semibold text-base-content truncate @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
+                            @endif
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        @if($bulkShow && $posts->isBulkEnabled($i))
+                            <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" @click.stop
                                    aria-label="{{ mrcatz_lang('btn_select') }} row {{ $i + 1 }}"
                                    value="{{ $posts->getRowRawData($i)->{$bulkPrimaryKey} }}"
                                    wire:model.live="selectedRows"/>
                         @endif
+                        @foreach($actionCols as $aci)
+                            <span @click.stop>{!! $posts->getData($i, $aci) !!}</span>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Card body: remaining fields as pills --}}
+                @if(count($restCols) > 0)
+                    <div class="px-4 pb-3 grid grid-cols-2 gap-1.5">
+                        @foreach($restCols as $ci)
+                            @if($posts->isEditable($ci))
+                                <div class="px-3 py-2 rounded-lg bg-base-200/40"
+                                     x-data="{
+                                         editing: false,
+                                         val: '{{ e(strip_tags($posts->getData($i, $ci))) }}',
+                                         error: '',
+                                         submit() {
+                                             this.editing = false;
+                                             this.error = '';
+                                             $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($ci) }}', this.val);
+                                         }
+                                     }"
+                                     x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
+                                    <span class="text-[11px] text-base-content/40 block mb-0.5">{{ $posts->getHead($ci) }}</span>
+                                    <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
+                                          class="text-sm text-base-content/80 cursor-text @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
+                                    <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
+                                        <input x-ref="mc_{{ $i }}_{{ $ci }}" x-model="val"
+                                               @keydown.enter.prevent="submit()"
+                                               @keydown.escape.prevent="editing = false; error = ''"
+                                               @blur="if (!error) { editing = false }"
+                                               class="input input-xs input-bordered w-full text-sm"
+                                               :class="error ? 'input-error' : ''"/>
+                                        <span x-show="error" x-text="error" class="text-error text-xs mt-0.5"></span>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="px-3 py-2 rounded-lg bg-base-200/40">
+                                    <span class="text-[11px] text-base-content/40 block mb-0.5">{{ $posts->getHead($ci) }}</span>
+                                    <span class="text-sm text-base-content/80 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                 @endif
 
-                @foreach($visibleColOrder as $ci)
-                    @if($posts->getIndex($ci) != null)
-                        @continue
-                    @endif
-                    @if($posts->isEditable($ci))
-                        <div class="flex flex-col gap-0.5"
-                             x-data="{
-                                 editing: false,
-                                 val: '{{ e(strip_tags($posts->getData($i, $ci))) }}',
-                                 error: '',
-                                 submit() {
-                                     this.editing = false;
-                                     this.error = '';
-                                     $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($ci) }}', this.val);
-                                 }
-                             }"
-                             x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
-                            <span class="text-xs font-semibold text-base-content/40 uppercase tracking-wide">{{ $posts->getHead($ci) }}</span>
-                            <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
-                                  class="text-sm cursor-text border-b border-dashed border-base-content/20 py-1 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
-                            <div x-show="editing" class="flex flex-col" @click.stop>
-                                <input x-ref="mc_{{ $i }}_{{ $ci }}" x-model="val"
-                                       @keydown.enter.prevent="submit()"
-                                       @keydown.escape.prevent="editing = false; error = ''"
-                                       @blur="if (!error) { editing = false }"
-                                       class="input input-sm input-bordered w-full text-sm"
-                                       :class="error ? 'input-error' : ''"/>
-                                <span x-show="error" x-text="error" class="text-error text-xs mt-0.5"></span>
-                            </div>
-                        </div>
-                    @elseif($posts->getKey($ci) != null)
-                        <div class="flex flex-col gap-0.5">
-                            <span class="text-xs font-semibold text-base-content/40 uppercase tracking-wide">{{ $posts->getHead($ci) }}</span>
-                            <span class="text-sm @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
-                        </div>
-                    @else
-                        {{-- Custom column (actions etc.) --}}
-                        <div class="flex items-center justify-end gap-2 pt-1">
-                            {!! $posts->getData($i, $ci) !!}
-                        </div>
-                    @endif
-                @endforeach
-
+                {{-- Expand: open modal on mobile --}}
                 @if($showExpand)
-                    <div @click.stop="toggleExpand({{ $i }})" class="flex items-center gap-1 cursor-pointer text-base-content/40 pt-1">
-                        <span class="transition-transform duration-200" :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm') !!}</span>
-                        <span class="text-xs">{{ mrcatz_lang('btn_details') }}</span>
-                    </div>
-                    <div x-show="expandedRows.includes({{ $i }})" class="text-sm pt-2"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 -translate-y-2"
-                         x-transition:enter-end="opacity-100 translate-y-0">
-                        {!! $posts->getExpandContent($i) !!}
+                    <div class="px-4 pb-3">
+                        <button @click.stop="$dispatch('open-mobile-expand', { index: {{ $i }} })"
+                                class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-base-200/30 hover:bg-base-200/60 text-base-content/40 hover:text-base-content/60 transition-colors text-xs">
+                            {!! mrcatz_icon('info', 'text-sm') !!}
+                            {{ mrcatz_lang('btn_details') }}
+                        </button>
                     </div>
                 @endif
             </div>
         @endfor
     </div>
+
+    {{-- Mobile expand modal --}}
+    @if($showExpand)
+        <dialog id="modal-mobile-expand" class="modal modal-bottom md:hidden" aria-modal="true" aria-labelledby="modal-expand-title"
+                x-data="{ expandIndex: -1 }"
+                x-on:open-mobile-expand.window="expandIndex = $event.detail.index; $el.showModal()">
+            <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
+                <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
+                    <h3 id="modal-expand-title" class="text-sm font-bold text-base-content flex items-center gap-2">
+                        {!! mrcatz_icon('info', 'text-primary') !!}
+                        {{ mrcatz_lang('btn_details') }}
+                    </h3>
+                    <form method="dialog">
+                        <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200">{!! mrcatz_icon('close') !!}</button>
+                    </form>
+                </div>
+                <div class="px-5 py-4 max-h-[60vh] overflow-y-auto">
+                    @for($i = 0; $i < $posts->countRow(); $i++)
+                        <div x-show="expandIndex === {{ $i }}" x-cloak>
+                            {!! $posts->getExpandContent($i) !!}
+                        </div>
+                    @endfor
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop"><button>close</button></form>
+        </dialog>
+    @endif
 
     {{-- Desktop table view --}}
     <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif">
@@ -275,15 +350,21 @@
 {{-- Loading skeleton --}}
 <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
     {{-- Mobile skeleton --}}
-    <div class="md:hidden divide-y divide-base-content/5">
+    <div class="md:hidden space-y-3 p-3">
         @for($sk = 0; $sk < min($p ?? 5, 3); $sk++)
-            <div class="p-4 space-y-3">
-                @for($sc = 0; $sc < min($totalCols, 4); $sc++)
-                    <div class="space-y-1">
-                        <div class="skeleton h-3 w-16 rounded"></div>
-                        <div class="skeleton h-4 w-full rounded"></div>
-                    </div>
-                @endfor
+            <div class="rounded-xl border border-base-content/8 bg-base-100 p-4 space-y-2">
+                <div class="space-y-1">
+                    <div class="skeleton h-2.5 w-12 rounded"></div>
+                    <div class="skeleton h-4 w-3/4 rounded"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                    @for($sc = 0; $sc < min($totalCols - 1, 4); $sc++)
+                        <div class="px-3 py-2 rounded-lg bg-base-200/40 space-y-1">
+                            <div class="skeleton h-2.5 w-10 rounded"></div>
+                            <div class="skeleton h-3.5 w-full rounded"></div>
+                        </div>
+                    @endfor
+                </div>
             </div>
         @endfor
     </div>
