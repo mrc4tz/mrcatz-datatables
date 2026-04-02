@@ -25,7 +25,7 @@
     },
     deleteFocused(el) { let d = this.getRowData(el); if (d) $wire.deleteData(d); },
 
-    colWidths: @json($columnWidths ?? (object)[]),
+    colWidths: {},
     startResize(e, th, colIdx) {
         const startX = e.pageX;
         const startWidth = th.offsetWidth;
@@ -74,7 +74,7 @@
         if (this._storageAvailable) { localStorage.setItem(this.presetKey, JSON.stringify(this.presets)); }
     },
 
-}" x-init="initPresets()">
+}" x-init="initPresets(); colWidths = Object.assign({}, $wire.columnWidths || {})">
     @php
         $activeFilterCount = collect($activeFilters ?? [])->filter(fn($f) => !empty($f['value']))->count();
         $bulkEnabled = $bulkPrimaryKey !== null;
