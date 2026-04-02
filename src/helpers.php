@@ -108,7 +108,8 @@ if (!function_exists('mrcatz_icon')) {
                 ];
             }
             $mapped = $heroMap[$name] ?? $name;
-            return '<x-heroicon-o-' . $mapped . ' class="inline-block w-5 h-5' . ($class ? ' ' . $class : '') . '" />';
+            $svgClass = 'inline-block w-5 h-5' . ($class ? ' ' . $class : '');
+            return svg('heroicon-o-' . $mapped, $svgClass)->toHtml();
         }
 
         // Font Awesome
