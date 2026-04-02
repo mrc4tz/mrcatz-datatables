@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use MrCatz\DataTable\Exceptions\MrCatzException;
 
 class MrCatzDataTables
 {
@@ -298,19 +299,37 @@ class MrCatzDataTables
     public function getDataTableSet(): array { return $this->dataTableSet; }
     public function countColumn(): int { return count($this->dataTableSet); }
     public function countRow(): int { return count($this->data); }
-    public function getHead(int $i): string { return $this->dataTableSet[$i]['head']; }
-    public function getKey(int $i): ?string { return $this->dataTableSet[$i]['key']; }
-    public function getIndex(int $i): ?string { return $this->dataTableSet[$i]['index']; }
-    public function getSort(int $i): bool { return $this->dataTableSet[$i]['sort']; }
-    public function getOrder(int $i): ?string { return $this->dataTableSet[$i]['order']; }
-    public function isUppercase(int $i): bool { return $this->dataTableSet[$i]['uppercase']; }
-    public function isTH(int $i): bool { return $this->dataTableSet[$i]['th']; }
-    public function gravity(int $i): string { return $this->dataTableSet[$i]['gravity']; }
-    public function isEditable(int $i): bool { return $this->dataTableSet[$i]['editable'] ?? false; }
-    public function isVisible(int $i): bool { return $this->dataTableSet[$i]['visible'] ?? true; }
+
+    private function validateColumnIndex(int $i): void
+    {
+        if (!isset($this->dataTableSet[$i])) {
+            throw MrCatzException::columnNotFound($i, count($this->dataTableSet));
+        }
+    }
+
+    private function validateRowIndex(int $i): void
+    {
+        if (!isset($this->data[$i])) {
+            throw MrCatzException::rowNotFound($i, count($this->data));
+        }
+    }
+
+    public function getHead(int $i): string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['head']; }
+    public function getKey(int $i): ?string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['key']; }
+    public function getIndex(int $i): ?string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['index']; }
+    public function getSort(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['sort']; }
+    public function getOrder(int $i): ?string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['order']; }
+    public function isUppercase(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['uppercase']; }
+    public function isTH(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['th']; }
+    public function gravity(int $i): string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['gravity']; }
+    public function isEditable(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['editable'] ?? false; }
+    public function isVisible(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['visible'] ?? true; }
 
     public function getData(int $indexRow, int $indexColumn): mixed
     {
+        $this->validateColumnIndex($indexColumn);
+        $this->validateRowIndex($indexRow);
+
         if ($this->dataTableSet[$indexColumn]['key'] != null) {
             if ($this->callbacks[$indexColumn] != null) {
                 return $this->callbacks[$indexColumn]($this->data[$indexRow], $indexRow);
@@ -378,11 +397,12 @@ class MrCatzDataTables
 
     public function getExpandContent(int $indexRow): string
     {
+        $this->validateRowIndex($indexRow);
         if (!$this->expandCallback) return '';
         return ($this->expandCallback)($this->data[$indexRow], $indexRow);
     }
 
-    public function getRowRawData(int $indexRow): mixed { return $this->data[$indexRow]; }
+    public function getRowRawData(int $indexRow): mixed { $this->validateRowIndex($indexRow); return $this->data[$indexRow]; }
     public function getDatas(): mixed { return $this->data; }
 
     public function links(?string $view = null): mixed

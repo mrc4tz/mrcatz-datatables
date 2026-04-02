@@ -142,6 +142,8 @@ class MrCatzDataTableFilterTest extends TestCase
             key: 'key'
         );
 
-        $this->assertNull($filter->getDataFilter());
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('not initialized');
+        $filter->getDataFilter();
     }
 }

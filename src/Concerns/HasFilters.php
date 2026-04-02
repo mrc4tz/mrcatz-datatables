@@ -2,6 +2,7 @@
 
 namespace MrCatz\DataTable\Concerns;
 
+use MrCatz\DataTable\Exceptions\MrCatzException;
 use MrCatz\DataTable\MrCatzEvent;
 
 trait HasFilters
@@ -72,15 +73,21 @@ trait HasFilters
                 return;
             }
         }
+        throw MrCatzException::filterNotFound($id);
     }
 
     public function resetFilter(string $id): void
     {
+        $found = false;
         foreach ($this->activeFilters as $i => $af) {
             if ($af['id'] === $id) {
                 $this->activeFilters[$i]['value'] = null;
+                $found = true;
                 break;
             }
+        }
+        if (!$found) {
+            // Filter may not be active yet — not an error, just no-op
         }
         $this->syncFilterUrl();
         $this->findData();
@@ -94,6 +101,7 @@ trait HasFilters
                 return;
             }
         }
+        throw MrCatzException::filterNotFound($id);
     }
 
     public function change(string $id, mixed $value): void
@@ -161,7 +169,7 @@ trait HasFilters
         foreach ($this->dataFilters as $filter) {
             if ($filter['id'] == $id) return $filter;
         }
-        return [];
+        throw MrCatzException::filterNotFound($id);
     }
 
     private function findFilterCallbackById(string $id): ?callable

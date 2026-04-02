@@ -80,6 +80,14 @@ class MrCatzDataTableFilter
         return $this;
     }
 
-    public function getDataFilter(): ?array { return $this->dataFilter; }
+    public function getDataFilter(): ?array
+    {
+        if ($this->dataFilter === null) {
+            throw new \MrCatz\DataTable\Exceptions\MrCatzException(
+                "Filter [{$this->id}] not initialized. Did you forget to call ->get()?"
+            );
+        }
+        return $this->dataFilter;
+    }
     public function getCallback(): ?callable { return $this->callback; }
 }
