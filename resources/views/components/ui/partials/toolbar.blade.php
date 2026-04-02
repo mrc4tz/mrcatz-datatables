@@ -1,9 +1,98 @@
 {{-- Toolbar --}}
-<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-    <div class="flex items-center gap-2 w-full md:w-auto">
+
+{{-- ========== MOBILE TOOLBAR (md:hidden) ========== --}}
+<div class="flex flex-col gap-2 mb-4 md:hidden">
+    {{-- Row 1: Search full-width --}}
+    @if($showSearch)
+        <form wire:submit="searchData">
+            <label class="input input-bordered input-sm flex items-center gap-2 w-full transition-all duration-200 focus-within:input-primary focus-within:shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 text-base-content/40">
+                    <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd"/>
+                </svg>
+                <input type="text" class="grow text-sm" placeholder="{{ mrcatz_lang('search_placeholder') }}" wire:model="search"
+                       @if($typeSearchWithDelay)
+                           x-data @input.debounce.{{$typeSearchDelay}}="$dispatch('search-typing', { value: $event.target.value })"
+                       @elseif($typeSearch)
+                           x-data @input="$dispatch('search-typing', { value: $event.target.value })"
+                       @endif/>
+            </label>
+        </form>
+    @endif
+
+    {{-- Row 2: Actions + filter count --}}
+    <div class="flex items-center gap-1.5 flex-wrap">
+        @if(count($filters) > 0)
+            <label class="btn btn-sm btn-square btn-primary swap swap-rotate">
+                <input type="checkbox" x-on:change="open = ! open"/>
+                {!! mrcatz_icon('tune', 'swap-off text-lg') !!}
+                {!! mrcatz_icon('close', 'swap-on text-lg') !!}
+            </label>
+        @endif
+
+        @if(count($filters) > 0 || $showSearch)
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+                    @click="document.getElementById('modal-mobile-preset')?.showModal()">
+                {!! mrcatz_icon('bookmarks', 'text-lg') !!}
+            </button>
+        @endif
+
+        @if($enableColumnVisibility)
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+                    @click="document.getElementById('modal-mobile-columns')?.showModal()">
+                {!! mrcatz_icon('view_column', 'text-lg') !!}
+            </button>
+        @endif
+
+        @if(count($filters) > 0 || $showSearch)
+            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15"
+                    x-on:click="
+                        if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
+                            document.getElementById('modal-reset-confirm')?.showModal()
+                        } else {
+                            $wire.resetData()
+                        }
+                    ">
+                {!! mrcatz_icon('restart_alt', 'text-lg') !!}
+            </button>
+        @endif
+
+        {{-- Spacer --}}
+        <div class="flex-1"></div>
+
+        @if($showExportButton)
+            <button class="btn btn-sm btn-ghost border border-base-content/15 btn-square" wire:click="openExportModal">
+                {!! mrcatz_icon('download', 'text-lg') !!}
+            </button>
+        @endif
+        @if($bulkEnabled && $showBulkButton)
+            <button class="btn btn-sm btn-square {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}" wire:click="toggleBulk">
+                {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-lg') !!}
+            </button>
+        @endif
+        @if($showAddButton)
+            <button class="btn btn-sm btn-primary btn-square shadow-sm" wire:click="addData()">
+                {!! mrcatz_icon('add', 'text-lg') !!}
+            </button>
+        @endif
+    </div>
+
+    {{-- Row 3: Active filter count (only if filters active) --}}
+    @if(count($filters) > 0 && $activeFilterCount > 0)
+        <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-base-200/40 w-fit">
+            {!! mrcatz_icon('filter_alt', 'text-sm text-base-content/40') !!}
+            <p class="text-xs text-base-content/60">
+                <span class="font-semibold text-base-content">{{ $activeFilterCount }}</span> {{ mrcatz_lang('filter_active') }}
+            </p>
+        </div>
+    @endif
+</div>
+
+{{-- ========== DESKTOP TOOLBAR (hidden md:flex) ========== --}}
+<div class="hidden md:flex md:items-center md:justify-between gap-3 mb-4">
+    <div class="flex items-center gap-2">
         @if($showSearch)
-            <form class="flex-1 md:flex-none" wire:submit="searchData">
-                <label class="input input-bordered input-sm md:input-md flex items-center gap-2 w-full md:w-72 transition-all duration-200 focus-within:input-primary focus-within:shadow-sm">
+            <form wire:submit="searchData">
+                <label class="input input-bordered input-md flex items-center gap-2 w-72 transition-all duration-200 focus-within:input-primary focus-within:shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 text-base-content/40">
                         <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd"/>
                     </svg>
@@ -18,15 +107,15 @@
         @endif
 
         @if(count($filters) > 0)
-            <label class="btn btn-sm md:btn-md btn-square btn-primary swap swap-rotate tooltip tooltip-bottom" data-tip="Filter">
+            <label class="btn btn-md btn-square btn-primary swap swap-rotate tooltip tooltip-bottom" data-tip="Filter">
                 <input type="checkbox" x-on:change="open = ! open"/>
                 {!! mrcatz_icon('tune', 'swap-off text-lg') !!}
                 {!! mrcatz_icon('close', 'swap-on text-lg') !!}
             </label>
             @if($activeFilterCount > 0)
-                <div class="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-base-200/40">
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-base-200/40">
                     {!! mrcatz_icon('filter_alt', 'text-sm text-base-content/40') !!}
-                    <p class="text-xs sm:text-sm text-base-content/60">
+                    <p class="text-sm text-base-content/60">
                         <span class="font-semibold text-base-content">{{ $activeFilterCount }}</span> {{ mrcatz_lang('filter_active') }}
                     </p>
                 </div>
@@ -34,9 +123,8 @@
         @endif
 
         @if(count($filters) > 0 || $showSearch)
-            {{-- Desktop: dropdown --}}
-            <div class="relative hidden sm:block">
-                <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('filter_preset') }}"
+            <div class="relative">
+                <button class="btn btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('filter_preset') }}"
                         @click="presetOpen = !presetOpen">
                     {!! mrcatz_icon('bookmarks', 'text-lg') !!}
                 </button>
@@ -49,38 +137,33 @@
                     @include('mrcatz::components.ui.partials.preset-content')
                 </div>
             </div>
-            {{-- Mobile: bottom-sheet --}}
-            <button class="btn btn-sm btn-ghost btn-square border border-base-content/15 sm:hidden"
-                    @click="document.getElementById('modal-mobile-preset')?.showModal()">
-                {!! mrcatz_icon('bookmarks', 'text-lg') !!}
-            </button>
         @endif
     </div>
 
-    <div class="flex items-center gap-2 justify-end">
+    <div class="flex items-center gap-2">
         @if($showAddButton)
-            <button class="btn btn-sm md:btn-md btn-primary gap-2 shadow-sm tooltip tooltip-bottom before:sm:!hidden after:sm:!hidden" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
+            <button class="btn btn-md btn-primary gap-2 shadow-sm tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-lg') !!}
-                <span class="hidden sm:inline">{{ mrcatz_lang('btn_add') }}</span>
+                <span>{{ mrcatz_lang('btn_add') }}</span>
             </button>
         @endif
         @if($bulkEnabled && $showBulkButton)
-            <button class="btn btn-sm md:btn-md gap-1 tooltip tooltip-bottom before:sm:!hidden after:sm:!hidden {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
+            <button class="btn btn-md gap-1 tooltip tooltip-bottom {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
                     data-tip="{{ mrcatz_lang('btn_select') }}" wire:click="toggleBulk">
                 {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-lg') !!}
-                <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_select') }}</span>
+                <span class="text-sm">{{ mrcatz_lang('btn_select') }}</span>
             </button>
         @endif
         @if($showExportButton)
-            <button class="btn btn-sm md:btn-md btn-ghost border border-base-content/15 gap-1 tooltip tooltip-bottom before:sm:!hidden after:sm:!hidden"
+            <button class="btn btn-md btn-ghost border border-base-content/15 gap-1 tooltip tooltip-bottom"
                     data-tip="{{ mrcatz_lang('btn_export') }}" wire:click="openExportModal">
                 {!! mrcatz_icon('download', 'text-lg') !!}
-                <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_export') }}</span>
+                <span class="text-sm">{{ mrcatz_lang('btn_export') }}</span>
             </button>
         @endif
         @if($enableColumnVisibility)
             <div class="relative">
-                <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('col_visibility') }}"
+                <button class="btn btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('col_visibility') }}"
                         @click="colVisOpen = !colVisOpen">
                     {!! mrcatz_icon('view_column', 'text-lg') !!}
                 </button>
@@ -103,7 +186,7 @@
             </div>
         @endif
         @if(count($filters) > 0 || $showSearch)
-            <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
+            <button class="btn btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
                     x-on:click="
                         if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
                             document.getElementById('modal-reset-confirm')?.showModal()
