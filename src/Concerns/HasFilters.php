@@ -33,11 +33,24 @@ trait HasFilters
                 }
             }
 
-            // Trigger onFilterChanged for each active filter from URL
-            // so dependent filters (show/hide, data loading) are initialized
+            // Trigger onFilterChanged so dependent filters are initialized
+            // (e.g. show/hide, load dropdown data)
             foreach ($this->filterUrlParams as $id => $value) {
                 if (!empty($value)) {
                     $this->onFilterChanged($id, $value);
+                }
+            }
+
+            // Restore URL param values that may have been cleared by
+            // resetFilter() calls inside onFilterChanged()
+            foreach ($this->filterUrlParams as $id => $value) {
+                if (!empty($value)) {
+                    foreach ($this->activeFilters as $i => $af) {
+                        if ($af['id'] === $id) {
+                            $this->activeFilters[$i]['value'] = $value;
+                            break;
+                        }
+                    }
                 }
             }
         }
