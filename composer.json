@@ -36,7 +36,8 @@
         "livewire/livewire": "^3.0|^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0|^11.0"
+        "phpunit/phpunit": "^10.0|^11.0",
+        "orchestra/testbench": "^11.0"
     },
     "suggest": {
         "maatwebsite/excel": "Required for Excel export (^3.1)",

@@ -87,10 +87,11 @@ trait HasExport
             }, $filename . '.pdf');
         }
 
-        return Excel::download(
-            new \App\Exports\DatatableExport($title, $headers, $rows),
-            $filename . '.xlsx'
-        );
+        $exportClass = class_exists(\App\Exports\DatatableExport::class)
+            ? new \App\Exports\DatatableExport($title, $headers, $rows)
+            : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
+
+        return Excel::download($exportClass, $filename . '.xlsx');
     }
 
     protected function buildExportData(string $scope): array

@@ -682,6 +682,104 @@ Or add a new language by adding a new key alongside `'en'` and `'id'`.
 
 ---
 
+## Troubleshooting / FAQ
+
+### Search tidak bekerja pada query JOIN
+
+Jika menggunakan `JOIN` di `baseQuery()`, pastikan kolom di `withColumn()` menggunakan prefix tabel:
+
+```php
+->withColumn('Name', 'products.name')  // ✅ dengan prefix tabel
+->withColumn('Name', 'name')           // ❌ ambiguous column
+```
+
+Dan tambahkan `configTable()` untuk relevance search:
+
+```php
+public function configTable() {
+    return ['table_name' => 'products', 'table_id' => 'id'];
+}
+```
+
+### Filter tidak muncul / tidak terlihat
+
+1. Pastikan method `setFilter()` return array yang sudah memanggil `->get()`:
+```php
+public function setFilter() {
+    return [
+        MrCatzDataTableFilter::create('status', 'Status', $data, 'id', 'name', 'status')->get(),
+        //                                                                                ^^^^
+    ];
+}
+```
+
+2. Untuk dependent filter yang hidden, pastikan `$show` parameter diset `false`:
+```php
+MrCatzDataTableFilter::create('sub', 'Sub', [], 'id', 'name', 'sub_id', false)->get()
+//                                                                        ^^^^^
+```
+
+### Export error: Class not found
+
+**Excel export** membutuhkan `maatwebsite/excel`:
+```bash
+composer require maatwebsite/excel
+```
+
+**PDF export** membutuhkan `barryvdh/laravel-dompdf` dan view template:
+```bash
+composer require barryvdh/laravel-dompdf
+```
+Buat view `resources/views/exports/datatable-pdf.blade.php` untuk template PDF.
+
+Sejak v1.1.0, package sudah menyediakan `MrCatzExport` class bawaan. Jika sebelumnya menggunakan `App\Exports\DatatableExport`, class tersebut tetap akan digunakan (fallback otomatis).
+
+### Pagination menampilkan data yang sama di halaman berbeda
+
+Pastikan `baseQuery()` memiliki ordering yang konsisten. Tambahkan `setDefaultOrder()` di `setTable()`:
+
+```php
+public function setTable() {
+    return $this->CreateMrCatzTable()
+        ->withColumn('Name', 'name')
+        ->setDefaultOrder('id', 'desc');  // order yang konsisten
+}
+```
+
+### Keyboard navigation tidak berfungsi
+
+Pastikan `$enableKeyboardNav = true` di Table component (default sudah `true`). Keyboard navigation hanya aktif saat tabel dalam fokus — klik pada tabel terlebih dahulu.
+
+### Data tidak refresh setelah save/delete
+
+Pastikan memanggil `dispatch_to_view()` di akhir `saveData()` / `dropData()`:
+
+```php
+public function saveData() {
+    $result = DB::table('products')->insert([...]);
+    $this->dispatch_to_view($result, 'insert');
+}
+```
+
+### Override method menyebabkan "Declaration must be compatible" error
+
+Jangan tambahkan return type atau parameter type yang lebih strict dari parent class:
+
+```php
+public function saveData() { ... }          // ✅ tanpa return type
+public function saveData(): void { ... }    // ❌ akan error
+```
+
+### Cara publish dan override lokalisasi
+
+```bash
+php artisan vendor:publish --tag=mrcatz-lang
+```
+
+File akan di-copy ke `lang/vendor/mrcatz/`. Edit file tersebut untuk override atau tambah bahasa baru.
+
+---
+
 ## Requirements
 
 - PHP >= 8.1

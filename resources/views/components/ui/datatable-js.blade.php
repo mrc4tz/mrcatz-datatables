@@ -42,17 +42,25 @@
     presets: [],
     presetName: '',
     presetKey: 'mrcatz_presets_' + window.location.pathname,
-    initPresets() { this.presets = JSON.parse(localStorage.getItem(this.presetKey) || '[]'); },
+    _storageAvailable: false,
+    _checkStorage() {
+        try { const k = '__mrcatz_test__'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+        catch(e) { return false; }
+    },
+    initPresets() {
+        this._storageAvailable = this._checkStorage();
+        if (this._storageAvailable) { this.presets = JSON.parse(localStorage.getItem(this.presetKey) || '[]'); }
+    },
     savePreset() {
         if (!this.presetName.trim()) return;
         this.presets.push({ name: this.presetName.trim(), url: window.location.search });
-        localStorage.setItem(this.presetKey, JSON.stringify(this.presets));
+        if (this._storageAvailable) { localStorage.setItem(this.presetKey, JSON.stringify(this.presets)); }
         this.presetName = '';
     },
     loadPreset(p) { window.location.search = p.url; },
     deletePreset(i) {
         this.presets.splice(i, 1);
-        localStorage.setItem(this.presetKey, JSON.stringify(this.presets));
+        if (this._storageAvailable) { localStorage.setItem(this.presetKey, JSON.stringify(this.presets)); }
     }
 }" x-init="initPresets()">
     @php

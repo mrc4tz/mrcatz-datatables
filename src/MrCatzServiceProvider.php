@@ -8,11 +8,13 @@ use MrCatz\DataTable\Console\MrcatzRemoveCommand;
 
 class MrCatzServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/mrcatz.php', 'mrcatz');
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'mrcatz');
+
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'mrcatz');
 
         $this->publishes([
             __DIR__ . '/../config/mrcatz.php' => config_path('mrcatz.php'),
@@ -21,6 +23,10 @@ class MrCatzServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/mrcatz'),
         ], 'mrcatz-views');
+
+        $this->publishes([
+            __DIR__ . '/../lang' => $this->app->langPath('vendor/mrcatz'),
+        ], 'mrcatz-lang');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
