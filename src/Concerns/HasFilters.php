@@ -35,7 +35,8 @@ trait HasFilters
         }
     }
 
-    public function setFilter(): array { return []; }
+    // Override-able — no strict types for backward compatibility
+    public function setFilter() { return []; }
 
     public function setFilterShow(string $id, bool $show): void
     {
@@ -99,7 +100,7 @@ trait HasFilters
         $this->onFilterChanged($id, $filterValue);
     }
 
-    public function onFilterChanged(string $id, mixed $value): void {}
+    public function onFilterChanged($id, $value) {}
 
     private function findFilterConfigById(string $id): ?array
     {

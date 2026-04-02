@@ -74,8 +74,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         );
     }
 
-    public function onDataLoaded(mixed $dataBuilder, mixed $data): void {}
-    public function setPageName(): string { return 'page'; }
+    // Override-able methods — no strict types to preserve backward compatibility
+    public function onDataLoaded($dataBuilder, $data) {}
+    public function setPageName() { return 'page'; }
+    public function baseQuery() { return DB::table('users'); }
+    public function setView() { return 'mrcatz::components.ui.datatable-js'; }
+    public function configTable() { return null; }
+    public function ddTable() { return false; }
+    public function setTable() { return MrCatzDataTables::with([]); }
+    public function getRowPerPageOption() { return [5, 10, 15, 20]; }
+    public function showLoading() {}
 
     public function mount(): void
     {
@@ -103,8 +111,6 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         return $words;
     }
 
-    public function baseQuery(): mixed { return DB::table('users'); }
-    public function setView(): string { return 'mrcatz::components.ui.datatable-js'; }
     public function getMrCatzDataTables(): ?MrCatzDataTables { return $this->mrCatzDataTables; }
 
     private function getData(): MrCatzDataTables
@@ -114,8 +120,6 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
         return $this->mrCatzDataTables;
     }
-
-    public function configTable(): ?array { return null; }
 
     private function setData(?callable $onFinish = null): MrCatzDataTables
     {
@@ -136,12 +140,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $dt->setCurrentPage($this->getPage($this->setPageName()));
     }
 
-    public function ddTable(): bool { return false; }
-    public function setTable(): MrCatzDataTables { return MrCatzDataTables::with([]); }
-
     public function addData(): void { $this->dispatch(MrCatzEvent::ADD_DATA); }
-    public function editData(array $data): void { $this->dispatch(MrCatzEvent::EDIT_DATA, $data); }
-    public function deleteData(array $data): void { $this->dispatch(MrCatzEvent::DELETE_DATA, $data); }
+    public function editData($data): void { $this->dispatch(MrCatzEvent::EDIT_DATA, $data); }
+    public function deleteData($data): void { $this->dispatch(MrCatzEvent::DELETE_DATA, $data); }
 
     #[On(MrCatzEvent::SEARCH_TYPING)]
     public function searchData(): void
@@ -164,16 +165,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->mrCatzDataTables = $this->setData();
     }
 
-    public function orderData(string $key, string $order): void
+    public function orderData($key, $order): void
     {
         $this->key = $key;
         $this->value = ($order == 'desc') ? 'asc' : 'desc';
         $this->findData();
     }
 
-    public function goToP(int $page, string $pageName = 'page'): void { $this->gotoPage($page, $pageName); }
+    public function goToP($page, $pageName = 'page'): void { $this->gotoPage($page, $pageName); }
 
-    public function paginate(int $perPage): void
+    public function paginate($perPage): void
     {
         $this->setPage(1);
         $this->p = $perPage;
@@ -190,8 +191,6 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->mrCatzDataTables->build();
     }
 
-    public function getRowPerPageOption(): array { return [5, 10, 15, 20]; }
-
     #[On(MrCatzEvent::REFRESH_TABLE)]
     public function refreshData(): void
     {
@@ -201,8 +200,6 @@ class MrCatzDataTablesComponent extends MrCatzComponent
             $this->load_start = false;
         });
     }
-
-    public function showLoading(): void {}
 
     public function reorderColumn(int $from, int $to, int $totalColumns): void
     {

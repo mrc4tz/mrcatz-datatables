@@ -20,8 +20,9 @@ class MrCatzComponent extends Component
         $this->title = $title;
     }
 
-    public function saveData(): void {}
-    public function dropData(): void {}
+    // Override-able methods — no return type to preserve backward compatibility
+    public function saveData() {}
+    public function dropData() {}
 
     #[On(MrCatzEvent::PREPARE_ADD)]
     public function listenAddData(): void
@@ -31,34 +32,34 @@ class MrCatzComponent extends Component
         $this->prepareAddData();
     }
 
-    public function prepareAddData(): void {}
+    public function prepareAddData() {}
 
-    public function selectChangeValue(mixed $value, mixed $id): void {}
+    public function selectChangeValue($value, $id) {}
 
     #[On(MrCatzEvent::PREPARE_EDIT)]
-    public function listenEditData(array $data): void
+    public function listenEditData($data): void
     {
         $this->isEdit = true;
         $this->prepareEditData($data);
     }
 
-    public function prepareEditData(array $data): void {}
+    public function prepareEditData($data) {}
 
     #[On(MrCatzEvent::PREPARE_DELETE)]
-    public function listenDeleteData(array $data): void
+    public function listenDeleteData($data): void
     {
         $this->prepareDeleteData($data);
     }
 
-    public function prepareDeleteData(array $data): void {}
+    public function prepareDeleteData($data) {}
 
     #[On(MrCatzEvent::BULK_DELETE)]
-    public function listenBulkDeleteData(array $selectedRows): void
+    public function listenBulkDeleteData($selectedRows): void
     {
         $this->dropBulkData($selectedRows);
     }
 
-    public function dropBulkData(array $selectedRows): void {}
+    public function dropBulkData($selectedRows) {}
 
     public function dispatch_to_view(bool $condition, string $type): void
     {
