@@ -160,7 +160,8 @@
 
 {{-- Mobile columns bottom-sheet --}}
 @if($enableColumnVisibility)
-    <dialog id="modal-mobile-columns" class="modal modal-bottom sm:hidden" wire:ignore.self aria-modal="true" aria-labelledby="modal-columns-title">
+    <dialog id="modal-mobile-columns" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-columns-title"
+            x-data="{ hidden: @js($hiddenColumns), toggle(ci) { const idx = this.hidden.indexOf(ci); if (idx >= 0) this.hidden.splice(idx, 1); else this.hidden.push(ci); $wire.toggleColumn(ci); } }">
         <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
             <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
                 <h3 id="modal-columns-title" class="text-sm font-bold text-base-content flex items-center gap-2">
@@ -173,11 +174,10 @@
             </div>
             <div class="px-5 py-4 space-y-1 max-h-[60vh] overflow-y-auto">
                 @foreach(range(0, $totalCols - 1) as $ci)
-                    <label class="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-base-200/50 cursor-pointer active:bg-base-200/70"
-                           @click.stop>
+                    <label class="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-base-200/50 cursor-pointer active:bg-base-200/70">
                         <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
-                               @checked(!in_array($ci, $hiddenColumns))
-                               wire:click.prevent="toggleColumn({{ $ci }})"/>
+                               :checked="!hidden.includes({{ $ci }})"
+                               @click="toggle({{ $ci }})"/>
                         <span class="text-sm text-base-content/70">{{ $posts->getHead($ci) }}</span>
                     </label>
                 @endforeach

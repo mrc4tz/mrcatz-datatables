@@ -22,7 +22,7 @@
     {{-- Row 2: Actions + filter count --}}
     <div class="flex items-center gap-1.5 flex-wrap">
         @if(count($filters) > 0)
-            <label class="btn btn-sm btn-square btn-primary swap swap-rotate">
+            <label class="btn btn-sm btn-square btn-primary swap swap-rotate tooltip tooltip-bottom" data-tip="Filter">
                 <input type="checkbox" x-on:change="open = ! open"/>
                 {!! mrcatz_icon('tune', 'swap-off text-lg') !!}
                 {!! mrcatz_icon('close', 'swap-on text-lg') !!}
