@@ -33,6 +33,7 @@ class MrCatzDataTables
     private int $currentPage = 1;
     private ?\Closure $bulkCallback = null;
     private ?\Closure $expandCallback = null;
+    private ?\Closure $editableCallback = null;
 
     public static function with(
         EloquentBuilder|QueryBuilder|array $data,
@@ -400,6 +401,20 @@ class MrCatzDataTables
     {
         if ($this->bulkCallback === null) return true;
         return ($this->bulkCallback)($this->data[$indexRow], $indexRow);
+    }
+
+    public function enableEditable(?callable $callback = null): self
+    {
+        $this->editableCallback = $callback ? \Closure::fromCallable($callback) : fn($data, $i) => true;
+        return $this;
+    }
+
+    public function hasEditableCallback(): bool { return $this->editableCallback !== null; }
+
+    public function isEditableRow(int $indexRow, ?string $columnKey = null): bool
+    {
+        if ($this->editableCallback === null) return true;
+        return ($this->editableCallback)($this->data[$indexRow], $indexRow, $columnKey);
     }
 
     public function enableExpand(callable $callback): self

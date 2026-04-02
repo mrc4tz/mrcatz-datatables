@@ -28,7 +28,7 @@
                 <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
                     <div class="flex-1 min-w-0 overflow-hidden">
                         @if($firstDataCol !== null)
-                            @if($posts->isEditable($firstDataCol))
+                            @if($posts->isEditable($firstDataCol) && $posts->isEditableRow($i, $posts->getKey($firstDataCol)))
                                 <div x-data="{
                                          editing: false,
                                          val: '{{ e(strip_tags($posts->getData($i, $firstDataCol))) }}',
@@ -76,7 +76,7 @@
                 @if(count($restCols) > 0)
                     <div class="px-4 pb-3 grid grid-cols-2 gap-1.5">
                         @foreach($restCols as $ci)
-                            @if($posts->isEditable($ci))
+                            @if($posts->isEditable($ci) && $posts->isEditableRow($i, $posts->getKey($ci)))
                                 <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden"
                                      x-data="{
                                          editing: false,
@@ -264,7 +264,7 @@
                     @endif
 
                     @foreach($visibleColOrderDesktop as $ci)
-                        @if($posts->isEditable($ci))
+                        @if($posts->isEditable($ci) && $posts->isEditableRow($i, $posts->getKey($ci)))
                             <td class="text-sm @if($posts->isUppercase($ci)) uppercase @endif
                                 @if($posts->gravity($ci)=='center') text-center
                                 @elseif($posts->gravity($ci)=='right') text-right

@@ -485,6 +485,41 @@ Double-click to edit (tap on mobile), **Enter** to save, **Escape** to cancel.
 
 Validation uses standard Laravel rules. If validation fails, the input shows a red border with the error message — no data is saved until the value is valid.
 
+#### Per-Row Editable Control (`enableEditable`)
+
+Use `enableEditable()` to control which rows and columns are editable via a callback:
+
+```php
+->withColumn('Name', 'name', editable: true)
+->withColumn('Email', 'email', editable: true)
+->withColumn('Price', 'price', editable: true, rules: 'required|numeric|min:0')
+->enableEditable(function ($data, $i, $column_key) {
+    // Prevent editing name column for super-admin rows
+    if ($column_key == 'name' && $data->role === 'super-admin') {
+        return false;
+    }
+    return true;
+})
+```
+
+The callback receives three parameters:
+
+| Parameter | Description |
+|---|---|
+| `$data` | Row data object |
+| `$i` | Row index |
+| `$column_key` | The column key being checked (e.g. `'name'`, `'email'`, `'price'`) |
+
+Return `true` to allow editing, `false` to disable editing for that specific row + column combination.
+
+Without a callback, all editable columns are editable on all rows:
+
+```php
+->enableEditable()  // all editable columns enabled on all rows
+```
+
+Without calling `enableEditable()` at all, the behavior is unchanged — column-level `editable: true` applies to all rows (backward compatible).
+
 ### Column Visibility
 
 Enabled by default. Set default visibility per column:
@@ -696,7 +731,7 @@ composer require blade-ui-kit/blade-heroicons
 'icon_set' => 'custom',
 ```
 
-Icons not defined in `custom_icons` fallback to Material Icons.
+Icons not defined in `custom_icons` fallback to Default (inline SVG).
 
 ---
 
@@ -784,6 +819,7 @@ Icons not defined in `custom_icons` fallback to Material Icons.
 | `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`, `$rules`, `$showOn`) |
 | `withCustomColumn($head, $callback, ...)` | Custom column (`$key`, `$sort`, `$visible`, `$showOn`) |
 | `enableBulk($callback)` | Bulk select with per-row callback |
+| `enableEditable($callback)` | Per-row/column editable control (`$data`, `$i`, `$column_key`) → `bool` |
 | `enableExpand($callback)` | Expandable row content |
 | `setDefaultOrder($key, $dir)` | Default sort |
 | `addOrderBy($key, $dir)` | Additional sort |
