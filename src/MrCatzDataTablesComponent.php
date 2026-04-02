@@ -280,11 +280,6 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         });
     }
 
-    public function setColumnWidth($columnIndex, $width): void
-    {
-        $this->columnWidths[$columnIndex] = $width;
-    }
-
     public function toggleColumn($columnIndex): void
     {
         $idx = array_search($columnIndex, $this->hiddenColumns);

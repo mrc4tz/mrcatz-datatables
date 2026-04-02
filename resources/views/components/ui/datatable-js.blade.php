@@ -25,9 +25,11 @@
     },
     deleteFocused(el) { let d = this.getRowData(el); if (d) $wire.deleteData(d); },
 
+    colWidths: @json($columnWidths ?? (object)[]),
     startResize(e, th, colIdx) {
         const startX = e.pageX;
         const startWidth = th.offsetWidth;
+        const self = this;
         const move = (e) => {
             const w = Math.max(50, startWidth + e.pageX - startX);
             th.style.width = w + 'px';
@@ -36,10 +38,14 @@
         const up = () => {
             document.removeEventListener('mousemove', move);
             document.removeEventListener('mouseup', up);
-            $wire.setColumnWidth(colIdx, th.offsetWidth);
+            self.colWidths[colIdx] = th.offsetWidth;
+            $wire.columnWidths = Object.assign({}, self.colWidths);
         };
         document.addEventListener('mousemove', move);
         document.addEventListener('mouseup', up);
+    },
+    getColWidth(ci) {
+        return this.colWidths[ci] ? this.colWidths[ci] + 'px' : null;
     },
 
     colVisOpen: false,
@@ -269,7 +275,7 @@
                                     @if($posts->gravity($ci)=='center') text-center
                                     @elseif($posts->gravity($ci)=='right') text-right
                                     @else text-left @endif"
-                                    @if(!empty($columnWidths[$ci])) style="width:{{ $columnWidths[$ci] }}px;min-width:{{ $columnWidths[$ci] }}px;" @endif
+                                    :style="getColWidth({{ $ci }}) ? 'width:' + getColWidth({{ $ci }}) + ';min-width:' + getColWidth({{ $ci }}) : ''"
                                     @if($posts->getOrder($ci) === 'asc') aria-sort="ascending"
                                     @elseif($posts->getOrder($ci) === 'desc') aria-sort="descending"
                                     @elseif($posts->getSort($ci) && $posts->getKey($ci)) aria-sort="none"
