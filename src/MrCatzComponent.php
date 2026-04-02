@@ -62,6 +62,14 @@ class MrCatzComponent extends Component
 
     public function dropBulkData($selectedRows) {}
 
+    #[On(MrCatzEvent::INLINE_UPDATE)]
+    public function listenInlineUpdate($rowData, $columnKey, $newValue): void
+    {
+        $this->onInlineUpdate($rowData, $columnKey, $newValue);
+    }
+
+    public function onInlineUpdate($rowData, $columnKey, $newValue) {}
+
     public function dispatch_to_view(bool $condition, string $type): void
     {
         if (!$condition) {

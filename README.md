@@ -635,6 +635,8 @@ $this->dispatch_to_view($success, 'insert'); // auto: "User successfully added!"
 | `onFilterChanged($id, $value)` | Hook after filter changes |
 | `beforeExport($headers, $rows, $format, $scope)` | Hook before export — return `['headers' => ..., 'rows' => ...]` |
 | `afterExport($format, $scope)` | Hook after export completes |
+| `onRowClick($data)` | Hook when a row is clicked |
+| `onInlineUpdate($rowData, $columnKey, $newValue)` | Hook for inline cell edit (Page component) |
 | `setFilterShow($id, $show)` | Show/hide filter by ID |
 | `setFilterData($id, $data)` | Update filter option data by ID |
 | `resetFilter($id)` | Reset filter value to "All" |
@@ -767,6 +769,84 @@ MrCatz DataTable includes built-in accessibility support:
 - **`aria-live="polite"`** on toast notification container
 - **`role="alert"`** on individual toast notifications
 - **`role="grid"`** and **`aria-label`** on the data table
+
+---
+
+## Loading Skeleton
+
+When data is loading (search, filter, pagination, sort), skeleton placeholder rows are shown instead of a spinner. This reduces layout shift and provides a more responsive feel.
+
+---
+
+## Column Visibility
+
+Enable column visibility toggle in your Table component:
+
+```php
+public $enableColumnVisibility = true;
+```
+
+A "Columns" button appears in the toolbar with checkboxes for each column. Hidden columns are persisted in the URL (`col_hidden` parameter) — shareable and bookmarkable.
+
+---
+
+## Inline Editing
+
+Mark columns as editable in `setTable()`:
+
+```php
+->withColumn('Name', 'name', editable: true)
+->withColumn('Price', 'price', editable: true)
+```
+
+Users can **double-click** a cell to edit. Press **Enter** to save, **Escape** to cancel. The `inlineUpdateData` event is dispatched to the Page component.
+
+Handle the update in your Page component:
+
+```php
+public function onInlineUpdate($rowData, $columnKey, $newValue)
+{
+    DB::table('products')
+        ->where('id', $rowData['id'])
+        ->update([$columnKey => $newValue]);
+
+    $this->dispatch_to_view(true, 'update');
+}
+```
+
+---
+
+## Multi-Sort
+
+Click a column header to sort by that column (single sort). **Shift+click** to add additional sort columns. Each sorted column shows a numbered badge indicating sort priority.
+
+Multi-sort state is persisted in the URL (`sort_multi` parameter).
+
+---
+
+## Sticky Header
+
+Enable sticky header to keep column headers visible when scrolling long tables:
+
+```php
+public $stickyHeader = true;
+```
+
+The table container gets a max height of 70vh with the header pinned at the top.
+
+---
+
+## Row Click Hook
+
+Override `onRowClick()` to handle row click events:
+
+```php
+public function onRowClick($data)
+{
+    // Navigate to detail page
+    return redirect()->route('product.show', $data['id']);
+}
+```
 
 ---
 

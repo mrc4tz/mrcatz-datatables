@@ -79,6 +79,9 @@ return [
     'tooltip_edit' => 'Edit',
     'tooltip_delete' => 'Hapus',
 
+    // Column visibility
+    'col_visibility' => 'Kolom',
+
     // Loading
     'loading' => 'Memuat data...',
     'processing' => 'Memproses...',

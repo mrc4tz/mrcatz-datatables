@@ -79,6 +79,9 @@ return [
     'tooltip_edit' => 'Edit',
     'tooltip_delete' => 'Delete',
 
+    // Column visibility
+    'col_visibility' => 'Columns',
+
     // Loading
     'loading' => 'Loading data...',
     'processing' => 'Processing...',

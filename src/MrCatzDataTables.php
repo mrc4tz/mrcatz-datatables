@@ -84,6 +84,19 @@ class MrCatzDataTables
         return $this;
     }
 
+    public function setMultiSort(array $multiSort): self
+    {
+        for ($i = 0; $i < count($this->dataTableSet); $i++) {
+            $this->dataTableSet[$i]['order'] = null;
+            foreach ($multiSort as $s) {
+                if ($this->dataTableSet[$i]['key'] == $s['key']) {
+                    $this->dataTableSet[$i]['order'] = $s['dir'];
+                }
+            }
+        }
+        return $this;
+    }
+
     public function setSearch(string $search): self { $this->search = $search; return $this; }
 
     public function setFilters(array $keyValue, array $callbackFilters): self
@@ -256,9 +269,10 @@ class MrCatzDataTables
         bool $uppercase = false,
         bool $th = false,
         bool $sort = true,
-        string $gravity = 'left'
+        string $gravity = 'left',
+        bool $editable = false
     ): self {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity, 'editable' => $editable];
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
@@ -266,7 +280,7 @@ class MrCatzDataTables
 
     public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true): self
     {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left'];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left', 'editable' => false];
         $this->callbacks[$this->index] = $callback;
         $this->index++;
         return $this;
@@ -274,7 +288,7 @@ class MrCatzDataTables
 
     public function withColumnIndex(string $head): self
     {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => null, 'index' => 'index', 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => false, 'gravity' => 'left'];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => null, 'index' => 'index', 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => false, 'gravity' => 'left', 'editable' => false];
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
@@ -291,6 +305,7 @@ class MrCatzDataTables
     public function isUppercase(int $i): bool { return $this->dataTableSet[$i]['uppercase']; }
     public function isTH(int $i): bool { return $this->dataTableSet[$i]['th']; }
     public function gravity(int $i): string { return $this->dataTableSet[$i]['gravity']; }
+    public function isEditable(int $i): bool { return $this->dataTableSet[$i]['editable'] ?? false; }
 
     public function getData(int $indexRow, int $indexColumn): mixed
     {

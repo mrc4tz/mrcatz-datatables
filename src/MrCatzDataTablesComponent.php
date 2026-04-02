@@ -35,6 +35,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     #[Url(as: 'dir', except: '')]
     public $value = '';
 
+    #[Url(as: 'sort_multi', except: [])]
+    public $multiSort = [];
+
     #[Url(as: 'filter', except: [])]
     public $filterUrlParams = [];
 
@@ -56,11 +59,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     #[Url(as: 'col_order', except: [])]
     public $columnOrder = [];
 
+    #[Url(as: 'col_hidden', except: [])]
+    public $hiddenColumns = [];
+
+    public $enableColumnVisibility = false;
     public $enableColumnReorder = true;
     public $expandableRows = false;
     public $enableColumnSorting = true;
     public $showKeyboardNavNote = false;
     public $tableZebraStyle = true;
+    public $stickyHeader = false;
 
     public function CreateMrCatzTable(): MrCatzDataTables
     {
@@ -88,6 +96,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function setTable() { return MrCatzDataTables::with([]); }
     public function getRowPerPageOption() { return [5, 10, 15, 20]; }
     public function showLoading() {}
+    public function onRowClick($data) {}
 
     public function mount(): void
     {
@@ -95,6 +104,12 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         if ($this->p === null) {
             $this->p = $this->getRowPerPageOption()[0];
         }
+
+        // Validate debounce format (must be like '500ms' or '1s')
+        if ($this->typeSearchWithDelay && !preg_match('/^\d+(ms|s)$/', $this->typeSearchDelay)) {
+            $this->typeSearchDelay = '500ms';
+        }
+
         $this->bootFilters();
     }
 
@@ -139,9 +154,20 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $dt->setSearch($this->search);
         $dt->setFilters($this->buildKeyValue(), $this->buildFilterCallbacks());
         $dt->setConfig($this->configTable());
-        $dt->setOrderByKey($this->key, $this->value);
+
+        if (!empty($this->multiSort)) {
+            $dt->setMultiSort($this->multiSort);
+        } else {
+            $dt->setOrderByKey($this->key, $this->value);
+        }
+
         $dt->setPaginate($this->p);
         $dt->setCurrentPage($this->getPage($this->setPageName()));
+    }
+
+    public function inlineUpdate($rowData, $columnKey, $newValue): void
+    {
+        $this->dispatch(MrCatzEvent::INLINE_UPDATE, rowData: $rowData, columnKey: $columnKey, newValue: $newValue);
     }
 
     public function addData(): void { $this->dispatch(MrCatzEvent::ADD_DATA); }
@@ -162,9 +188,11 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->search = '';
         $this->key = '';
         $this->value = '';
+        $this->multiSort = [];
         $this->activeFilters = [];
         $this->filterUrlParams = [];
         $this->columnOrder = [];
+        $this->hiddenColumns = [];
         $this->clearSelection();
         $this->dispatch(MrCatzEvent::RESET_SELECT, $this->getDataFilter(), $this->prefix);
         $this->mrCatzDataTables = $this->setData();
@@ -174,6 +202,31 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     {
         $this->key = $key;
         $this->value = ($order == 'desc') ? 'asc' : 'desc';
+        $this->multiSort = [];
+        $this->findData();
+    }
+
+    public function addSort($key, $order): void
+    {
+        $newDir = ($order == 'desc') ? 'asc' : 'desc';
+
+        // Update existing or add new
+        foreach ($this->multiSort as $i => $s) {
+            if ($s['key'] === $key) {
+                $this->multiSort[$i]['dir'] = $newDir;
+                $this->findData();
+                return;
+            }
+        }
+
+        // First entry: include the current primary sort
+        if (empty($this->multiSort) && !empty($this->key)) {
+            $this->multiSort[] = ['key' => $this->key, 'dir' => $this->value];
+        }
+
+        $this->multiSort[] = ['key' => $key, 'dir' => $newDir];
+        $this->key = '';
+        $this->value = '';
         $this->findData();
     }
 
@@ -204,6 +257,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->mrCatzDataTables = $this->setData(function () {
             $this->load_start = false;
         });
+    }
+
+    public function toggleColumn($columnIndex): void
+    {
+        $idx = array_search($columnIndex, $this->hiddenColumns);
+        if ($idx !== false) {
+            array_splice($this->hiddenColumns, $idx, 1);
+        } else {
+            $this->hiddenColumns[] = $columnIndex;
+        }
     }
 
     public function reorderColumn(int $from, int $to, int $totalColumns): void

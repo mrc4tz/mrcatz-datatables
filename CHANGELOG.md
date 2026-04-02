@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-02
+
+### Added
+- Loading skeleton placeholder rows during data fetch (replaces spinner)
+- Column visibility toggle — hide/show columns via dropdown, persistent in URL (`col_hidden`)
+- Inline editing — double-click editable cells, dispatches `inlineUpdateData` event to Page component
+- `withColumn()` new `editable` parameter for inline edit support
+- `onInlineUpdate($rowData, $columnKey, $newValue)` override-able hook on Page component
+- Multi-sort — Shift+click column headers to sort by multiple columns, with numbered badges
+- `addSort($key, $order)` method and `multiSort` URL-persistent state
+- `setMultiSort()` on engine for multi-column ordering
+- Sticky header — `$stickyHeader = true` to keep thead visible on scroll
+- Row click hook — `onRowClick($data)` override-able method on Table component
+- Search debounce validation — auto-corrects invalid `typeSearchDelay` format on mount
+- `$enableColumnVisibility` property to show/hide column toggle button
+- `$stickyHeader` property
+- `MrCatzEvent::INLINE_UPDATE` constant
+- Lang key `col_visibility` (EN: "Columns", ID: "Kolom")
+
+## [1.2.5] - 2026-04-02
+
+### Fixed
+- Reset button now also clears column order
+
+## [1.2.4] - 2026-04-02
+
+### Fixed
+- Preserve dependent filter URL params on boot — snapshot before onFilterChanged mutates
+
+## [1.2.3] - 2026-04-02
+
+### Fixed
+- Restore dependent filter values after onFilterChanged on boot
+
+## [1.2.2] - 2026-04-02
+
+### Fixed
+- Trigger onFilterChanged on mount when filters loaded from URL
+
+## [1.2.1] - 2026-04-02
+
+### Changed
+- Column reorder persisted via URL (`col_order`) instead of localStorage
+
 ## [1.2.0] - 2026-04-02
 
 ### Added
@@ -101,7 +145,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-language support (English, Indonesian)
 - DaisyUI 5 / Tailwind CSS styling
 
-[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.5...v1.3.0
+[1.2.5]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.4...v1.2.5
+[1.2.4]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.3...v1.2.4
+[1.2.3]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/mrc4tz/mrcatz-datatables/compare/v1.1.1...v1.1.2

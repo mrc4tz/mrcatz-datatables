@@ -38,6 +38,7 @@
         document.addEventListener('mouseup', up);
     },
 
+    colVisOpen: false,
     presetOpen: false,
     presets: [],
     presetName: '',
@@ -69,6 +70,7 @@
         $bulkEnabled = $bulkPrimaryKey !== null;
         $bulkShow = $bulkEnabled && (!$showBulkButton || $bulkActive);
         $colOrder = !empty($columnOrder) ? $columnOrder : range(0, $posts->countColumn() - 1);
+        $visibleColOrder = array_values(array_filter($colOrder, fn($ci) => !in_array($ci, $hiddenColumns ?? [])));
         $totalCols = $posts->countColumn();
         $showExpand = $expandableRows && $posts->hasExpand();
         $totalColspan = $totalCols + ($bulkShow ? 1 : 0) + ($showExpand ? 1 : 0);
@@ -166,6 +168,30 @@
                     <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_export') }}</span>
                 </button>
             @endif
+            @if($enableColumnVisibility)
+                <div class="relative">
+                    <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('col_visibility') }}"
+                            @click="colVisOpen = !colVisOpen">
+                        <span class="material-icons text-lg">view_column</span>
+                    </button>
+                    <div x-show="colVisOpen" @click.outside="colVisOpen = false"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 top-full mt-2 w-56 bg-base-100 border border-base-content/10 rounded-xl shadow-xl z-50 p-3 space-y-1">
+                        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-2">{{ mrcatz_lang('col_visibility') }}</p>
+                        @foreach(range(0, $totalCols - 1) as $ci)
+                            <label class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-base-200/50 cursor-pointer">
+                                <input type="checkbox" class="checkbox checkbox-xs checkbox-primary"
+                                       @checked(!in_array($ci, $hiddenColumns))
+                                       wire:click="toggleColumn({{ $ci }})"/>
+                                <span class="text-sm text-base-content/70">{{ $posts->getHead($ci) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
             @if(count($filters) > 0 || $showSearch)
                 <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
                         x-on:click="
@@ -207,7 +233,7 @@
         <div @if($cardContainer) class="card-body p-0" @endif>
 
             @if($posts->hasData())
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif">
                     <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                            @if($enableKeyboardNav)
                            tabindex="0"
@@ -219,7 +245,7 @@
                            @keydown.backspace.prevent="deleteFocused($el)"
                            @endif>
                         <thead>
-                        <tr class="bg-base-200/50 border-b border-base-content/10">
+                        <tr class="bg-base-200/50 border-b border-base-content/10 @if($stickyHeader) sticky top-0 z-10 bg-base-200 @endif">
                             @if($showExpand)
                                 <th class="w-8"></th>
                             @endif
@@ -232,7 +258,7 @@
                                 </th>
                             @endif
 
-                            @foreach($colOrder as $pos => $ci)
+                            @foreach($visibleColOrder as $pos => $ci)
                                 <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 relative
                                     @if($posts->gravity($ci)=='center') text-center
                                     @elseif($posts->gravity($ci)=='right') text-right
@@ -251,7 +277,7 @@
                                     @endif>
                                     @if($enableColumnSorting && $posts->getKey($ci) != null && $posts->getSort($ci))
                                         <button class="flex items-center gap-1 hover:text-primary transition-colors duration-200"
-                                                wire:click="orderData({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }})">
+                                                x-data @click="$event.shiftKey ? $wire.addSort({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }}) : $wire.orderData({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }})">
                                             {{ $posts->getHead($ci) }}
                                             @if($posts->getOrder($ci) === 'asc')
                                                 <span class="material-icons text-sm text-primary/50">keyboard_arrow_up</span>
@@ -259,6 +285,13 @@
                                                 <span class="material-icons text-sm text-primary/50">keyboard_arrow_down</span>
                                             @else
                                                 <span class="material-symbols-outlined text-sm opacity-40">unfold_more</span>
+                                            @endif
+                                            @if(!empty($multiSort))
+                                                @foreach($multiSort as $si => $ms)
+                                                    @if($ms['key'] === $posts->getKey($ci))
+                                                        <span class="badge badge-xs badge-primary text-[9px] font-bold">{{ $si + 1 }}</span>
+                                                    @endif
+                                                @endforeach
                                             @endif
                                         </button>
                                     @else
@@ -285,7 +318,7 @@
                         @for($i = 0; $i < $posts->countRow(); $i++)
                             <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
                                 :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 25%,transparent)' : '{{ $tableZebraStyle && $i % 2 === 1 ? 'background:color-mix(in srgb,var(--color-base-content) 3%,transparent)' : '' }}'"
-                                @click="focusedRow = {{ $i }}"
+                                @click="focusedRow = {{ $i }}; $wire.onRowClick(JSON.parse($el.dataset.row))"
                                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
                                 @if($showExpand)
@@ -306,8 +339,23 @@
                                     </td>
                                 @endif
 
-                                @foreach($colOrder as $ci)
-                                    @if($posts->isTH($ci))
+                                @foreach($visibleColOrder as $ci)
+                                    @if($posts->isEditable($ci))
+                                        <td class="text-sm @if($posts->isUppercase($ci)) uppercase @endif
+                                            @if($posts->gravity($ci)=='center') text-center
+                                            @elseif($posts->gravity($ci)=='right') text-right
+                                            @else text-left @endif"
+                                            x-data="{ editing: false, val: '{{ e(strip_tags($posts->getData($i, $ci))) }}' }"
+                                            @dblclick.stop="editing = true; $nextTick(() => $refs['ie_{{ $i }}_{{ $ci }}']?.focus())">
+                                            <span x-show="!editing" class="cursor-text border-b border-dashed border-base-content/20">{!! $posts->getData($i, $ci) !!}</span>
+                                            <input x-show="editing" x-ref="ie_{{ $i }}_{{ $ci }}"
+                                                   x-model="val" @click.stop
+                                                   @keydown.enter.prevent="editing = false; $wire.inlineUpdate(JSON.parse($el.closest('tr').dataset.row), '{{ $posts->getKey($ci) }}', val)"
+                                                   @keydown.escape.prevent="editing = false"
+                                                   @blur="editing = false"
+                                                   class="input input-xs input-bordered w-full max-w-[200px] text-sm"/>
+                                        </td>
+                                    @elseif($posts->isTH($ci))
                                         <th class="text-sm @if($posts->isUppercase($ci)) uppercase @endif
                                             @if($posts->gravity($ci)=='center') text-center
                                             @elseif($posts->gravity($ci)=='right') text-right
@@ -358,8 +406,20 @@
                 </div>
             @endif
 
-            <div class="flex items-center justify-center py-20" wire:target="datatables" wire:loading>
-                <span class="loading loading-spinner loading-lg text-primary"></span>
+            <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <tbody>
+                            @for($sk = 0; $sk < min($p ?? 5, 5); $sk++)
+                                <tr class="border-b border-base-content/5">
+                                    @for($sc = 0; $sc < $totalCols; $sc++)
+                                        <td><div class="skeleton h-4 w-full rounded"></div></td>
+                                    @endfor
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             @if($usePagination)

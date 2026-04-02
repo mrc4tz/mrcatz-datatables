@@ -24,4 +24,5 @@ final class MrCatzEvent
     public const PREPARE_DELETE = 'prepareDeleteData';
     public const BULK_DELETE = 'bulkDeleteData';
     public const REFRESH_TABLE = 'refreshDataTable';
+    public const INLINE_UPDATE = 'inlineUpdateData';
 }
