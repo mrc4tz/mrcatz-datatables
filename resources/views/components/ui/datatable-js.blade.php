@@ -63,28 +63,7 @@
         if (this._storageAvailable) { localStorage.setItem(this.presetKey, JSON.stringify(this.presets)); }
     },
 
-    colOrderKey: 'mrcatz_colorder_' + window.location.pathname,
-    initColOrder() {
-        if (!this._storageAvailable) return;
-        const saved = localStorage.getItem(this.colOrderKey);
-        if (saved) {
-            try {
-                const order = JSON.parse(saved);
-                if (Array.isArray(order) && order.length === {{ $posts->countColumn() }}) {
-                    $wire.columnOrder = order;
-                }
-            } catch(e) {}
-        }
-    },
-    saveColOrder(from, to, total) {
-        $wire.reorderColumn(from, to, total);
-        this.$nextTick(() => {
-            if (this._storageAvailable && $wire.columnOrder.length > 0) {
-                localStorage.setItem(this.colOrderKey, JSON.stringify($wire.columnOrder));
-            }
-        });
-    }
-}" x-init="initPresets(); initColOrder()">
+}" x-init="initPresets()">
     @php
         $activeFilterCount = collect($activeFilters ?? [])->filter(fn($f) => !empty($f['value']))->count();
         $bulkEnabled = $bulkPrimaryKey !== null;
@@ -266,7 +245,7 @@
                                     draggable="true"
                                     @dragstart="dragCol = {{ $pos }}"
                                     @dragover.prevent="dragOverCol = {{ $pos }}"
-                                    @drop.prevent="saveColOrder(dragCol, {{ $pos }}, {{ $totalCols }}); dragCol = -1; dragOverCol = -1"
+                                    @drop.prevent="$wire.reorderColumn(dragCol, {{ $pos }}, {{ $totalCols }}); dragCol = -1; dragOverCol = -1"
                                     @dragend="dragCol = -1; dragOverCol = -1"
                                     :style="dragOverCol === {{ $pos }} && dragCol !== {{ $pos }} && dragCol >= 0 ? 'box-shadow: inset 3px 0 0 0 var(--color-primary)' : ''"
                                     @endif>

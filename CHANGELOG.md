@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accessibility: `aria-label` on bulk checkboxes (header + per-row), `aria-live` on toast container
 - Accessibility: `role="grid"` + `aria-label` on data table
 - Export hooks: `beforeExport($headers, $rows, $format, $scope)` and `afterExport($format, $scope)`
-- Column reorder persistence via localStorage (survives page refresh)
+- Column reorder persistence via URL query parameter `col_order` (`#[Url]`)
 - New README sections: Export Hooks, Column Reorder Persistence, PDF Export, Accessibility
 
 ### Changed

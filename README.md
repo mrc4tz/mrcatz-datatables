@@ -740,7 +740,7 @@ public function afterExport($format, $scope)
 
 ## Column Reorder Persistence
 
-Column reorder is automatically saved to `localStorage`. When users drag-and-drop column headers, the new order persists across page refreshes. This works alongside the existing filter presets localStorage — both gracefully fallback when storage is unavailable (private browsing).
+Column reorder is automatically persisted in the URL via `#[Url]` (query parameter `col_order`). When users drag-and-drop column headers, the new order is reflected in the URL — shareable, bookmarkable, and survives page refresh just like search, sort, and filter state.
 
 ---
 

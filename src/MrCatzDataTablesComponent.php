@@ -52,7 +52,10 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public $enableKeyboardNav = true;
     public $enableColumnResize = true;
+
+    #[Url(as: 'col_order', except: [])]
     public $columnOrder = [];
+
     public $enableColumnReorder = true;
     public $expandableRows = false;
     public $enableColumnSorting = true;
