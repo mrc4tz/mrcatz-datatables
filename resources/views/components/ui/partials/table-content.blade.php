@@ -13,7 +13,7 @@
                     $firstDataCol = null;
                     $restCols = [];
                     $actionCols = [];
-                    foreach ($visibleColOrder as $ci) {
+                    foreach ($visibleColOrderMobile as $ci) {
                         if ($posts->getIndex($ci) != null) continue;
                         if ($posts->getKey($ci) == null && !$posts->isEditable($ci)) {
                             $actionCols[] = $ci;
@@ -179,7 +179,7 @@
                     </th>
                 @endif
 
-                @foreach($visibleColOrder as $pos => $ci)
+                @foreach($visibleColOrderDesktop as $pos => $ci)
                     <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 relative
                         @if($posts->gravity($ci)=='center') text-center
                         @elseif($posts->gravity($ci)=='right') text-right
@@ -261,7 +261,7 @@
                         </td>
                     @endif
 
-                    @foreach($visibleColOrder as $ci)
+                    @foreach($visibleColOrderDesktop as $ci)
                         @if($posts->isEditable($ci))
                             <td class="text-sm @if($posts->isUppercase($ci)) uppercase @endif
                                 @if($posts->gravity($ci)=='center') text-center

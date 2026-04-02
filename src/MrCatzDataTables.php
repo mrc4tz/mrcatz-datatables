@@ -273,17 +273,18 @@ class MrCatzDataTables
         string $gravity = 'left',
         bool $editable = false,
         bool $visible = true,
-        ?string $rules = null
+        ?string $rules = null,
+        string $showOn = 'both'
     ): self {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity, 'editable' => $editable, 'visible' => $visible, 'rules' => $rules];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => $uppercase, 'th' => $th, 'sort' => $sort, 'gravity' => $gravity, 'editable' => $editable, 'visible' => $visible, 'rules' => $rules, 'showOn' => $showOn];
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
     }
 
-    public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true, bool $visible = true): self
+    public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true, bool $visible = true, string $showOn = 'both'): self
     {
-        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left', 'editable' => false, 'visible' => $visible];
+        $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left', 'editable' => false, 'visible' => $visible, 'showOn' => $showOn];
         $this->callbacks[$this->index] = $callback;
         $this->index++;
         return $this;
@@ -326,6 +327,7 @@ class MrCatzDataTables
     public function isEditable(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['editable'] ?? false; }
     public function isVisible(int $i): bool { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['visible'] ?? true; }
     public function getRules(int $i): ?string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['rules'] ?? null; }
+    public function getShowOn(int $i): string { $this->validateColumnIndex($i); return $this->dataTableSet[$i]['showOn'] ?? 'both'; }
 
     public function getInlineValidationRules(): array
     {

@@ -83,6 +83,8 @@
         $visibleColOrder = $enableColumnVisibility
             ? array_values(array_filter($colOrder, fn($ci) => !in_array($ci, $hiddenColumns ?? [])))
             : $colOrder;
+        $visibleColOrderDesktop = array_values(array_filter($visibleColOrder, fn($ci) => in_array($posts->getShowOn($ci), ['both', 'desktop'])));
+        $visibleColOrderMobile = array_values(array_filter($visibleColOrder, fn($ci) => in_array($posts->getShowOn($ci), ['both', 'mobile'])));
         $totalCols = $posts->countColumn();
         $expandMode = $expandableRows === true ? 'both' : ($expandableRows ?: false);
         $hasExpand = $expandMode && $posts->hasExpand();
