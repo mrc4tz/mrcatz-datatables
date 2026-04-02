@@ -110,8 +110,8 @@
             @if(count($filters) > 0)
                 <label class="btn btn-sm md:btn-md btn-square btn-primary swap swap-rotate tooltip tooltip-bottom" data-tip="Filter">
                     <input type="checkbox" x-on:change="open = ! open"/>
-                    <span class="swap-off">{!! mrcatz_icon('tune', 'text-lg') !!}</span>
-                    <span class="swap-on">{!! mrcatz_icon('close', 'text-lg') !!}</span>
+                    {!! mrcatz_icon('tune', 'swap-off text-lg') !!}
+                    {!! mrcatz_icon('close', 'swap-on text-lg') !!}
                 </label>
                 @if($activeFilterCount > 0)
                     <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-base-200/40">
