@@ -25,8 +25,8 @@
                     }
                 @endphp
 
-                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
-                    <div class="flex-1 min-w-0">
+                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2 overflow-hidden">
+                    <div class="flex-1 min-w-0 overflow-hidden">
                         @if($firstDataCol !== null)
                             @if($posts->isEditable($firstDataCol))
                                 <div x-data="{
@@ -77,7 +77,7 @@
                     <div class="px-4 pb-3 grid grid-cols-2 gap-1.5">
                         @foreach($restCols as $ci)
                             @if($posts->isEditable($ci))
-                                <div class="px-3 py-2 rounded-lg bg-base-200/40"
+                                <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden"
                                      x-data="{
                                          editing: false,
                                          val: '{{ e(strip_tags($posts->getData($i, $ci))) }}',
@@ -91,7 +91,7 @@
                                      x-on:inline-validation-error.window="if ($event.detail.columnKey === '{{ $posts->getKey($ci) }}') { error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }">
                                     <span class="text-[11px] text-base-content/40 block mb-0.5">{{ $posts->getHead($ci) }}</span>
                                     <span x-show="!editing" @click.stop="editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
-                                          class="text-sm text-base-content/80 cursor-text @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
+                                          class="text-sm text-base-content/80 cursor-text block truncate @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
                                     <div x-show="editing" class="flex flex-col mt-0.5" @click.stop>
                                         <input x-ref="mc_{{ $i }}_{{ $ci }}" x-model="val"
                                                @keydown.enter.prevent="submit()"
@@ -103,9 +103,9 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="px-3 py-2 rounded-lg bg-base-200/40">
+                                <div class="px-3 py-2 rounded-lg bg-base-200/40 min-w-0 overflow-hidden">
                                     <span class="text-[11px] text-base-content/40 block mb-0.5">{{ $posts->getHead($ci) }}</span>
-                                    <span class="text-sm text-base-content/80 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
+                                    <span class="text-sm text-base-content/80 block truncate @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
                                 </div>
                             @endif
                         @endforeach
