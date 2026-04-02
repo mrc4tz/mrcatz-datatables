@@ -21,7 +21,10 @@ trait HasFilters
         }
 
         if (!empty($this->filterUrlParams)) {
-            foreach ($this->filterUrlParams as $id => $value) {
+            // Snapshot URL params before any mutation by onFilterChanged/resetFilter
+            $savedUrlParams = $this->filterUrlParams;
+
+            foreach ($savedUrlParams as $id => $value) {
                 $config = $this->findFilterConfigById($id);
                 if ($config) {
                     $this->activeFilters[] = [
@@ -35,15 +38,14 @@ trait HasFilters
 
             // Trigger onFilterChanged so dependent filters are initialized
             // (e.g. show/hide, load dropdown data)
-            foreach ($this->filterUrlParams as $id => $value) {
+            foreach ($savedUrlParams as $id => $value) {
                 if (!empty($value)) {
                     $this->onFilterChanged($id, $value);
                 }
             }
 
-            // Restore URL param values that may have been cleared by
-            // resetFilter() calls inside onFilterChanged()
-            foreach ($this->filterUrlParams as $id => $value) {
+            // Restore values that were cleared by resetFilter() inside onFilterChanged()
+            foreach ($savedUrlParams as $id => $value) {
                 if (!empty($value)) {
                     foreach ($this->activeFilters as $i => $af) {
                         if ($af['id'] === $id) {
@@ -53,6 +55,9 @@ trait HasFilters
                     }
                 }
             }
+
+            // Re-sync URL params so they match the restored activeFilters
+            $this->syncFilterUrl();
         }
     }
 
