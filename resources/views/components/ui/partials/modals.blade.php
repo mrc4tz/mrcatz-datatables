@@ -161,7 +161,7 @@
 {{-- Mobile columns bottom-sheet --}}
 @if($enableColumnVisibility)
     <dialog id="modal-mobile-columns" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-columns-title"
-            x-data="{ hidden: @js($hiddenColumns), toggle(ci) { const idx = this.hidden.indexOf(ci); if (idx >= 0) this.hidden.splice(idx, 1); else this.hidden.push(ci); $wire.toggleColumn(ci); } }">
+            x-data="{ hidden: @js($hiddenColumns), toggle(ci) { const idx = this.hidden.indexOf(ci); if (idx >= 0) this.hidden.splice(idx, 1); else this.hidden.push(ci); $wire.set('hiddenColumns', [...this.hidden], false); } }">
         <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
             <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
                 <h3 id="modal-columns-title" class="text-sm font-bold text-base-content flex items-center gap-2">
