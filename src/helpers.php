@@ -5,7 +5,7 @@ if (!function_exists('mrcatz_lang')) {
      * Get a MrCatz DataTable translated string.
      *
      * Uses Laravel lang files (lang/vendor/mrcatz/) with locale from
-     * app locale or config('mrcatz.locale') fallback.
+     * config('mrcatz.locale').
      *
      * Replacement keys accept both ':key' and 'key' formats.
      *
@@ -22,7 +22,7 @@ if (!function_exists('mrcatz_lang')) {
         }
 
         try {
-            $locale = app()->getLocale() ?? config('mrcatz.locale', 'en');
+            $locale = config('mrcatz.locale', 'en');
             $langKey = "mrcatz::mrcatz.{$key}";
             $translated = trans($langKey, $normalized, $locale);
 
