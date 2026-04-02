@@ -19,10 +19,13 @@
         return (this.focusedRow >= 0 && rows[this.focusedRow])
             ? JSON.parse(rows[this.focusedRow].dataset.row) : null;
     },
-    editFocused(el) { let d = this.getRowData(el); if (d) $wire.editData(d); },
+    editFocused(el, e) {
+        if (e && e.target.tagName === 'INPUT') return;
+        let d = this.getRowData(el); if (d) $wire.editData(d);
+    },
     deleteFocused(el) { let d = this.getRowData(el); if (d) $wire.deleteData(d); },
 
-    startResize(e, th) {
+    startResize(e, th, colIdx) {
         const startX = e.pageX;
         const startWidth = th.offsetWidth;
         const move = (e) => {
@@ -33,6 +36,7 @@
         const up = () => {
             document.removeEventListener('mousemove', move);
             document.removeEventListener('mouseup', up);
+            $wire.setColumnWidth(colIdx, th.offsetWidth);
         };
         document.addEventListener('mousemove', move);
         document.addEventListener('mouseup', up);
@@ -242,7 +246,7 @@
                            @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
                            @keydown.arrow-down.prevent="navDown(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
                            @keydown.escape.prevent="focusedRow = -1"
-                           @keydown.enter.prevent="editFocused($el)"
+                           @keydown.enter.prevent="editFocused($el, $event)"
                            @keydown.delete.prevent="deleteFocused($el)"
                            @keydown.backspace.prevent="deleteFocused($el)"
                            @endif>
@@ -265,6 +269,7 @@
                                     @if($posts->gravity($ci)=='center') text-center
                                     @elseif($posts->gravity($ci)=='right') text-right
                                     @else text-left @endif"
+                                    @if(!empty($columnWidths[$ci])) style="width:{{ $columnWidths[$ci] }}px;min-width:{{ $columnWidths[$ci] }}px;" @endif
                                     @if($posts->getOrder($ci) === 'asc') aria-sort="ascending"
                                     @elseif($posts->getOrder($ci) === 'desc') aria-sort="descending"
                                     @elseif($posts->getSort($ci) && $posts->getKey($ci)) aria-sort="none"
@@ -306,7 +311,7 @@
 
                                     @if($enableColumnResize && $posts->getKey($ci) != null)
                                         <div style="position:absolute;right:-2px;top:25%;bottom:25%;width:12px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center;"
-                                             @mousedown.prevent.stop="startResize($event, $el.parentElement)"
+                                             @mousedown.prevent.stop="startResize($event, $el.parentElement, {{ $ci }})"
                                              onmouseenter="this.firstElementChild.style.opacity='1'"
                                              onmouseleave="this.firstElementChild.style.opacity='0'">
                                             <div style="width:3px;height:100%;border-radius:9999px;background:linear-gradient(to bottom,transparent,var(--color-primary),transparent);opacity:0;transition:opacity 0.2s;"></div>
@@ -320,7 +325,7 @@
                         @for($i = 0; $i < $posts->countRow(); $i++)
                             <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
                                 :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 25%,transparent)' : '{{ $tableZebraStyle && $i % 2 === 1 ? 'background:color-mix(in srgb,var(--color-base-content) 3%,transparent)' : '' }}'"
-                                @click="focusedRow = {{ $i }}; $wire.rowClicked(JSON.parse($el.dataset.row))"
+                                @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse($el.dataset.row)); @endif"
                                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
 
                                 @if($showExpand)
@@ -387,25 +392,29 @@
                     </table>
                 </div>
             @else
-                <div class="flex flex-col items-center justify-center py-20 px-4">
-                    <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
-                        @if(!empty($search) || $activeFilterCount > 0)
-                            <span class="material-icons text-base-content/30 text-3xl">search_off</span>
+                @if($emptyStateView)
+                    @include($emptyStateView, ['search' => $search, 'activeFilterCount' => $activeFilterCount])
+                @else
+                    <div class="flex flex-col items-center justify-center py-20 px-4">
+                        <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
+                            @if(!empty($search) || $activeFilterCount > 0)
+                                <span class="material-icons text-base-content/30 text-3xl">search_off</span>
+                            @else
+                                <span class="material-icons text-base-content/30 text-3xl">inbox</span>
+                            @endif
+                        </div>
+                        @if(!empty($search))
+                            <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results_for', [':query' => $search]) }}</p>
+                            <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_hint') }}</p>
+                        @elseif($activeFilterCount > 0)
+                            <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results') }}</p>
+                            <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_filter_hint') }}</p>
                         @else
-                            <span class="material-icons text-base-content/30 text-3xl">inbox</span>
+                            <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_data') }}</p>
+                            <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_data_hint') }}</p>
                         @endif
                     </div>
-                    @if(!empty($search))
-                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results_for', [':query' => $search]) }}</p>
-                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_hint') }}</p>
-                    @elseif($activeFilterCount > 0)
-                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_results') }}</p>
-                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_results_filter_hint') }}</p>
-                    @else
-                        <p class="text-base-content/40 text-sm font-medium">{{ mrcatz_lang('no_data') }}</p>
-                        <p class="text-base-content/25 text-xs mt-1">{{ mrcatz_lang('no_data_hint') }}</p>
-                    @endif
-                </div>
+                @endif
             @endif
 
             <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">

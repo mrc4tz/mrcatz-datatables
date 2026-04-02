@@ -115,21 +115,27 @@ trait HasExport
         $headers = [];
         $exportableColumns = [];
         foreach ($dataTableSet as $i => $col) {
-            if ($col['key'] !== null || $col['index'] !== null) {
-                $headers[] = $col['head'];
-                $exportableColumns[] = $i;
-            }
+            $headers[] = $col['head'];
+            $exportableColumns[] = $i;
         }
 
-        $data = $this->buildExportQuery($scope)->orderBy('created_at', 'desc')->get();
+        // Build engine with export query data (no pagination) so callbacks work
+        $dt->setBaseDataBuilder($this->buildExportQuery($scope)->orderBy('created_at', 'desc'));
+        $dt->setSearch('');
+        $dt->setFilters([], []);
+        $dt->usePagination = false;
+        $dt->build();
 
         $rows = [];
-        foreach ($data as $rowIndex => $record) {
+        for ($rowIndex = 0; $rowIndex < $dt->countRow(); $rowIndex++) {
             $row = [];
             foreach ($exportableColumns as $colIndex) {
                 $col = $dataTableSet[$colIndex];
-                if ($col['index'] !== null) { $row[] = $rowIndex + 1; }
-                elseif ($col['key'] !== null) { $row[] = strip_tags($record->{$col['key']} ?? ''); }
+                if ($col['index'] !== null) {
+                    $row[] = $rowIndex + 1;
+                } else {
+                    $row[] = strip_tags($dt->getData($rowIndex, $colIndex) ?? '');
+                }
             }
             $rows[] = $row;
         }

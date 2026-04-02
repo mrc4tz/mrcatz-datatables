@@ -491,13 +491,31 @@ public function afterExport($format, $scope)
 
 ### Row Click Hook
 
+Enable in Table component, handle in Page component:
+
 ```php
+// Table component
+public $enableRowClick = true;
+
 // Page component
 public function onRowClick($data)
 {
     return redirect()->route('product.show', $data['id']);
 }
 ```
+
+### Empty State Customization
+
+Override `emptyStateView()` in your Table component to use a custom blade view:
+
+```php
+public function emptyStateView()
+{
+    return 'partials.custom-empty-state';  // your custom blade view
+}
+```
+
+The view receives `$search` and `$activeFilterCount` variables. Return `null` (default) to use the built-in empty state.
 
 ### Sticky Header
 
@@ -603,7 +621,6 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 | `$borderContainer` | `false` | Table with border |
 | `$withLoading` | `false` | Fullscreen loading overlay |
 | `$tableZebraStyle` | `true` | Zebra stripe rows |
-| `$stickyHeader` | `false` | Sticky header on scroll |
 | `$typeSearch` | `false` | Realtime search on typing |
 | `$typeSearchWithDelay` | `false` | Realtime search with debounce |
 | `$typeSearchDelay` | `'500ms'` | Debounce delay (e.g. `'500ms'`, `'1s'`) |
@@ -614,6 +631,8 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 | `$enableKeyboardNav` | `true` | Keyboard navigation |
 | `$showKeyboardNavNote` | `false` | Show keyboard shortcut hints |
 | `$expandableRows` | `false` | Enable expandable row detail |
+| `$stickyHeader` | `false` | Sticky header on scroll |
+| `$enableRowClick` | `false` | Enable row click dispatch to Page |
 | `$bulkPrimaryKey` | `null` | Primary key for bulk select, `null` = disabled |
 | `$showBulkButton` | `false` | Show bulk select toggle button |
 
@@ -649,6 +668,7 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 | `onFilterChanged($id, $value)` | Hook for dependent filters |
 | `beforeExport($headers, $rows, $format, $scope)` | Manipulate export data |
 | `afterExport($format, $scope)` | Post-export logic |
+| `emptyStateView()` | Custom blade view for empty state (`null` = default) |
 | `setFilterShow($id, $show)` | Show/hide filter dynamically |
 | `setFilterData($id, $data)` | Update filter options dynamically |
 | `resetFilter($id)` | Reset filter to "All" |

@@ -62,6 +62,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     #[Url(as: 'col_hidden', except: [])]
     public $hiddenColumns = [];
 
+    #[Url(as: 'col_widths', except: [])]
+    public $columnWidths = [];
+
     public $enableColumnVisibility = true;
     public $enableColumnReorder = true;
     public $expandableRows = false;
@@ -69,6 +72,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $showKeyboardNavNote = false;
     public $tableZebraStyle = true;
     public $stickyHeader = false;
+    public $enableRowClick = false;
 
     public function CreateMrCatzTable(): MrCatzDataTables
     {
@@ -96,6 +100,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function setTable() { return MrCatzDataTables::with([]); }
     public function getRowPerPageOption() { return [5, 10, 15, 20]; }
     public function showLoading() {}
+    public function emptyStateView() { return null; }
 
     public function rowClicked($data): void
     {
@@ -132,7 +137,8 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->dataFilters = $this->getDataFilter();
         return view($this->setView(), [
             'posts' => $this->getData(),
-            'filters' => $this->dataFilters
+            'filters' => $this->dataFilters,
+            'emptyStateView' => $this->emptyStateView(),
         ]);
     }
 
@@ -207,6 +213,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->filterUrlParams = [];
         $this->columnOrder = [];
         $this->hiddenColumns = [];
+        $this->columnWidths = [];
         $this->clearSelection();
         $this->dispatch(MrCatzEvent::RESET_SELECT, $this->getDataFilter(), $this->prefix);
         $this->mrCatzDataTables = $this->setData();
@@ -271,6 +278,11 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->mrCatzDataTables = $this->setData(function () {
             $this->load_start = false;
         });
+    }
+
+    public function setColumnWidth($columnIndex, $width): void
+    {
+        $this->columnWidths[$columnIndex] = $width;
     }
 
     public function toggleColumn($columnIndex): void
