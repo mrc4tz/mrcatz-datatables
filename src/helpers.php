@@ -111,6 +111,51 @@ if (!function_exists('mrcatz_icon')) {
             return '<x-heroicon-o-' . $mapped . ' class="inline-block w-5 h-5' . ($class ? ' ' . $class : '') . '" />';
         }
 
+        // Font Awesome
+        if ($iconSet === 'fontawesome') {
+            static $faMap = null;
+            if ($faMap === null) {
+                $faMap = [
+                    'add' => 'fa-solid fa-plus',
+                    'edit' => 'fa-solid fa-pen-to-square',
+                    'edit_note' => 'fa-solid fa-pen-to-square',
+                    'delete' => 'fa-solid fa-trash',
+                    'delete_forever' => 'fa-solid fa-trash-can',
+                    'delete_sweep' => 'fa-solid fa-trash-can',
+                    'close' => 'fa-solid fa-xmark',
+                    'cancel' => 'fa-solid fa-circle-xmark',
+                    'check_circle' => 'fa-solid fa-circle-check',
+                    'check_box' => 'fa-regular fa-square-check',
+                    'check_box_outline_blank' => 'fa-regular fa-square',
+                    'search' => 'fa-solid fa-magnifying-glass',
+                    'search_off' => 'fa-solid fa-magnifying-glass',
+                    'save' => 'fa-solid fa-floppy-disk',
+                    'download' => 'fa-solid fa-download',
+                    'tune' => 'fa-solid fa-sliders',
+                    'filter_alt' => 'fa-solid fa-filter',
+                    'bookmarks' => 'fa-solid fa-bookmark',
+                    'restart_alt' => 'fa-solid fa-rotate',
+                    'info' => 'fa-solid fa-circle-info',
+                    'warning' => 'fa-solid fa-triangle-exclamation',
+                    'error' => 'fa-solid fa-circle-exclamation',
+                    'inbox' => 'fa-solid fa-inbox',
+                    'home' => 'fa-solid fa-house',
+                    'chevron_left' => 'fa-solid fa-chevron-left',
+                    'chevron_right' => 'fa-solid fa-chevron-right',
+                    'keyboard_arrow_up' => 'fa-solid fa-chevron-up',
+                    'keyboard_arrow_down' => 'fa-solid fa-chevron-down',
+                    'unfold_more' => 'fa-solid fa-arrows-up-down',
+                    'add_circle' => 'fa-solid fa-circle-plus',
+                    'table_view' => 'fa-solid fa-table',
+                    'picture_as_pdf' => 'fa-solid fa-file-pdf',
+                    'select_all' => 'fa-solid fa-border-all',
+                    'view_column' => 'fa-solid fa-table-columns',
+                ];
+            }
+            $mapped = $faMap[$name] ?? 'fa-solid fa-circle-question';
+            return '<i class="' . $mapped . ($class ? ' ' . $class : '') . '"></i>';
+        }
+
         // Custom icons
         if ($iconSet === 'custom') {
             try {

@@ -81,7 +81,7 @@ php artisan mrcatz:make Product --path=Admin
 - Modular traits — HasFilters, HasExport, HasBulkActions
 - Event constants — `MrCatzEvent::REFRESH_DATA` etc.
 - Multi-language — English & Indonesian via Laravel lang files
-- Configurable icon set — Material Icons, Heroicons, or custom
+- Configurable icon set — Material Icons, Heroicons, Font Awesome, or custom
 - Search debounce validation — auto-corrects invalid format
 - Backward compatible — no strict types on public properties/methods
 - Test suite — 78 tests, 195 assertions
@@ -601,7 +601,7 @@ Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 MrCatz DataTable supports configurable icon sets. Set in `config/mrcatz.php`:
 
 ```php
-'icon_set' => 'material',  // 'material' (default), 'heroicons', 'custom'
+'icon_set' => 'material',  // 'material' (default), 'heroicons', 'fontawesome', 'custom'
 ```
 
 **Material Icons** (default) — requires Google Fonts link in your layout:
@@ -618,6 +618,16 @@ composer require blade-ui-kit/blade-heroicons
 
 ```php
 'icon_set' => 'heroicons',
+```
+
+**Font Awesome** — requires Font Awesome CSS in your layout:
+
+```html
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+```
+
+```php
+'icon_set' => 'fontawesome',
 ```
 
 **Custom** — define your own icon map with any icon library:
@@ -787,7 +797,7 @@ public function saveData(): void { ... }   // salah
 - Laravel >= 11.0
 - Livewire >= 3.0
 - Tailwind CSS + DaisyUI
-- Icon set: Material Icons (default), Heroicons, or custom (configurable)
+- Icon set: Material Icons (default), Heroicons, Font Awesome, or custom (configurable)
 
 ## License
 
