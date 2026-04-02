@@ -186,20 +186,24 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $dt->setCurrentPage($this->getPage($this->setPageName()));
     }
 
-    public function inlineUpdate($rowData, $columnKey, $newValue): void
+    public function inlineUpdate($rowData, $columnKey, $newValue, $rowIndex = null): void
     {
         $dt = $this->setTable();
         $allRules = $dt->getInlineValidationRules();
 
         if (isset($allRules[$columnKey])) {
+            // Strip table prefix (e.g. 'products.name' → 'name') so Laravel
+            // doesn't interpret the dot as nested array notation.
+            $validationKey = str_contains($columnKey, '.') ? substr($columnKey, strrpos($columnKey, '.') + 1) : $columnKey;
+
             $validator = Validator::make(
-                [$columnKey => $newValue],
-                [$columnKey => $allRules[$columnKey]]
+                [$validationKey => $newValue],
+                [$validationKey => $allRules[$columnKey]]
             );
 
             if ($validator->fails()) {
-                $error = $validator->errors()->first($columnKey);
-                $this->dispatch('inline-validation-error', columnKey: $columnKey, error: $error);
+                $error = $validator->errors()->first($validationKey);
+                $this->dispatch('inline-validation-error', columnKey: $columnKey, rowIndex: $rowIndex, error: $error);
                 $this->notice('error', $error);
                 return;
             }
