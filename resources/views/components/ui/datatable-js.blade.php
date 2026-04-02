@@ -70,7 +70,9 @@
         $bulkEnabled = $bulkPrimaryKey !== null;
         $bulkShow = $bulkEnabled && (!$showBulkButton || $bulkActive);
         $colOrder = !empty($columnOrder) ? $columnOrder : range(0, $posts->countColumn() - 1);
-        $visibleColOrder = array_values(array_filter($colOrder, fn($ci) => !in_array($ci, $hiddenColumns ?? [])));
+        $visibleColOrder = $enableColumnVisibility
+            ? array_values(array_filter($colOrder, fn($ci) => !in_array($ci, $hiddenColumns ?? [])))
+            : $colOrder;
         $totalCols = $posts->countColumn();
         $showExpand = $expandableRows && $posts->hasExpand();
         $totalColspan = $totalCols + ($bulkShow ? 1 : 0) + ($showExpand ? 1 : 0);

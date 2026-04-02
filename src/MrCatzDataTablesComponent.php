@@ -62,7 +62,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     #[Url(as: 'col_hidden', except: [])]
     public $hiddenColumns = [];
 
-    public $enableColumnVisibility = false;
+    public $enableColumnVisibility = true;
     public $enableColumnReorder = true;
     public $expandableRows = false;
     public $enableColumnSorting = true;
@@ -108,6 +108,16 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         // Validate debounce format (must be like '500ms' or '1s')
         if ($this->typeSearchWithDelay && !preg_match('/^\d+(ms|s)$/', $this->typeSearchDelay)) {
             $this->typeSearchDelay = '500ms';
+        }
+
+        // Initialize hiddenColumns from column visible defaults (only if URL didn't set them)
+        if ($this->enableColumnVisibility && empty($this->hiddenColumns)) {
+            $dt = $this->setTable();
+            foreach ($dt->getDataTableSet() as $i => $col) {
+                if (!($col['visible'] ?? true)) {
+                    $this->hiddenColumns[] = $i;
+                }
+            }
         }
 
         $this->bootFilters();
