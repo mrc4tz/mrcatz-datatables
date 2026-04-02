@@ -354,18 +354,38 @@ public function setTable()
         ->withColumn('Email', 'email', visible: false)        // hidden by default
         ->withColumn('Price', 'price', editable: true)         // inline editable
         ->withColumn('Code', 'code', uppercase: true, gravity: 'center')
+        ->withColumn('Phone', 'phone', showOn: 'mobile')      // mobile card only
         ->withCustomColumn('Status', function ($data, $i) {
             return '<span class="badge badge-sm">' . $data->status . '</span>';
         }, 'status', false)
         ->withCustomColumn('Actions', function ($data, $i) {
             return MrCatzDataTables::getActionView($data, $i);
-        });
+        }, showOn: 'desktop');                                 // desktop table only
 }
 ```
 
-**`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`, `$rules`
+**`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`, `$rules`, `$showOn`
 
-**`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`
+**`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`, `$showOn`
+
+#### Responsive Column Visibility (`showOn`)
+
+Control which columns appear on mobile (card view) vs desktop (table view):
+
+```php
+->withColumn('Name', 'name')                              // both (default)
+->withColumn('Email', 'email', showOn: 'desktop')         // desktop table only
+->withColumn('Phone', 'phone', showOn: 'mobile')          // mobile card only
+->withCustomColumn('Actions', fn($d, $i) => ..., showOn: 'desktop')
+```
+
+| Value | Mobile Card | Desktop Table |
+|---|---|---|
+| `'both'` | Shown | Shown |
+| `'mobile'` | Shown | Hidden |
+| `'desktop'` | Hidden | Shown |
+
+This is independent of `$visible` (column visibility toggle) — `showOn` controls responsive layout, `visible` controls user-togglable visibility.
 
 #### Search Highlight on Custom Columns
 
@@ -756,8 +776,8 @@ Icons not defined in `custom_icons` fallback to Material Icons.
 | Method | Description |
 |---|---|
 | `withColumnIndex($head)` | Auto-numbered row column |
-| `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`, `$rules`) |
-| `withCustomColumn($head, $callback, ...)` | Custom column (`$key`, `$sort`, `$visible`) |
+| `withColumn($head, $key, ...)` | Data column (`$uppercase`, `$th`, `$sort`, `$gravity`, `$editable`, `$visible`, `$rules`, `$showOn`) |
+| `withCustomColumn($head, $callback, ...)` | Custom column (`$key`, `$sort`, `$visible`, `$showOn`) |
 | `enableBulk($callback)` | Bulk select with per-row callback |
 | `enableExpand($callback)` | Expandable row content |
 | `setDefaultOrder($key, $dir)` | Default sort |
