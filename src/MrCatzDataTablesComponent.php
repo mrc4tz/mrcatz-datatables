@@ -164,6 +164,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->value = '';
         $this->activeFilters = [];
         $this->filterUrlParams = [];
+        $this->columnOrder = [];
         $this->clearSelection();
         $this->dispatch(MrCatzEvent::RESET_SELECT, $this->getDataFilter(), $this->prefix);
         $this->mrCatzDataTables = $this->setData();
