@@ -9,11 +9,11 @@ use MrCatz\DataTable\MrCatzEvent;
 
 trait HasExport
 {
-    public bool $showExportButton = true;
-    public string $exportTitle = 'Data Export';
-    public string $exportSearch = '';
-    public array $exportFilterValues = [];
-    public int $exportCount = 0;
+    public $showExportButton = true;
+    public $exportTitle = 'Data Export';
+    public $exportSearch = '';
+    public $exportFilterValues = [];
+    public $exportCount = 0;
 
     public function openExportModal(): void
     {

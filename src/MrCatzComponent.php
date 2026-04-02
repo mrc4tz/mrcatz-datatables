@@ -7,13 +7,14 @@ use Livewire\Attributes\On;
 
 class MrCatzComponent extends Component
 {
-    public string $title = '';
-    public string $form_title = '';
-    public string $deleted_text = '';
-    public bool $isEdit = false;
-    public mixed $id = null;
-    public array $breadcrumbs = [];
-    public int $index = -1;
+    // Public properties — no strict types to allow child class override without type declaration
+    public $title = '';
+    public $form_title = '';
+    public $deleted_text = '';
+    public $isEdit = false;
+    public $id = null;
+    public $breadcrumbs = [];
+    public $index = -1;
 
     public function setTitle(string $title): void
     {

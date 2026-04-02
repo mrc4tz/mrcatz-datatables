@@ -6,11 +6,11 @@ use MrCatz\DataTable\MrCatzEvent;
 
 trait HasBulkActions
 {
-    public ?string $bulkPrimaryKey = null;
-    public bool $showBulkButton = false;
-    public bool $bulkActive = false;
-    public array $selectedRows = [];
-    public bool $selectAll = false;
+    public $bulkPrimaryKey = null;
+    public $showBulkButton = false;
+    public $bulkActive = false;
+    public $selectedRows = [];
+    public $selectAll = false;
 
     public function toggleBulk(): void
     {

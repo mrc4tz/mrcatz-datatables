@@ -17,46 +17,47 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     use HasExport;
     use HasBulkActions;
 
-    public string $tableTitle = '';
-    public string $prefix = '';
+    // Public properties — no strict types to allow child class override without type declaration
+    public $tableTitle = '';
+    public $prefix = '';
 
     protected ?MrCatzDataTables $mrCatzDataTables = null;
 
     #[Url(except: '')]
-    public string $search = '';
+    public $search = '';
 
     #[Url(as: 'per_page')]
-    public ?int $p = null;
+    public $p = null;
 
     #[Url(as: 'sort', except: '')]
-    public string $key = '';
+    public $key = '';
 
     #[Url(as: 'dir', except: '')]
-    public string $value = '';
+    public $value = '';
 
     #[Url(as: 'filter', except: [])]
-    public array $filterUrlParams = [];
+    public $filterUrlParams = [];
 
-    public bool $withLoading = false;
-    public bool $showAddButton = true;
-    public bool $showSearch = true;
-    public bool $usePagination = true;
-    public bool $cardContainer = true;
-    public bool $borderContainer = false;
-    public bool $typeSearch = false;
-    public bool $typeSearchWithDelay = false;
-    public string $typeSearchDelay = '500ms';
+    public $withLoading = false;
+    public $showAddButton = true;
+    public $showSearch = true;
+    public $usePagination = true;
+    public $cardContainer = true;
+    public $borderContainer = false;
+    public $typeSearch = false;
+    public $typeSearchWithDelay = false;
+    public $typeSearchDelay = '500ms';
 
-    public bool $load_start = false;
+    public $load_start = false;
 
-    public bool $enableKeyboardNav = true;
-    public bool $enableColumnResize = true;
-    public array $columnOrder = [];
-    public bool $enableColumnReorder = true;
-    public bool $expandableRows = false;
-    public bool $enableColumnSorting = true;
-    public bool $showKeyboardNavNote = false;
-    public bool $tableZebraStyle = true;
+    public $enableKeyboardNav = true;
+    public $enableColumnResize = true;
+    public $columnOrder = [];
+    public $enableColumnReorder = true;
+    public $expandableRows = false;
+    public $enableColumnSorting = true;
+    public $showKeyboardNavNote = false;
+    public $tableZebraStyle = true;
 
     public function CreateMrCatzTable(): MrCatzDataTables
     {
@@ -74,7 +75,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         );
     }
 
-    // Override-able methods — no strict types to preserve backward compatibility
+    // Override-able methods — no strict types for backward compatibility
     public function onDataLoaded($dataBuilder, $data) {}
     public function setPageName() { return 'page'; }
     public function baseQuery() { return DB::table('users'); }

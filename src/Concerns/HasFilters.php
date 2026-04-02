@@ -6,12 +6,12 @@ use MrCatz\DataTable\MrCatzEvent;
 
 trait HasFilters
 {
-    public array $dataFilters = [];
-    public array $activeFilters = [];
-    public array $filterShow = [];
-    public array $filterData = [];
+    public $dataFilters = [];
+    public $activeFilters = [];
+    public $filterShow = [];
+    public $filterData = [];
 
-    public string $default_filter_value = '';
+    public $default_filter_value = '';
 
     protected function bootFilters(): void
     {
