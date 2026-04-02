@@ -36,3 +36,94 @@ if (!function_exists('mrcatz_lang')) {
         return $key;
     }
 }
+
+if (!function_exists('mrcatz_icon')) {
+    /**
+     * Render an icon for MrCatz DataTable.
+     *
+     * Supports 'material' (default), 'heroicons', and 'custom' icon sets
+     * via config('mrcatz.icon_set').
+     *
+     * @param string $name   Icon name (e.g. 'add', 'edit', 'close')
+     * @param string $class  Additional CSS classes
+     * @return string        Raw HTML
+     */
+    function mrcatz_icon(string $name, string $class = ''): string
+    {
+        static $heroMap = null;
+        static $iconSet = null;
+
+        if ($iconSet === null) {
+            try {
+                $iconSet = config('mrcatz.icon_set', 'material');
+            } catch (\Throwable $e) {
+                $iconSet = 'material';
+            }
+        }
+
+        // Material Icons (default)
+        if ($iconSet === 'material') {
+            $tag = in_array($name, ['home', 'unfold_more']) ? 'material-symbols-outlined' : 'material-icons';
+            return '<span class="' . $tag . ($class ? ' ' . $class : '') . '">' . $name . '</span>';
+        }
+
+        // Heroicons (Blade SVG)
+        if ($iconSet === 'heroicons') {
+            if ($heroMap === null) {
+                $heroMap = [
+                    'add' => 'plus',
+                    'edit' => 'pencil-square',
+                    'edit_note' => 'pencil-square',
+                    'delete' => 'trash',
+                    'delete_forever' => 'trash',
+                    'delete_sweep' => 'trash',
+                    'close' => 'x-mark',
+                    'cancel' => 'x-circle',
+                    'check_circle' => 'check-circle',
+                    'check_box' => 'check',
+                    'check_box_outline_blank' => 'stop',
+                    'search' => 'magnifying-glass',
+                    'search_off' => 'magnifying-glass',
+                    'save' => 'arrow-down-tray',
+                    'download' => 'arrow-down-tray',
+                    'tune' => 'adjustments-horizontal',
+                    'filter_alt' => 'funnel',
+                    'bookmarks' => 'bookmark',
+                    'restart_alt' => 'arrow-path',
+                    'info' => 'information-circle',
+                    'warning' => 'exclamation-triangle',
+                    'error' => 'exclamation-circle',
+                    'inbox' => 'inbox',
+                    'home' => 'home',
+                    'chevron_left' => 'chevron-left',
+                    'chevron_right' => 'chevron-right',
+                    'keyboard_arrow_up' => 'chevron-up',
+                    'keyboard_arrow_down' => 'chevron-down',
+                    'unfold_more' => 'arrows-up-down',
+                    'add_circle' => 'plus-circle',
+                    'table_view' => 'table-cells',
+                    'picture_as_pdf' => 'document',
+                    'select_all' => 'squares-2x2',
+                    'view_column' => 'view-columns',
+                ];
+            }
+            $mapped = $heroMap[$name] ?? $name;
+            return '<x-heroicon-o-' . $mapped . ' class="inline-block w-5 h-5' . ($class ? ' ' . $class : '') . '" />';
+        }
+
+        // Custom icons
+        if ($iconSet === 'custom') {
+            try {
+                $custom = config('mrcatz.custom_icons', []);
+                if (isset($custom[$name])) {
+                    return $custom[$name];
+                }
+            } catch (\Throwable $e) {}
+            // Fallback to material if custom not defined
+            $tag = in_array($name, ['home', 'unfold_more']) ? 'material-symbols-outlined' : 'material-icons';
+            return '<span class="' . $tag . ($class ? ' ' . $class : '') . '">' . $name . '</span>';
+        }
+
+        return $name;
+    }
+}

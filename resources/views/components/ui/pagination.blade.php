@@ -32,12 +32,12 @@
                 <div class="join sm:hidden">
                     @if ($paginator->onFirstPage())
                         <button class="join-item btn btn-sm btn-disabled" disabled>
-                            <span class="material-icons text-sm">chevron_left</span>
+                            {!! mrcatz_icon('chevron_left', 'text-sm') !!}
                         </button>
                     @else
                         <button class="join-item btn btn-sm hover:btn-primary transition-colors duration-200"
                                 wire:click="previousPage('{{ $paginator->getPageName() }}')">
-                            <span class="material-icons text-sm">chevron_left</span>
+                            {!! mrcatz_icon('chevron_left', 'text-sm') !!}
                         </button>
                     @endif
 
@@ -48,11 +48,11 @@
                     @if ($paginator->hasMorePages())
                         <button class="join-item btn btn-sm hover:btn-primary transition-colors duration-200"
                                 wire:click="nextPage('{{ $paginator->getPageName() }}')">
-                            <span class="material-icons text-sm">chevron_right</span>
+                            {!! mrcatz_icon('chevron_right', 'text-sm') !!}
                         </button>
                     @else
                         <button class="join-item btn btn-sm btn-disabled" disabled>
-                            <span class="material-icons text-sm">chevron_right</span>
+                            {!! mrcatz_icon('chevron_right', 'text-sm') !!}
                         </button>
                     @endif
                 </div>
@@ -61,12 +61,12 @@
                 <div class="join hidden sm:flex">
                     @if ($paginator->onFirstPage())
                         <button class="join-item btn btn-sm btn-disabled" disabled>
-                            <span class="material-icons text-sm">chevron_left</span>
+                            {!! mrcatz_icon('chevron_left', 'text-sm') !!}
                         </button>
                     @else
                         <button class="join-item btn btn-sm hover:btn-primary transition-colors duration-200"
                                 wire:click="previousPage('{{ $paginator->getPageName() }}')">
-                            <span class="material-icons text-sm">chevron_left</span>
+                            {!! mrcatz_icon('chevron_left', 'text-sm') !!}
                         </button>
                     @endif
 
@@ -89,11 +89,11 @@
                     @if ($paginator->hasMorePages())
                         <button class="join-item btn btn-sm hover:btn-primary transition-colors duration-200"
                                 wire:click="nextPage('{{ $paginator->getPageName() }}')">
-                            <span class="material-icons text-sm">chevron_right</span>
+                            {!! mrcatz_icon('chevron_right', 'text-sm') !!}
                         </button>
                     @else
                         <button class="join-item btn btn-sm btn-disabled" disabled>
-                            <span class="material-icons text-sm">chevron_right</span>
+                            {!! mrcatz_icon('chevron_right', 'text-sm') !!}
                         </button>
                     @endif
                 </div>

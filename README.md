@@ -81,6 +81,7 @@ php artisan mrcatz:make Product --path=Admin
 - Modular traits — HasFilters, HasExport, HasBulkActions
 - Event constants — `MrCatzEvent::REFRESH_DATA` etc.
 - Multi-language — English & Indonesian via Laravel lang files
+- Configurable icon set — Material Icons, Heroicons, or custom
 - Search debounce validation — auto-corrects invalid format
 - Backward compatible — no strict types on public properties/methods
 - Test suite — 78 tests, 195 assertions
@@ -595,6 +596,49 @@ Set locale in `config/mrcatz.php`:
 
 Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
 
+### Icon Set
+
+MrCatz DataTable supports configurable icon sets. Set in `config/mrcatz.php`:
+
+```php
+'icon_set' => 'material',  // 'material' (default), 'heroicons', 'custom'
+```
+
+**Material Icons** (default) — requires Google Fonts link in your layout:
+
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined" rel="stylesheet">
+```
+
+**Heroicons** — requires Blade Heroicons package, no external font needed:
+
+```bash
+composer require blade-ui-kit/blade-heroicons
+```
+
+```php
+'icon_set' => 'heroicons',
+```
+
+**Custom** — define your own icon map with any icon library:
+
+```php
+'icon_set' => 'custom',
+'custom_icons' => [
+    'add' => '<i class="fas fa-plus"></i>',
+    'edit' => '<i class="fas fa-pen"></i>',
+    'delete' => '<i class="fas fa-trash"></i>',
+    'close' => '<i class="fas fa-times"></i>',
+    'search' => '<i class="fas fa-search"></i>',
+    'download' => '<i class="fas fa-download"></i>',
+    // ... define all icons you need
+],
+```
+
+Icons not defined in `custom_icons` fallback to Material Icons.
+
+All 30 icon names used: `add`, `edit`, `edit_note`, `delete`, `delete_forever`, `delete_sweep`, `close`, `cancel`, `check_circle`, `check_box`, `check_box_outline_blank`, `search`, `search_off`, `save`, `download`, `tune`, `filter_alt`, `bookmarks`, `restart_alt`, `info`, `warning`, `error`, `inbox`, `home`, `chevron_left`, `chevron_right`, `keyboard_arrow_up`, `keyboard_arrow_down`, `unfold_more`, `add_circle`, `table_view`, `picture_as_pdf`, `select_all`, `view_column`.
+
 ---
 
 ## Property Reference
@@ -743,7 +787,7 @@ public function saveData(): void { ... }   // salah
 - Laravel >= 11.0
 - Livewire >= 3.0
 - Tailwind CSS + DaisyUI
-- Material Icons (Google Fonts)
+- Icon set: Material Icons (default), Heroicons, or custom (configurable)
 
 ## License
 

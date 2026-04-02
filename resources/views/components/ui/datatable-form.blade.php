@@ -3,12 +3,12 @@
         {{-- Header --}}
         <div class="flex items-center justify-between pb-4 mb-4 border-b border-base-content/10">
             <h3 id="modal-data-title" class="text-lg font-bold text-base-content flex items-center gap-2">
-                <span class="material-icons text-primary">{{ $isEdit ? 'edit_note' : 'add_circle' }}</span>
+                {!! mrcatz_icon($isEdit ? 'edit_note' : 'add_circle', 'text-primary') !!}
                 {{ $form_title ?: mrcatz_lang('default_form_title') }}
             </h3>
             <form method="dialog">
                 <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors" aria-label="{{ mrcatz_lang('btn_cancel') }}">
-                    <span class="material-icons">close</span>
+                    {!! mrcatz_icon('close') !!}
                 </button>
             </form>
         </div>
@@ -23,7 +23,7 @@
         {{-- Footer --}}
         <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
             <button class="btn btn-primary gap-2 px-6 shadow-sm" wire:click="saveData">
-                <span class="material-icons text-lg">check_circle</span>
+                {!! mrcatz_icon('check_circle', 'text-lg') !!}
                 {{ mrcatz_lang('btn_save') }}
             </button>
             <form method="dialog">
@@ -41,7 +41,7 @@
         {{-- Icon --}}
         <div class="flex justify-center mb-4">
             <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
-                <span class="material-icons text-error text-3xl">warning</span>
+                {!! mrcatz_icon('warning', 'text-3xl text-error') !!}
             </div>
         </div>
 
@@ -53,7 +53,7 @@
 
         <div class="modal-action justify-center gap-3">
             <button class="btn btn-error gap-2 px-6 shadow-sm" wire:click="dropData">
-                <span class="material-icons text-lg">delete_forever</span>
+                {!! mrcatz_icon('delete_forever', 'text-lg') !!}
                 {{ mrcatz_lang('btn_yes_delete') }}
             </button>
             <form method="dialog">

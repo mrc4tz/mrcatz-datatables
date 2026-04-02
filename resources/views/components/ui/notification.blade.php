@@ -16,10 +16,10 @@
              x-transition:leave-start="transform translate-x-0 opacity-100"
              x-transition:leave-end="transform translate-x-full opacity-0"
              @click="remove(notice.id)" style="pointer-events:auto">
-            <template x-if="notice.type === 'success'"><span class="material-icons">check_circle</span></template>
-            <template x-if="notice.type === 'info'"><span class="material-icons">info</span></template>
-            <template x-if="notice.type === 'warning'"><span class="material-icons">error</span></template>
-            <template x-if="notice.type === 'error'"><span class="material-icons">cancel</span></template>
+            <template x-if="notice.type === 'success'">{!! mrcatz_icon('check_circle') !!}</template>
+            <template x-if="notice.type === 'info'">{!! mrcatz_icon('info') !!}</template>
+            <template x-if="notice.type === 'warning'">{!! mrcatz_icon('error') !!}</template>
+            <template x-if="notice.type === 'error'">{!! mrcatz_icon('cancel') !!}</template>
             <span x-text="notice.text"></span>
         </div>
     </template>

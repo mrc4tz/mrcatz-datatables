@@ -7,7 +7,7 @@
                     <li>
                         <a href="{{$bread['url']}}" class="flex items-center gap-1 font-semibold text-primary hover:text-primary/80 transition-colors">
                             @if($loop->first)
-                                <span class="material-symbols-outlined text-sm">home</span>
+                                {!! mrcatz_icon('home', 'text-sm') !!}
                             @endif
                             {{ $bread['title'] }}
                         </a>

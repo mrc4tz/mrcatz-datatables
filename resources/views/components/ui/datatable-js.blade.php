@@ -110,12 +110,12 @@
             @if(count($filters) > 0)
                 <label class="btn btn-sm md:btn-md btn-square btn-primary swap swap-rotate tooltip tooltip-bottom" data-tip="Filter">
                     <input type="checkbox" x-on:change="open = ! open"/>
-                    <span class="material-icons swap-off text-lg">tune</span>
-                    <span class="material-icons swap-on text-lg">close</span>
+                    <span class="swap-off">{!! mrcatz_icon('tune', 'text-lg') !!}</span>
+                    <span class="swap-on">{!! mrcatz_icon('close', 'text-lg') !!}</span>
                 </label>
                 @if($activeFilterCount > 0)
                     <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-base-200/40">
-                        <span class="material-icons text-base-content/40 text-sm">filter_alt</span>
+                        {!! mrcatz_icon('filter_alt', 'text-sm text-base-content/40') !!}
                         <p class="text-sm text-base-content/60">
                             <span class="font-semibold text-base-content">{{ $activeFilterCount }}</span> {{ mrcatz_lang('filter_active') }}
                         </p>
@@ -127,7 +127,7 @@
                 <div class="relative hidden sm:block">
                     <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('filter_preset') }}"
                             @click="presetOpen = !presetOpen">
-                        <span class="material-icons text-lg">bookmarks</span>
+                        {!! mrcatz_icon('bookmarks', 'text-lg') !!}
                     </button>
                     <div x-show="presetOpen" @click.outside="presetOpen = false"
                          x-transition:enter="transition ease-out duration-150"
@@ -142,7 +142,7 @@
                         <template x-for="(p, i) in presets" :key="i">
                             <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-base-200/50 cursor-pointer group">
                                 <button class="text-sm text-base-content/70 truncate flex-1 text-left" @click="loadPreset(p)" x-text="p.name"></button>
-                                <button class="material-icons text-xs text-base-content/20 group-hover:text-error transition-colors" @click.stop="deletePreset(i)">close</button>
+                                <button class="text-xs text-base-content/20 group-hover:text-error transition-colors" @click.stop="deletePreset(i)">{!! mrcatz_icon('close', 'text-xs') !!}</button>
                             </div>
                         </template>
                         <div class="border-t border-base-content/10 pt-2 mt-2">
@@ -150,7 +150,7 @@
                                 <input type="text" class="input input-bordered input-xs flex-1 text-xs" placeholder="{{ mrcatz_lang('filter_preset_placeholder') }}"
                                        x-model="presetName" @keydown.enter.prevent="savePreset()"/>
                                 <button class="btn btn-xs btn-primary btn-square" @click="savePreset()">
-                                    <span class="material-icons text-xs">save</span>
+                                    {!! mrcatz_icon('save', 'text-xs') !!}
                                 </button>
                             </div>
                         </div>
@@ -162,21 +162,21 @@
         <div class="flex items-center gap-2 justify-end">
             @if($showAddButton)
                 <button class="btn btn-sm md:btn-md btn-primary gap-2 shadow-sm" wire:click="addData()">
-                    <span class="material-icons text-lg">add</span>
+                    {!! mrcatz_icon('add', 'text-lg') !!}
                     <span class="hidden sm:inline">{{ mrcatz_lang('btn_add') }}</span>
                 </button>
             @endif
             @if($bulkEnabled && $showBulkButton)
                 <button class="btn btn-sm md:btn-md gap-1 {{ $bulkActive ? 'btn-secondary' : 'btn-ghost border border-base-content/15' }}"
                         wire:click="toggleBulk">
-                    <span class="material-icons text-lg">{{ $bulkActive ? 'check_box' : 'check_box_outline_blank' }}</span>
+                    {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-lg') !!}
                     <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_select') }}</span>
                 </button>
             @endif
             @if($showExportButton)
                 <button class="btn btn-sm md:btn-md btn-ghost border border-base-content/15 gap-1"
                         wire:click="openExportModal">
-                    <span class="material-icons text-lg">download</span>
+                    {!! mrcatz_icon('download', 'text-lg') !!}
                     <span class="hidden sm:inline text-sm">{{ mrcatz_lang('btn_export') }}</span>
                 </button>
             @endif
@@ -184,7 +184,7 @@
                 <div class="relative">
                     <button class="btn btn-sm md:btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('col_visibility') }}"
                             @click="colVisOpen = !colVisOpen">
-                        <span class="material-icons text-lg">view_column</span>
+                        {!! mrcatz_icon('view_column', 'text-lg') !!}
                     </button>
                     <div x-show="colVisOpen" @click.outside="colVisOpen = false"
                          x-transition:enter="transition ease-out duration-150"
@@ -213,7 +213,7 @@
                                 $wire.resetData()
                             }
                         ">
-                    <span class="material-icons text-lg">restart_alt</span>
+                    {!! mrcatz_icon('restart_alt', 'text-lg') !!}
                 </button>
             @endif
         </div>
@@ -224,17 +224,17 @@
     @if($bulkShow && count($selectedRows) > 0)
         <div class="mb-4 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div class="flex items-center gap-2">
-                <span class="material-icons text-primary text-sm">check_circle</span>
+                {!! mrcatz_icon('check_circle', 'text-sm text-primary') !!}
                 <span class="text-sm font-medium text-primary">{{ count($selectedRows) }} {{ mrcatz_lang('data_selected') }}</span>
             </div>
             <div class="flex gap-2">
                 <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none"
                         x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
-                    <span class="material-icons text-xs">delete</span>
+                    {!! mrcatz_icon('delete', 'text-xs') !!}
                     {{ mrcatz_lang('btn_delete') }}
                 </button>
                 <button class="btn btn-xs btn-ghost gap-1 flex-1 sm:flex-none" wire:click="clearSelection">
-                    <span class="material-icons text-xs">close</span>
+                    {!! mrcatz_icon('close', 'text-xs') !!}
                     {{ mrcatz_lang('btn_cancel') }}
                 </button>
             </div>
@@ -293,11 +293,11 @@
                                                 x-data @click="$event.shiftKey ? $wire.addSort({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }}) : $wire.orderData({{ json_encode($posts->getKey($ci)) }}, {{ json_encode($posts->getOrder($ci)) }})">
                                             {{ $posts->getHead($ci) }}
                                             @if($posts->getOrder($ci) === 'asc')
-                                                <span class="material-icons text-sm text-primary/50">keyboard_arrow_up</span>
+                                                {!! mrcatz_icon('keyboard_arrow_up', 'text-sm text-primary/50') !!}
                                             @elseif($posts->getOrder($ci) === 'desc')
-                                                <span class="material-icons text-sm text-primary/50">keyboard_arrow_down</span>
+                                                {!! mrcatz_icon('keyboard_arrow_down', 'text-sm text-primary/50') !!}
                                             @else
-                                                <span class="material-symbols-outlined text-sm opacity-40">unfold_more</span>
+                                                {!! mrcatz_icon('unfold_more', 'text-sm opacity-40') !!}
                                             @endif
                                             @if(!empty($multiSort))
                                                 @foreach($multiSort as $si => $ms)
@@ -336,8 +336,8 @@
 
                                 @if($showExpand)
                                     <td class="w-8 text-center" @click.stop="toggleExpand({{ $i }})">
-                                        <span class="material-icons text-sm text-base-content/40 transition-transform duration-200"
-                                              :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">chevron_right</span>
+                                        <span class="transition-transform duration-200"
+                                              :class="expandedRows.includes({{ $i }}) ? 'rotate-90' : ''">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
                                     </td>
                                 @endif
 
@@ -404,9 +404,9 @@
                     <div class="flex flex-col items-center justify-center py-20 px-4">
                         <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
                             @if(!empty($search) || $activeFilterCount > 0)
-                                <span class="material-icons text-base-content/30 text-3xl">search_off</span>
+                                {!! mrcatz_icon('search_off', 'text-3xl text-base-content/30') !!}
                             @else
-                                <span class="material-icons text-base-content/30 text-3xl">inbox</span>
+                                {!! mrcatz_icon('inbox', 'text-3xl text-base-content/30') !!}
                             @endif
                         </div>
                         @if(!empty($search))
@@ -461,11 +461,11 @@
             <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg" x-trap.noscroll="document.getElementById('modal-export')?.open">
                 <div class="flex items-center justify-between pb-4 mb-5 border-b border-base-content/10">
                     <h3 id="modal-export-title" class="text-lg font-bold text-base-content flex items-center gap-2">
-                        <span class="material-icons text-primary">download</span>
+                        {!! mrcatz_icon('download', 'text-primary') !!}
                         {{ mrcatz_lang('export_title') }}
                     </h3>
                     <form method="dialog">
-                        <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200"><span class="material-icons">close</span></button>
+                        <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200">{!! mrcatz_icon('close') !!}</button>
                     </form>
                 </div>
 
@@ -476,13 +476,13 @@
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="format === 'excel' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="format = 'excel'">
-                                <span class="material-icons text-success text-2xl">table_view</span>
+                                {!! mrcatz_icon('table_view', 'text-2xl text-success') !!}
                                 <div><p class="text-sm font-semibold text-base-content">Excel</p><p class="text-xs text-base-content/40">.xlsx</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="format === 'pdf' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="format = 'pdf'">
-                                <span class="material-icons text-error text-2xl">picture_as_pdf</span>
+                                {!! mrcatz_icon('picture_as_pdf', 'text-2xl text-error') !!}
                                 <div><p class="text-sm font-semibold text-base-content">PDF</p><p class="text-xs text-base-content/40">.pdf</p></div>
                             </label>
                         </div>
@@ -494,13 +494,13 @@
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="scope === 'all' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="scope = 'all'; $wire.updateExportCount('all')">
-                                <span class="material-icons text-lg" :class="scope === 'all' ? 'text-primary' : 'text-base-content/30'">select_all</span>
+                                <span :class="scope === 'all' ? 'text-primary' : 'text-base-content/30'">{!! mrcatz_icon('select_all', 'text-lg') !!}</span>
                                 <div><p class="text-sm font-semibold text-base-content">{{ mrcatz_lang('export_all') }}</p><p class="text-xs text-base-content/40">{{ mrcatz_lang('export_all_desc') }}</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                    :class="scope === 'filtered' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                    @click="scope = 'filtered'; $wire.updateExportCount('filtered')">
-                                <span class="material-icons text-lg" :class="scope === 'filtered' ? 'text-primary' : 'text-base-content/30'">filter_alt</span>
+                                <span :class="scope === 'filtered' ? 'text-primary' : 'text-base-content/30'">{!! mrcatz_icon('filter_alt', 'text-lg') !!}</span>
                                 <div><p class="text-sm font-semibold text-base-content">{{ mrcatz_lang('export_filtered') }}</p><p class="text-xs text-base-content/40">{{ mrcatz_lang('export_filtered_desc') }}</p></div>
                             </label>
                         </div>
@@ -510,13 +510,13 @@
                          x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
                         <div class="rounded-xl bg-base-200/40 p-4 space-y-3">
                             <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide flex items-center gap-1">
-                                <span class="material-icons text-xs">tune</span>
+                                {!! mrcatz_icon('tune', 'text-xs') !!}
                                 {{ mrcatz_lang('export_settings') }}
                             </p>
                             <div>
                                 <label class="text-xs text-base-content/50 mb-1 block">{{ mrcatz_lang('export_search') }}</label>
                                 <label class="input input-bordered input-sm flex items-center gap-2 w-full focus-within:input-primary transition-all">
-                                    <span class="material-icons text-base-content/30 text-sm">search</span>
+                                    {!! mrcatz_icon('search', 'text-sm text-base-content/30') !!}
                                     <input type="text" class="grow text-sm" placeholder="{{ mrcatz_lang('export_search_placeholder') }}" wire:model="exportSearch"/>
                                 </label>
                             </div>
@@ -542,7 +542,7 @@
                 </div>
 
                 <div class="mt-4 p-3 rounded-xl bg-base-200/40 flex items-center gap-2">
-                    <span class="material-icons text-base-content/40 text-sm">info</span>
+                    {!! mrcatz_icon('info', 'text-sm text-base-content/40') !!}
                     <p class="text-sm text-base-content/60">
                         <span class="font-semibold text-base-content" wire:loading.remove wire:target="updateExportCount">{{ number_format($exportCount) }}</span>
                         <span class="loading loading-spinner loading-xs" wire:loading wire:target="updateExportCount"></span>
@@ -553,7 +553,7 @@
                 <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
                     <button class="btn btn-primary gap-2 px-6 shadow-sm"
                             x-on:click="$wire.exportData(format, scope); document.getElementById('modal-export').close();">
-                        <span class="material-icons text-lg">download</span>
+                        {!! mrcatz_icon('download', 'text-lg') !!}
                         {{ mrcatz_lang('btn_export') }}
                     </button>
                     <form method="dialog">
@@ -568,7 +568,7 @@
     <dialog id="modal-reset-confirm" class="modal modal-bottom sm:modal-middle" aria-modal="true" aria-labelledby="modal-reset-title">
         <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-reset-confirm')?.open">
             <div class="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
-                <span class="material-icons text-warning text-2xl">restart_alt</span>
+                {!! mrcatz_icon('restart_alt', 'text-2xl text-warning') !!}
             </div>
             <h3 id="modal-reset-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
             <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('reset_desc') }}</p>
@@ -587,7 +587,7 @@
         <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-bulk-delete-title">
             <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-bulk-delete')?.open">
                 <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
-                    <span class="material-icons text-error text-2xl">delete_sweep</span>
+                    {!! mrcatz_icon('delete_sweep', 'text-2xl text-error') !!}
                 </div>
                 <h3 id="modal-bulk-delete-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
                 <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('bulk_delete_desc') }}</p>
