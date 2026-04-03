@@ -459,23 +459,22 @@
                 {{-- Lightbox --}}
                 @if($field['preview'])
                     <style>
-                        #{{ $lightboxId }}::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+                        #{{ $lightboxId }} { background: none; border: none; outline: none; padding: 0; max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; }
+                        #{{ $lightboxId }}::backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
                         #{{ $lightboxId }}[open] { animation: mrcatz-lb-in 200ms ease-out; }
                         @keyframes mrcatz-lb-in { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
                     </style>
                     <dialog id="{{ $lightboxId }}"
-                            class="bg-transparent p-0 max-w-none max-h-none m-auto"
                             x-data="{ scale: 1, justReset: false }"
                             @close="scale = 1; justReset = false"
-                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
-                            onclick="if(event.target===this)this.close()">
-                        <div class="flex items-center justify-center min-h-screen p-8 cursor-zoom-out"
-                             @click.self="if(scale > 1) { scale = 1 } else { $el.closest('dialog').close() }">
+                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))">
+                        <div class="flex items-center justify-center w-full h-full cursor-zoom-out"
+                             @click.self="if(scale !== 1) { scale = 1; justReset = true; } else { $el.closest('dialog').close() }">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
                                  class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none cursor-zoom-out"
                                  draggable="false"
                                  :style="'transform: scale(' + scale + ')'"
-                                 @click.stop="if(justReset) { justReset = false; return; } if(scale > 1) { scale = 1; justReset = true; } else { $el.closest('dialog').close() }" />
+                                 @click.stop="if(justReset) { justReset = false; return; } if(scale !== 1) { scale = 1; justReset = true; } else { $el.closest('dialog').close() }" />
                         </div>
                     </dialog>
                 @endif
