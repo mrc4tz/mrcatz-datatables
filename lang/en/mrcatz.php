@@ -95,4 +95,12 @@ return [
     // Load more
     'showing_rows' => 'Showing :count rows',
     'btn_load_more' => 'Load More',
+
+    // Form builder
+    'form_current_file' => 'Current file',
+    'form_click_to_zoom' => 'Click image to enlarge',
+    'form_upload' => 'Upload',
+    'form_delete_photo' => 'Delete this photo?',
+    'form_delete_photo_desc' => 'Deleted photos cannot be recovered.',
+    'form_btn_delete' => 'Delete',
 ];

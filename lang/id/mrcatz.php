@@ -95,4 +95,12 @@ return [
     // Load more
     'showing_rows' => 'Menampilkan :count baris',
     'btn_load_more' => 'Muat Lebih Banyak',
+
+    // Form builder
+    'form_current_file' => 'File saat ini',
+    'form_click_to_zoom' => 'Klik gambar untuk memperbesar',
+    'form_upload' => 'Upload',
+    'form_delete_photo' => 'Hapus foto ini?',
+    'form_delete_photo_desc' => 'Foto yang dihapus tidak dapat dikembalikan.',
+    'form_btn_delete' => 'Hapus',
 ];
