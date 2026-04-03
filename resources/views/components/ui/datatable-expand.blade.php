@@ -59,6 +59,12 @@
                     {{ $field['buttonLabel'] }}
                 </a>
             </div>
+        @elseif($field['type'] === 'html')
+            {{-- Custom HTML --}}
+            <div class="px-3 py-2 rounded-lg bg-base-200/40">
+                <span class="text-[11px] text-base-content/40 block mb-1">{{ $field['label'] }}</span>
+                <div class="text-sm text-base-content/80">{!! $field['content'] !!}</div>
+            </div>
         @endif
     @endforeach
 </div>

@@ -647,6 +647,16 @@ class MrCatzDataTables
                         'download' => $value['download'] ?? false,
                         'target' => $target,
                     ];
+                } elseif ($type === 'html') {
+                    $content = $value['content'] ?? '';
+                    if ($content instanceof \Closure) {
+                        $content = $content($data);
+                    }
+                    $mapped[] = [
+                        'label' => $label,
+                        'type' => 'html',
+                        'content' => $content,
+                    ];
                 } else {
                     // Text with key
                     $key = $value['key'] ?? '';
