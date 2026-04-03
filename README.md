@@ -448,6 +448,35 @@ The same `urlPrefix` option is available in expand view image type:
 
 Clicking the image opens a lightbox with scroll zoom, click to reset/close.
 
+#### Standalone Lightbox
+
+The global lightbox is available on any page that includes the notification component. Use it on any `<img>` element:
+
+```blade
+{{-- Alpine.js --}}
+<img src="{{ asset('photos/product.jpg') }}"
+     class="w-32 h-32 rounded-lg object-cover cursor-zoom-in hover:opacity-80 transition-opacity"
+     x-data
+     @click="$dispatch('mrcatz-lightbox', { url: '{{ asset('photos/product.jpg') }}' })" />
+
+{{-- Gallery --}}
+<div class="flex gap-3">
+    @foreach($photos as $photo)
+        <img src="{{ asset('storage/' . $photo->path) }}"
+             class="w-24 h-24 rounded-lg object-cover cursor-zoom-in hover:opacity-80 transition-opacity"
+             x-data
+             @click="$dispatch('mrcatz-lightbox', { url: '{{ asset('storage/' . $photo->path) }}' })" />
+    @endforeach
+</div>
+
+{{-- Vanilla JS (no Alpine) --}}
+<img src="/img/banner.jpg"
+     class="cursor-zoom-in"
+     onclick="window.dispatchEvent(new CustomEvent('mrcatz-lightbox', { detail: { url: '/img/banner.jpg' } }))" />
+```
+
+Just dispatch the `mrcatz-lightbox` event with `{ url: '...' }` — the global lightbox handles zoom, reset, and close automatically.
+
 #### Responsive Column Visibility (`showOn`)
 
 Control which columns appear on mobile (card view) vs desktop (table view):
@@ -1064,6 +1093,67 @@ Do not add return types on overridden methods:
 public function saveData() { ... }         // correct
 public function saveData(): void { ... }   // wrong
 ```
+
+---
+
+## Comparison with Other Admin Panels
+
+| Feature | **MrCatz** | **Filament** | **Backpack** | **Nova** |
+|---|---|---|---|---|
+| **Price** | Free (MIT) | Free (MIT) | Paid ($69-499) | Paid ($99/site) |
+| **Stack** | Livewire + DaisyUI | Livewire + Custom UI | jQuery + Bootstrap | Vue + Tailwind |
+| **Learning Curve** | Low — plain Livewire | Medium — custom ecosystem | Medium — CRUD DSL | Medium — Vue + API |
+| **Setup** | `composer require` + go | `composer require` + panels setup | `composer require` + config | `composer require` + license |
+| **Scaffolding** | `mrcatz:make` (4 files) | `make:filament-resource` | `backpack:crud` | `nova:resource` |
+| **DataTable** | Built-in (search, sort, filter, export, inline edit, bulk, expand) | Built-in | Built-in | Built-in |
+| **Form Builder** | `setForm()` PHP API | Resource form schema | `addField()` in controller | Field classes in resource |
+| **Standalone Forms** | Yes — any Livewire component via `HasFormBuilder` trait | Yes — via Form Builder package | No — tied to CRUD | No — tied to Resource |
+| **Image Column** | `withColumnImage()` + lightbox zoom | `ImageColumn` | `image` column type | `Image` field |
+| **Image Lightbox** | Built-in (scroll zoom, click reset) | No (needs plugin) | No | No |
+| **Expand Rows** | Built-in (text, image, button, link, html) | No (needs custom) | `details_row` (basic) | No |
+| **Inline Editing** | Built-in (double-click, validation) | Needs plugin | `InlineCreate` (limited) | `inline` (basic) |
+| **Multi-sort** | Built-in (Shift+click) | No | No | No |
+| **URL Persistence** | Full (search, sort, filter, columns, page) | Partial | Partial | Partial |
+| **Column Visibility** | Built-in toggle | Via layout | No | No |
+| **Column Resize** | Built-in drag | No | No | No |
+| **Column Reorder** | Built-in drag | No | No | No |
+| **Keyboard Nav** | Built-in (Arrow, Enter, Delete, Escape) | No | No | No |
+| **Export** | Excel + PDF built-in | Needs plugin | Needs plugin | No |
+| **Mobile View** | Auto card layout | Responsive table | Responsive table | Responsive table |
+| **Dynamic Fields** | `visibleWhen`, `dependsOn`, `onChange` | `visible()`, `reactive()` | `fake`, JS callbacks | `dependsOn` |
+| **Grid Layout** | `span()`, `rowSpan()`, `mobileOrder()` | `columns()`, `columnSpan()` | No | No |
+| **File Upload** | `file()`, `fileupload()`, `image()` with smart preview | `FileUpload` | `upload`, `image` | `File`, `Image` |
+| **Icon System** | 5 sets (SVG, Heroicons, Material, FA, custom) | Heroicons (Blade Icons) | Font Awesome | Heroicons |
+| **Theme** | Any DaisyUI theme | Filament themes | AdminLTE / CoreUI | Nova UI |
+| **i18n** | Built-in (en, id, custom) | Built-in (50+ locales) | Built-in (40+ locales) | Built-in |
+| **UI Framework** | Tailwind + DaisyUI | Tailwind + Custom | Bootstrap | Tailwind + Vue |
+| **Bundle Size** | Minimal (zero CDN default) | Medium | Heavy (jQuery + Bootstrap) | Medium (Vue) |
+
+### When to Choose MrCatz
+
+**Choose MrCatz if you:**
+- Want a lightweight DataTable + Form Builder without a full admin panel framework
+- Need advanced table features (inline edit, multi-sort, column resize/reorder, keyboard nav, image lightbox)
+- Prefer DaisyUI theming over custom component systems
+- Want Form Builder usable on any page, not just CRUD resources
+- Need expand rows with rich content (image, button, link, html)
+- Want zero-cost, zero-dependency icons out of the box
+- Are building with plain Livewire components (not a panel framework)
+
+**Choose Filament if you:**
+- Want a full admin panel with dashboard, widgets, notifications, user management
+- Need the largest plugin ecosystem
+- Prefer an opinionated, batteries-included approach
+
+**Choose Backpack if you:**
+- Have existing jQuery/Bootstrap projects
+- Want point-and-click CRUD generation
+- Need commercial support
+
+**Choose Nova if you:**
+- Are deeply invested in the Laravel ecosystem (first-party)
+- Prefer Vue.js frontend
+- Need official Laravel team support
 
 ---
 
