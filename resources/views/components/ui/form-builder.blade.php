@@ -42,6 +42,7 @@
         .mrcatz-form-grid > div {
             grid-column: 1 / -1 !important;
             grid-row: auto !important;
+            padding-left: 0 !important;
             order: var(--mrcatz-mobile-order, 0);
         }
     }
@@ -50,7 +51,7 @@
     $formGap = $this->formGap ?? '1rem';
     $formColumnGap = $this->formColumnGap ?? '1.5rem';
 @endphp
-<div class="mrcatz-form-grid grid grid-cols-12" style="row-gap: {{ $formGap }}; column-gap: {{ $formColumnGap }}">
+<div class="mrcatz-form-grid grid grid-cols-12" style="gap: {{ $formGap }}">
     @foreach($formFields as $fieldIndex => $field)
         @php
             $show = $this->shouldShowField($field);
@@ -66,6 +67,7 @@
 
             $inlineStyles = collect([
                 $rowSpan ? "grid-row: 1 / span {$rowSpan}" : null,
+                $rowSpan ? "padding-left: {$formColumnGap}" : null,
                 $mobileOrder !== null ? "--mrcatz-mobile-order: {$mobileOrder}" : null,
             ])->filter()->implode('; ');
         @endphp
@@ -459,20 +461,22 @@
                             @close="scale = 1"
                             @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
                             onclick="if(event.target===this)this.close()">
-                        <div class="flex flex-col items-center justify-center w-full h-full p-4" onclick="if(event.target===this)this.closest('dialog').close()">
-                            {{-- Controls --}}
-                            <div class="flex items-center gap-2 mb-3">
-                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.max(0.25, scale - 0.25)">-</button>
-                                <span class="text-white/80 text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
-                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.min(5, scale + 0.25)">+</button>
-                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = 1">
-                                    {!! mrcatz_icon('restart_alt', 'text-xs') !!}
-                                </button>
-                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20 ml-2" onclick="this.closest('dialog').close()">
-                                    {!! mrcatz_icon('close', 'text-xs') !!}
-                                </button>
-                            </div>
-                            {{-- Image --}}
+                        {{-- Controls: fixed top, always above image --}}
+                        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/50 backdrop-blur rounded-full px-3 py-1.5">
+                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.max(0.25, scale - 0.25)">-</button>
+                            <span class="text-white/80 text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
+                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.min(5, scale + 0.25)">+</button>
+                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = 1">
+                                {!! mrcatz_icon('restart_alt', 'text-xs') !!}
+                            </button>
+                            <div class="w-px h-4 bg-white/20"></div>
+                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" onclick="this.closest('dialog').close()">
+                                {!! mrcatz_icon('close', 'text-xs') !!}
+                            </button>
+                        </div>
+                        {{-- Image: centered, scrollable when zoomed --}}
+                        <div class="flex items-center justify-center w-full h-full overflow-auto p-8"
+                             onclick="if(event.target===this)this.closest('dialog').close()">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
                                  class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-150 origin-center select-none"
                                  draggable="false"
