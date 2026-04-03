@@ -603,6 +603,8 @@ class MrCatzDataTables
                     if ($url instanceof \Closure) {
                         $url = $url($data);
                     }
+                    $target = $value['target'] ?? null;
+                    if (!empty($value['newTab'])) $target = '_blank';
                     $mapped[] = [
                         'label' => $label,
                         'type' => $type,
@@ -611,7 +613,7 @@ class MrCatzDataTables
                         'icon' => $value['icon'] ?? null,
                         'style' => $value['style'] ?? ($type === 'link' ? 'ghost' : 'primary'),
                         'download' => $value['download'] ?? false,
-                        'target' => $value['target'] ?? null,
+                        'target' => $target,
                     ];
                 } else {
                     // Text with key

@@ -68,25 +68,31 @@
     @endforeach
 </div>
 
-{{-- Lightbox dialogs rendered OUTSIDE the grid to avoid overflow clipping --}}
+{{-- Lightbox: create dialogs on document.body via JS to escape table/tr/td context --}}
 @foreach($expandDialogs as $dlg)
-    <style>
-        #{{ $dlg['id'] }} { background:none;border:none;outline:none;padding:0;max-width:100vw;max-height:100vh;width:100vw;height:100vh; }
-        #{{ $dlg['id'] }}::backdrop { background:rgba(0,0,0,0.85);backdrop-filter:blur(4px); }
-        #{{ $dlg['id'] }}[open] { animation:mrcatz-lb-in 200ms ease-out; }
-    </style>
-    <dialog id="{{ $dlg['id'] }}"
-            x-data="{ scale:1, justReset:false }"
-            @close="scale=1;justReset=false"
-            @wheel.prevent="scale=Math.min(5,Math.max(0.25,scale+($event.deltaY<0?0.15:-0.15)))">
-        <div class="flex items-center justify-center w-full h-full cursor-default"
-             @click.self="if(scale!==1){scale=1;justReset=true}else{$el.closest('dialog').close()}">
-            <img src="{{ $dlg['url'] }}" alt=""
-                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none cursor-default"
-                 draggable="false" :style="'transform:scale('+scale+')'"
-                 @click.stop="if(justReset){justReset=false;return}if(scale!==1){scale=1;justReset=true}else{$el.closest('dialog').close()}" />
-        </div>
-    </dialog>
+    <script>
+        (function() {
+            if (document.getElementById('{{ $dlg['id'] }}')) return;
+            var d = document.createElement('dialog');
+            d.id = '{{ $dlg['id'] }}';
+            d.style.cssText = 'background:none;border:none;outline:none;padding:0;max-width:100vw;max-height:100vh;width:100vw;height:100vh;';
+            d.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:default;" onclick="var s=this.parentElement.__scale||1;if(s!==1){this.parentElement.__scale=1;this.parentElement.__justReset=true;this.querySelector(\'img\').style.transform=\'scale(1)\'}else{this.parentElement.close()}">' +
+                '<img src="{{ $dlg['url'] }}" alt="" draggable="false" style="max-height:85vh;max-width:90vw;border-radius:0.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);transition:transform 0.2s;transform-origin:center;user-select:none;cursor:default;" onclick="event.stopPropagation();var d=this.closest(\'dialog\');if(d.__justReset){d.__justReset=false;return}var s=d.__scale||1;if(s!==1){d.__scale=1;d.__justReset=true;this.style.transform=\'scale(1)\'}else{d.close()}" />' +
+                '</div>';
+            d.__scale = 1;
+            d.__justReset = false;
+            d.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                d.__scale = Math.min(5, Math.max(0.25, (d.__scale||1) + (e.deltaY < 0 ? 0.15 : -0.15)));
+                d.querySelector('img').style.transform = 'scale(' + d.__scale + ')';
+            });
+            d.addEventListener('close', function() { d.__scale = 1; d.__justReset = false; d.querySelector('img').style.transform = 'scale(1)'; });
+            var style = document.createElement('style');
+            style.textContent = '#{{ $dlg['id'] }}::backdrop{background:rgba(0,0,0,0.85);backdrop-filter:blur(4px)}#{{ $dlg['id'] }}[open]{animation:mrcatz-lb-in 200ms ease-out}';
+            document.head.appendChild(style);
+            document.body.appendChild(d);
+        })();
+    </script>
 @endforeach
 @if(!isset($__mrcatz_lb_keyframes))
     @php $__mrcatz_lb_keyframes = true; @endphp
