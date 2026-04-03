@@ -149,10 +149,12 @@
                     <button type="button"
                             class="{{ trim($btnClass) }} gap-2 w-full"
                             wire:click="{{ $field['onClick'] }}"
-                            @if($field['loading'])
-                                wire:loading.attr="disabled" wire:target="{{ $btnTarget }}"
-                            @endif
+                            wire:loading.attr="disabled" wire:target="{{ $btnTarget }}"
                             @if($disabled) disabled @endif>
+                        @if(!$field['loading'])
+                            <span class="loading loading-spinner loading-xs"
+                                  wire:loading wire:target="{{ $btnTarget }}"></span>
+                        @endif
                         @if($field['icon'])
                             {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
                         @endif
