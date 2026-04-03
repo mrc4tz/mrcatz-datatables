@@ -343,19 +343,20 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
                         {{-- Preview --}}
-                        @if($field['preview'])
-                            <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                 class="shrink-0 object-cover object-center {{ $pvClass }}"
-                                 @if($pvStyle) style="{{ $pvStyle }}" @endif />
-                        @elseif($field['fallback'])
-                            <div class="shrink-0 overflow-hidden flex items-center justify-center bg-primary/10 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
-                                <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
-                            </div>
-                        @else
-                            <div class="shrink-0 overflow-hidden flex items-center justify-center bg-base-300 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
-                                {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
-                            </div>
-                        @endif
+                        <div class="shrink-0 overflow-hidden {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                            @if($field['preview'])
+                                <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
+                                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
+                            @elseif($field['fallback'])
+                                <div style="width: 100%; height: 100%;" class="bg-primary/10 flex items-center justify-center">
+                                    <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
+                                </div>
+                            @else
+                                <div style="width: 100%; height: 100%;" class="bg-base-300 flex items-center justify-center">
+                                    {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
+                                </div>
+                            @endif
+                        </div>
 
                         {{-- File input + buttons --}}
                         <div class="w-full max-w-xs">
