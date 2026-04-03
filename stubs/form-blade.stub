@@ -1,5 +1,11 @@
 <div>
 
+    {{-- ============================================================
+       FILE INI OPSIONAL jika menggunakan Form Builder (setForm()).
+       Jika {{name}}Page sudah override setForm(), file ini tidak dipakai.
+       Hapus file ini jika menggunakan Form Builder sepenuhnya.
+       ============================================================ --}}
+
     @extends('mrcatz::components.ui.datatable-form')
 
     @section('forms')

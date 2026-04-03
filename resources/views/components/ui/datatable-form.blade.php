@@ -16,7 +16,11 @@
         {{-- Body --}}
         <form>
             <div class="flex-col max-h-[60vh] overflow-y-auto pr-1 -mr-1">
-                @yield('forms')
+                @if($this->hasFormBuilder())
+                    @include('mrcatz::components.ui.form-builder')
+                @else
+                    @yield('forms')
+                @endif
             </div>
         </form>
 

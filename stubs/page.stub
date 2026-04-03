@@ -4,12 +4,34 @@ namespace {{namespace}};
 
 use App\Models\{{name}};
 use MrCatz\DataTable\MrCatzComponent;
+use MrCatz\DataTable\MrCatzFormField;
 use Illuminate\Support\Facades\Auth;
 
 class {{name}}Page extends MrCatzComponent
 {
     // Tambahkan property form sesuai kebutuhan
     // public $field_name;
+
+    /**
+     * (Opsional) Definisikan form fields menggunakan Form Builder.
+     * Jika method ini di-override, Blade form file ({{snake}}_form.blade.php) tidak diperlukan.
+     * Jika tidak di-override, form akan menggunakan Blade file seperti biasa.
+     *
+     * Contoh:
+     * public function setForm(): array
+     * {
+     *     return [
+     *         MrCatzFormField::text('name', label: 'Nama', rules: 'required|max:255', icon: 'person'),
+     *         MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
+     *         MrCatzFormField::select('role', label: 'Role', data: [
+     *             ['id' => 'admin', 'name' => 'Admin'],
+     *             ['id' => 'user', 'name' => 'User'],
+     *         ], value: 'id', option: 'name'),
+     *         MrCatzFormField::password('password', label: 'Password', rules: 'required|min:8')
+     *             ->withConfirmation(),
+     *     ];
+     * }
+     */
 
     public function mount()
     {
@@ -53,6 +75,10 @@ class {{name}}Page extends MrCatzComponent
 
     public function saveData()
     {
+        // Jika menggunakan Form Builder:
+        // $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
+        //
+        // Jika menggunakan Blade form manual:
         // $this->validate([...]);
 
         if ($this->isEdit) {

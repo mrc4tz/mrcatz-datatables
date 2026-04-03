@@ -42,6 +42,7 @@ php artisan mrcatz:make Product --path=Admin
 - Inline editing — double-click cells to edit, Enter to save, with server-side validation
 - Row click hook — custom action when row is clicked
 - Fluent DataTable API — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
+- **Form Builder** — define form fields in PHP, no Blade form file needed
 
 **Search & Filter**
 - Multi-keyword search with relevance scoring and highlight
@@ -735,6 +736,222 @@ Icons not defined in `custom_icons` fallback to Default (inline SVG).
 
 ---
 
+## Form Builder
+
+Define form fields programmatically in your Page component — no separate Blade form file needed. **Fully optional** — existing Blade forms (`@yield('forms')`) continue to work.
+
+### Basic Usage
+
+```php
+use MrCatz\DataTable\MrCatzFormField;
+
+class UserPage extends MrCatzComponent
+{
+    public $name, $email, $role, $password, $password_confirmation;
+
+    public function setForm(): array
+    {
+        return [
+            MrCatzFormField::text('name', label: 'Name', rules: 'required|max:255', icon: 'person'),
+            MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
+            MrCatzFormField::select('role', label: 'Role', data: [
+                ['id' => 'admin', 'name' => 'Admin'],
+                ['id' => 'user', 'name' => 'User'],
+            ], value: 'id', option: 'name'),
+            MrCatzFormField::password('password', label: 'Password', rules: 'required|min:8')
+                ->withConfirmation(),
+        ];
+    }
+
+    public function saveData()
+    {
+        $this->validate(
+            $this->getFormValidationRules(),
+            $this->getFormValidationMessages()
+        );
+        // ... save logic
+    }
+}
+```
+
+When `setForm()` returns fields, the form modal auto-renders them. If `setForm()` is not overridden (returns `[]`), the Blade `@yield('forms')` approach is used — **backward compatible**.
+
+### Field Types
+
+| Method | Description |
+|---|---|
+| `text(id, label, ...)` | Text input |
+| `email(id, label, ...)` | Email input |
+| `password(id, label, ...)` | Password input |
+| `number(id, label, ...)` | Number input with `step`, `min`, `max` |
+| `select(id, label, data, value, option, ...)` | Dropdown select |
+| `textarea(id, label, ...)` | Multi-line text |
+| `file(id, label, ...)` | File upload with optional `accept` |
+| `toggle(id, label)` | Checkbox toggle |
+| `chooser(id, label, data, value, option)` | Multi-checkbox buttons |
+| `radio(id, label, options)` | Radio buttons (`options: ['val' => 'Label']`) |
+| `hidden(id)` | Hidden input |
+
+**Static content elements:**
+
+| Method | Description |
+|---|---|
+| `section(title)` | Section heading with border |
+| `note(text)` | Small muted text |
+| `alert(text, type)` | Alert box: `'info'`, `'warning'`, `'success'`, `'error'` |
+| `html(content)` | Raw HTML block |
+
+### Modifiers (Chainable)
+
+```php
+MrCatzFormField::text('name', label: 'Name')
+    ->span(6)                    // Grid column span (1-12, default: 12)
+    ->hint('Max 255 characters') // Helper text below field
+    ->prefix('Rp')               // Text before input
+    ->suffix('kg')               // Text after input
+    ->live()                     // wire:model.live (realtime)
+    ->lazy()                     // wire:model.blur (on blur)
+    ->debounce(300)              // wire:model.live.debounce.300ms
+    ->disabled()                 // Disable field
+    ->disabled(fn() => ...)      // Conditional disable
+    ->hideWhen(fn() => ...)      // Conditional hide
+    ->onChange('methodName')     // Call Livewire method on change
+    ->dependsOn('other_field')  // Re-render when parent field changes
+    ->visibleWhen('field', 'value')     // Show when field == value
+    ->visibleWhen('field', ['a', 'b'])  // Show when field is 'a' or 'b'
+    ->visibleWhenAll(['type' => 'x', 'role' => 'admin'])  // Multiple conditions
+```
+
+**File-specific:**
+
+```php
+MrCatzFormField::file('avatar', label: 'Avatar')
+    ->preview($this->isEdit ? $this->avatarUrl : null)  // Show current file
+```
+
+**Password-specific:**
+
+```php
+MrCatzFormField::password('password', label: 'Password', rules: 'required|min:8')
+    ->withConfirmation(label: 'Confirm Password')  // Auto-generates confirmation field
+```
+
+### Grid Layout
+
+Form uses a 12-column grid. Use `->span()` for multi-column layouts:
+
+```php
+MrCatzFormField::text('first_name', label: 'First Name')->span(6),
+MrCatzFormField::text('last_name', label: 'Last Name')->span(6),
+MrCatzFormField::textarea('bio', label: 'Bio'),  // full width (default: span 12)
+```
+
+### Dynamic / Dependent Fields
+
+```php
+// Radio toggle — show/hide fields based on selection
+MrCatzFormField::radio('type', label: 'Type', options: ['url' => 'URL', 'file' => 'FILE']),
+MrCatzFormField::text('file_url', label: 'URL', icon: 'link')
+    ->visibleWhen('type', 'url'),
+MrCatzFormField::file('file_file', label: 'File')
+    ->visibleWhen('type', 'file'),
+
+// Cascade select — parent updates child data
+MrCatzFormField::select('province_id', label: 'Province', data: $this->provinces, value: 'id', option: 'name')
+    ->live()->onChange('loadCities'),
+MrCatzFormField::select('city_id', label: 'City', data: $this->cities, value: 'id', option: 'name')
+    ->dependsOn('province_id'),
+```
+
+In your component:
+
+```php
+public function loadCities($value)
+{
+    $this->cities = City::where('province_id', $value)->get()->toArray();
+    $this->city_id = null;
+}
+```
+
+### Validation
+
+Rules are defined on each field — error messages render automatically:
+
+```php
+MrCatzFormField::text('name', label: 'Name',
+    rules: 'required|max:255',
+    messages: [
+        'required' => 'Name is required!',
+        'max' => 'Name must be under :max characters',
+    ]
+),
+```
+
+In `saveData()`:
+
+```php
+$this->validate(
+    $this->getFormValidationRules(),     // ['name' => 'required|max:255', ...]
+    $this->getFormValidationMessages()   // ['name.required' => 'Name is required!', ...]
+);
+```
+
+### Icons
+
+Form field icons support 3 modes:
+
+```php
+// 1. Icon name — uses mrcatz_icon() / config form_icons
+MrCatzFormField::text('name', icon: 'person'),
+
+// 2. Raw HTML — rendered as-is
+MrCatzFormField::text('name', icon: '<i class="bi bi-person"></i>'),
+
+// 3. Registered in config/mrcatz.php form_icons
+// 'form_icons' => ['person' => '<path d="..."/>' ]
+MrCatzFormField::text('name', icon: 'person'),
+```
+
+Config `form_icons` values can be SVG paths (auto-wrapped in `<svg>`) or raw HTML:
+
+```php
+// config/mrcatz.php
+'form_icons' => [
+    'person' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75..."/>',
+    'mail'   => '<i class="bi bi-envelope"></i>',
+],
+```
+
+### Full Example
+
+```php
+public function setForm(): array
+{
+    return [
+        MrCatzFormField::section('Account Information'),
+        MrCatzFormField::text('first_name', label: 'First Name', rules: 'required')->span(6),
+        MrCatzFormField::text('last_name', label: 'Last Name', rules: 'required')->span(6),
+        MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
+
+        MrCatzFormField::section('Pricing'),
+        MrCatzFormField::number('price', label: 'Price', rules: 'required|numeric')
+            ->prefix('Rp')->suffix('/unit'),
+
+        MrCatzFormField::section('Document'),
+        MrCatzFormField::alert('Max upload 2MB, JPG/PNG only.', type: 'info'),
+        MrCatzFormField::radio('doc_type', label: 'Document Type', options: ['url' => 'URL', 'file' => 'FILE']),
+        MrCatzFormField::text('doc_url', label: 'URL')->visibleWhen('doc_type', 'url'),
+        MrCatzFormField::file('doc_file', label: 'File', accept: 'image/*')
+            ->visibleWhen('doc_type', 'file')
+            ->preview($this->isEdit ? $this->existingFileUrl : null),
+
+        MrCatzFormField::note('Changes will take effect immediately.'),
+    ];
+}
+```
+
+---
+
 ## Property Reference
 
 ### Page Properties
@@ -790,6 +1007,11 @@ Icons not defined in `custom_icons` fallback to Default (inline SVG).
 | `onRowClick($data)` | Handle row click |
 | `dispatch_to_view($condition, $type)` | Send success/failure notification |
 | `show_notif($type, $text)` | Show custom notification |
+| `setForm()` | Define form fields (Form Builder) |
+| `getFormValidationRules()` | Extract validation rules from form fields |
+| `getFormValidationMessages()` | Extract custom validation messages |
+| `hasFormBuilder()` | Check if Form Builder is active |
+| `formFieldChanged($id, $value)` | Handle field change events |
 
 ### Table — Override Methods
 

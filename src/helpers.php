@@ -84,6 +84,16 @@ if (!function_exists('mrcatz_icon_svg')) {
             ];
         }
 
+        // Check form_icons config before fallback
+        if (!isset($svgMap[$name])) {
+            try {
+                $formIcons = config('mrcatz.form_icons', []);
+                if (isset($formIcons[$name])) {
+                    return mrcatz_resolve_form_icon($formIcons[$name], $class);
+                }
+            } catch (\Throwable $e) {}
+        }
+
         $path = $svgMap[$name] ?? '<circle cx="12" cy="12" r="1.5"/>';
         $cls = 'inline-block w-5 h-5' . ($class ? ' ' . $class : '');
         return '<svg class="' . $cls . '" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' . $path . '</svg>';
@@ -186,7 +196,7 @@ if (!function_exists('mrcatz_icon')) {
                     'view_column' => 'fa-solid fa-table-columns',
                 ];
             }
-            $mapped = $faMap[$name] ?? 'fa-solid fa-circle-question';
+            $mapped = $faMap[$name] ?? 'fa-solid fa-' . str_replace('_', '-', $name);
             return '<i class="' . $mapped . ($class ? ' ' . $class : '') . '"></i>';
         }
 
@@ -204,5 +214,64 @@ if (!function_exists('mrcatz_icon')) {
 
         // Unknown icon set — fallback to inline SVG
         return mrcatz_icon_svg($name, $class);
+    }
+}
+
+if (!function_exists('mrcatz_resolve_form_icon')) {
+    /**
+     * Resolve a form_icons config value to HTML.
+     *
+     * If the value starts with an SVG element tag (<path, <circle, <g, <rect, <line, <polygon, <polyline),
+     * it's wrapped in an <svg> tag. Otherwise, rendered as raw HTML.
+     */
+    function mrcatz_resolve_form_icon(string $value, string $class = ''): string
+    {
+        $svgTags = ['<path', '<circle', '<g', '<rect', '<line', '<polygon', '<polyline'];
+        $isSvgPath = false;
+        foreach ($svgTags as $tag) {
+            if (str_starts_with(trim($value), $tag)) {
+                $isSvgPath = true;
+                break;
+            }
+        }
+
+        if ($isSvgPath) {
+            $cls = 'inline-block w-5 h-5' . ($class ? ' ' . $class : '');
+            return '<svg class="' . $cls . '" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' . $value . '</svg>';
+        }
+
+        // Raw HTML — render as-is
+        return $value;
+    }
+}
+
+if (!function_exists('mrcatz_form_icon')) {
+    /**
+     * Resolve a form field icon to HTML.
+     *
+     * Supports 3 modes:
+     * 1. Raw HTML (starts with '<') — rendered as-is
+     * 2. Name found in config('mrcatz.form_icons') — resolved via mrcatz_resolve_form_icon()
+     * 3. Name passed to mrcatz_icon() — uses the active icon_set
+     */
+    function mrcatz_form_icon(?string $icon, string $class = ''): string
+    {
+        if (!$icon) return '';
+
+        // Mode 1: Raw HTML
+        if (str_starts_with(trim($icon), '<')) {
+            return $icon;
+        }
+
+        // Mode 2: Check config form_icons
+        try {
+            $formIcons = config('mrcatz.form_icons', []);
+            if (isset($formIcons[$icon])) {
+                return mrcatz_resolve_form_icon($formIcons[$icon], $class);
+            }
+        } catch (\Throwable $e) {}
+
+        // Mode 3: Standard mrcatz_icon()
+        return mrcatz_icon($icon, $class);
     }
 }

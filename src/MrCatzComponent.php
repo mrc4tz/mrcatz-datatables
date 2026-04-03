@@ -4,9 +4,11 @@ namespace MrCatz\DataTable;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use MrCatz\DataTable\Concerns\HasFormBuilder;
 
 class MrCatzComponent extends Component
 {
+    use HasFormBuilder;
     // Public properties — no strict types to allow child class override without type declaration
     public $title = '';
     public $form_title = '';
