@@ -517,7 +517,7 @@ class MrCatzDataTables
         $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback) {
             $url = $data->{$key} ?? null;
             if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
-                $url = asset($url);
+                $url = asset('storage/' . $url);
             }
             $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
             return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key);
@@ -586,7 +586,7 @@ class MrCatzDataTables
                     $key = $value['key'] ?? '';
                     $url = $data->{$key} ?? null;
                     if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
-                        $url = asset($url);
+                        $url = asset('storage/' . $url);
                     }
                     $fallbackKey = $value['fallback'] ?? null;
                     $mapped[] = [
