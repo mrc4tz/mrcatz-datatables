@@ -37,7 +37,12 @@
     ];
 @endphp
 
-<div class="grid grid-cols-12 gap-4">
+<style>
+    @media (max-width: 640px) {
+        .mrcatz-form-grid > div { grid-column: 1 / -1 !important; grid-row: auto !important; }
+    }
+</style>
+<div class="mrcatz-form-grid grid grid-cols-12 gap-4">
     @foreach($formFields as $fieldIndex => $field)
         @php
             $show = $this->shouldShowField($field);
@@ -338,20 +343,19 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
                         {{-- Preview --}}
-                        <div class="relative overflow-hidden shrink-0 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
-                            @if($field['preview'])
-                                <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                     class="absolute inset-0 w-full h-full object-cover object-center" />
-                            @elseif($field['fallback'])
-                                <div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                    <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
-                                </div>
-                            @else
-                                <div class="absolute inset-0 bg-base-300 flex items-center justify-center">
-                                    {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
-                                </div>
-                            @endif
-                        </div>
+                        @if($field['preview'])
+                            <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
+                                 class="shrink-0 object-cover object-center {{ $pvClass }}"
+                                 @if($pvStyle) style="{{ $pvStyle }}" @endif />
+                        @elseif($field['fallback'])
+                            <div class="shrink-0 overflow-hidden flex items-center justify-center bg-primary/10 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                                <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
+                            </div>
+                        @else
+                            <div class="shrink-0 overflow-hidden flex items-center justify-center bg-base-300 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                                {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
+                            </div>
+                        @endif
 
                         {{-- File input + buttons --}}
                         <div class="w-full max-w-xs">
