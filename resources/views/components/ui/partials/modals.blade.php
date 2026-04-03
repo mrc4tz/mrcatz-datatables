@@ -217,7 +217,8 @@
         </div>
     @endif
     <div wire:loading.delay wire:target="showLoading, searchData, goToP, nextPage, previousPage, change, paginate, saveData, dropData, resetData, orderData, editData, deleteData, exportData, bulkDelete"
-         style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);">
+         class="flex items-center justify-center"
+         style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);">
         <div class="flex flex-col items-center gap-3">
             <span class="loading loading-dots loading-xl text-primary"></span>
             <span class="text-white text-sm font-medium">{{ mrcatz_lang('processing') }}</span>
