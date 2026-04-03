@@ -39,21 +39,19 @@
 
 <div class="grid grid-cols-12 gap-4">
     @foreach($formFields as $fieldIndex => $field)
-        @if(!$this->shouldShowField($field))
-            @continue
-        @endif
-
         @php
+            $show = $this->shouldShowField($field);
             $type = $field['type'];
             $id = $field['id'];
             $span = $field['span'] ?? 12;
             $disabled = $field['disabled'] ?? false;
             $wireDirective = $field['wireDirective'] ?? '';
-            $onChangeAttr = $field['onChange'] ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
+            $onChangeAttr = ($field['onChange'] ?? null) ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
         @endphp
 
-        <div class="{{ $spanClass }}" wire:key="mrcatz-fb-{{ $fieldIndex }}">
+        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}">
+        @if($show)
 
             {{-- ═══ HIDDEN ═══ --}}
             @if($type === 'hidden')
@@ -588,6 +586,7 @@
                 </fieldset>
 
             @endif
+        @endif
         </div>
     @endforeach
 </div>
