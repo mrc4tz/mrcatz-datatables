@@ -739,10 +739,36 @@ public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 | image | `'Label' => ['type' => 'image', 'key' => '...', ...]` | Image with clickable lightbox zoom |
 | button | `'Label' => ['type' => 'button', 'label' => '...', ...]` | Attachment link (download) |
 | link | `'Label' => ['type' => 'link', 'label' => '...', ...]` | Action button (navigate) |
+| html | `'Label' => ['type' => 'html', 'content' => '...']` | Custom HTML content |
 
-**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter)
+**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter), `urlPrefix` (default: `'storage'`)
 
 **Button/Link options:** `label`, `url` (string or Closure), `icon`, `style` (DaisyUI), `download` (bool), `newTab` (bool), `target`
+
+**HTML type** — render custom content. `content` can be a string or Closure receiving `$data`:
+
+```php
+// Static HTML
+'Badge' => [
+    'type' => 'html',
+    'content' => '<span class="badge badge-primary">Premium</span>',
+],
+
+// Dynamic HTML via Closure
+'Status' => [
+    'type' => 'html',
+    'content' => fn($d) => '<div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full ' . ($d->status === 'active' ? 'bg-success' : 'bg-error') . '"></div>
+        ' . ucfirst($d->status) . '
+    </div>',
+],
+
+// Progress bar
+'Progress' => [
+    'type' => 'html',
+    'content' => fn($d) => '<progress class="progress progress-primary w-full" value="' . $d->progress . '" max="100"></progress>',
+],
+```
 
 Return `null` from the callback to disable expand for a specific row — the chevron (desktop) and Details button (mobile) will be hidden for that row.
 
