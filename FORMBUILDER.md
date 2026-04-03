@@ -199,7 +199,106 @@ public string $formColumnGap = '1.5rem'; // Column gap between side-by-side sect
 
 ```php
 ->preview($url)              // Show current file preview
-->preview($url, width: 128, height: 128)  // With pixel dimensions (for file type)
+->preview($url, width: 128, height: 128)  // With pixel dimensions
+```
+
+---
+
+## File Upload Fields
+
+There are 3 field types for uploading files, each with a different use case:
+
+| Method | Use Case | Preview | Upload UI |
+|---|---|---|---|
+| `file()` | Generic file upload | Auto-detect: image thumbnail + lightbox, or file icon + badge | Standard file input |
+| `fileupload()` | File with inline preview | Same as file() but preview beside label text | Standard file input |
+| `image()` | Avatar/profile photo | Circular/styled, centered, with fallback initial | Upload + Delete buttons |
+
+### `file()` — Basic File Upload
+
+```php
+// Image only
+MrCatzFormField::file('photo', label: 'Photo',
+    rules: 'required|image|mimes:jpg,png|max:2048',
+    accept: 'image/jpg,image/jpeg,image/png',
+)->preview($this->photoUrl)
+
+// PDF only
+MrCatzFormField::file('document', label: 'Document',
+    rules: 'required|mimes:pdf|max:5120',
+    accept: '.pdf',
+)->preview($this->docUrl)
+
+// Any file
+MrCatzFormField::file('attachment', label: 'Attachment',
+    rules: 'required|max:10240',
+)
+```
+
+### `fileupload()` — File Upload with Inline Preview
+
+Same as `file()` but preview is displayed inline (image thumbnail left-aligned with label, or file icon card):
+
+```php
+// Product image with preview
+MrCatzFormField::fileupload('image_file', label: 'Product Image',
+    accept: 'image/jpg,image/jpeg,image/png,image/webp',
+)->preview($this->imageUrl, width: 80, height: 80)
+  ->hint('Optional. JPG, PNG, WEBP. Max 2MB.')
+
+// Document with preview
+MrCatzFormField::fileupload('doc_file', label: 'Document',
+    accept: '.pdf,.doc,.docx,.xls,.xlsx',
+)->preview($this->docUrl)
+  ->hint('PDF, Word, or Excel. Max 5MB.')
+```
+
+### Parameters Explained
+
+**`accept`** — Browser file picker filter. Restricts which files the user can select:
+
+```php
+accept: 'image/*'                              // All images
+accept: 'image/jpg,image/jpeg,image/png'       // Specific image types
+accept: '.pdf'                                 // PDF only
+accept: '.pdf,.doc,.docx'                      // PDF + Word
+accept: '.xls,.xlsx,.csv'                      // Excel/CSV
+accept: null                                   // Any file (default)
+```
+
+**`rules`** — Laravel validation rules. Validated server-side in `saveData()`:
+
+```php
+rules: 'required|image|mimes:jpg,png|max:2048'          // Required image, max 2MB
+rules: 'required|mimes:pdf|max:5120'                     // Required PDF, max 5MB
+rules: 'nullable|file|mimes:jpg,png,pdf,xls,xlsx|max:10240'  // Optional, multiple types
+rules: 'required|file|max:20480'                         // Required, any type, max 20MB
+```
+
+> **Note:** `accept` filters the browser file picker (client-side UX). `rules` validates on the server. Always use both for proper file handling.
+
+**`preview`** — URL of current file (for edit mode). Auto-detects file type:
+
+- **Image** (jpg, png, gif, webp, svg): thumbnail with clickable lightbox zoom
+- **PDF**: icon + filename + red badge
+- **Excel** (xls, xlsx, csv): icon + filename + green badge
+- **Word** (doc, docx): icon + filename + blue badge
+- **Archive** (zip, rar, 7z): icon + filename + yellow badge
+- **Other**: generic download icon + badge
+
+### Validation in saveData()
+
+```php
+// Option 1: rules defined in setForm() — auto-extracted
+$this->validate(
+    $this->getFormValidationRules(),
+    $this->getFormValidationMessages()
+);
+
+// Option 2: manual validation for file (when rules not in setForm)
+if ($this->image_file) {
+    $this->validate(['image_file' => 'image|mimes:jpg,png|max:2048']);
+}
 ```
 
 ---
