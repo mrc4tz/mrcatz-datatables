@@ -46,8 +46,11 @@
         }
     }
 </style>
-@php $formGap = $this->formGap ?? '1rem'; @endphp
-<div class="mrcatz-form-grid grid grid-cols-12" style="gap: {{ $formGap }}">
+@php
+    $formGap = $this->formGap ?? '1rem';
+    $formColumnGap = $this->formColumnGap ?? '1.5rem';
+@endphp
+<div class="mrcatz-form-grid grid grid-cols-12" style="row-gap: {{ $formGap }}; column-gap: {{ $formColumnGap }}">
     @foreach($formFields as $fieldIndex => $field)
         @php
             $show = $this->shouldShowField($field);
@@ -332,12 +335,13 @@
                     @endif
                 </fieldset>
 
-            {{-- ═══ IMAGE (upload with preview) ═══ --}}
+            {{-- ═══ IMAGE ═══ --}}
             @elseif($type === 'image')
                 @php
                     $sc = mrcatz_fb_classes('file-input', $field);
                     $modalId = 'modal_delete_' . $id;
                     $lightboxId = 'lightbox_' . $id;
+                    $isUploadMode = !empty($field['onUpload']);
 
                     $pvClass = $field['previewClass'] ?? 'rounded-full ring ring-primary ring-offset-base-100 ring-offset-2';
                     $pw = $field['previewWidth'] ?? 128;
@@ -345,9 +349,9 @@
                 @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-                    <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
+                    <div class="flex flex-col items-center gap-4 @if($isUploadMode) p-4 border border-base-content/10 rounded-lg bg-base-200/20 @endif">
                         {{-- Preview: clickable for lightbox --}}
-                        <div class="shrink-0 overflow-hidden cursor-pointer transition-opacity hover:opacity-80 {{ $pvClass }}"
+                        <div class="shrink-0 overflow-hidden {{ $field['preview'] ? 'cursor-pointer transition-opacity hover:opacity-80' : '' }} {{ $pvClass }}"
                              style="width: {{ $pw }}px; height: {{ $ph }}px;"
                              @if($field['preview']) onclick="document.getElementById('{{ $lightboxId }}').showModal()" @endif>
                             @if($field['preview'])
@@ -364,23 +368,23 @@
                             @endif
                         </div>
 
-                        {{-- File input + buttons --}}
-                        <div class="w-full max-w-xs">
-                            <input type="file"
-                                   class="file-input file-input-bordered file-input-sm {{ $sc }} w-full
-                                       @error($id) file-input-error @enderror"
-                                   {!! $wireDirective !!}
-                                   @if($field['accept']) accept="{{ $field['accept'] }}" @endif
-                                   @if($disabled) disabled @endif />
-                            @error($id)
-                                <p class="text-error text-xs mt-1 flex items-center gap-1">
-                                    {!! mrcatz_icon('error', 'text-xs') !!}
-                                    {{ $message }}
-                                </p>
-                            @enderror
+                        {{-- Upload UI (only if onUpload is set) --}}
+                        @if($isUploadMode)
+                            <div class="w-full max-w-xs">
+                                <input type="file"
+                                       class="file-input file-input-bordered file-input-sm {{ $sc }} w-full
+                                           @error($id) file-input-error @enderror"
+                                       {!! $wireDirective !!}
+                                       @if($field['accept']) accept="{{ $field['accept'] }}" @endif
+                                       @if($disabled) disabled @endif />
+                                @error($id)
+                                    <p class="text-error text-xs mt-1 flex items-center gap-1">
+                                        {!! mrcatz_icon('error', 'text-xs') !!}
+                                        {{ $message }}
+                                    </p>
+                                @enderror
 
-                            <div class="flex gap-2 mt-3">
-                                @if($field['onUpload'])
+                                <div class="flex gap-2 mt-3">
                                     <button type="button"
                                             class="btn btn-primary btn-sm flex-1 gap-1"
                                             wire:click="{{ $field['onUpload'] }}"
@@ -390,16 +394,16 @@
                                               wire:loading wire:target="{{ $field['onUpload'] }},{{ $id }}"></span>
                                         Upload
                                     </button>
-                                @endif
-                                @if($field['onDelete'] && $field['preview'])
-                                    <button type="button"
-                                            class="btn btn-error btn-sm btn-outline gap-1"
-                                            onclick="document.getElementById('{{ $modalId }}').showModal()">
-                                        {!! mrcatz_icon('delete', 'text-sm') !!}
-                                    </button>
-                                @endif
+                                    @if($field['onDelete'] && $field['preview'])
+                                        <button type="button"
+                                                class="btn btn-error btn-sm btn-outline gap-1"
+                                                onclick="document.getElementById('{{ $modalId }}').showModal()">
+                                            {!! mrcatz_icon('delete', 'text-sm') !!}
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         @if($field['hint'])
                             @php
@@ -448,29 +452,31 @@
                     </dialog>
                 @endif
 
-                {{-- Lightbox modal (zoom) --}}
+                {{-- Lightbox: transparent backdrop, scroll zoom --}}
                 @if($field['preview'])
-                    <dialog id="{{ $lightboxId }}" class="modal" onclick="if(event.target===this)this.close()">
-                        <div class="modal-box max-w-4xl bg-base-100 p-2 sm:p-4" x-data="{ scale: 1 }">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-semibold text-base-content/70">{{ $field['label'] }}</span>
-                                <div class="flex items-center gap-1">
-                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = Math.max(0.5, scale - 0.25)">-</button>
-                                    <span class="text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
-                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = Math.min(3, scale + 0.25)">+</button>
-                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = 1">
-                                        {!! mrcatz_icon('restart_alt', 'text-xs') !!}
-                                    </button>
-                                    <form method="dialog" class="inline">
-                                        <button class="btn btn-ghost btn-xs btn-circle">{!! mrcatz_icon('close', 'text-xs') !!}</button>
-                                    </form>
-                                </div>
+                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm"
+                            x-data="{ scale: 1 }"
+                            @close="scale = 1"
+                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
+                            onclick="if(event.target===this)this.close()">
+                        <div class="flex flex-col items-center justify-center w-full h-full p-4" onclick="if(event.target===this)this.closest('dialog').close()">
+                            {{-- Controls --}}
+                            <div class="flex items-center gap-2 mb-3">
+                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.max(0.25, scale - 0.25)">-</button>
+                                <span class="text-white/80 text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
+                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.min(5, scale + 0.25)">+</button>
+                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = 1">
+                                    {!! mrcatz_icon('restart_alt', 'text-xs') !!}
+                                </button>
+                                <button type="button" class="btn btn-sm btn-circle bg-white/10 border-0 text-white hover:bg-white/20 ml-2" onclick="this.closest('dialog').close()">
+                                    {!! mrcatz_icon('close', 'text-xs') !!}
+                                </button>
                             </div>
-                            <div class="overflow-auto max-h-[80vh] flex justify-center rounded-lg bg-base-200/50">
-                                <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                     class="transition-transform duration-200 origin-center"
-                                     :style="'transform: scale(' + scale + ')'" />
-                            </div>
+                            {{-- Image --}}
+                            <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
+                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-150 origin-center select-none"
+                                 draggable="false"
+                                 :style="'transform: scale(' + scale + ')'" />
                         </div>
                     </dialog>
                 @endif

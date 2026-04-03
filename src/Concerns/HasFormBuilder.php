@@ -7,10 +7,16 @@ use Closure;
 trait HasFormBuilder
 {
     /**
-     * Form grid gap. Set to any CSS value: '1rem', '1.5rem', '0.5rem', '2rem', etc.
-     * Default: '1rem' (equivalent to Tailwind gap-4).
+     * Gap between form field rows. CSS value: '1rem', '0.5rem', '1.5rem', etc.
+     * Default: '1rem' (Tailwind gap-4).
      */
     public string $formGap = '1rem';
+
+    /**
+     * Gap between grid columns (e.g. between image and form fields side by side).
+     * Default: '1.5rem' (Tailwind gap-6).
+     */
+    public string $formColumnGap = '1.5rem';
 
     /**
      * Override this method to define form fields using MrCatzFormField.
