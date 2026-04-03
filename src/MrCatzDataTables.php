@@ -598,18 +598,18 @@ class MrCatzDataTables
                         'previewClass' => $value['previewClass'] ?? 'rounded-lg',
                         'fallback' => $fallbackKey ? ($data->{$fallbackKey} ?? null) : null,
                     ];
-                } elseif ($type === 'button') {
+                } elseif ($type === 'button' || $type === 'link') {
                     $url = $value['url'] ?? '#';
                     if ($url instanceof \Closure) {
                         $url = $url($data);
                     }
                     $mapped[] = [
                         'label' => $label,
-                        'type' => 'button',
+                        'type' => $type,
                         'buttonLabel' => $value['label'] ?? $label,
                         'url' => $url,
                         'icon' => $value['icon'] ?? null,
-                        'style' => $value['style'] ?? 'primary',
+                        'style' => $value['style'] ?? ($type === 'link' ? 'ghost' : 'primary'),
                         'download' => $value['download'] ?? false,
                         'target' => $value['target'] ?? null,
                     ];
