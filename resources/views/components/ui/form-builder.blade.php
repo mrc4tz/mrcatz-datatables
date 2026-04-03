@@ -338,7 +338,7 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
                         {{-- Preview --}}
-                        <div class="overflow-hidden {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                        <div class="overflow-hidden shrink-0 aspect-square {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
                             @if($field['preview'])
                                 <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
                                      class="object-cover w-full h-full" />
