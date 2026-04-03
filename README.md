@@ -668,14 +668,57 @@ public function dropBulkData($selectedRows)
 public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 
 ->enableExpand(function ($data, $i) {
-    // Return null to disable expand for this specific row
-    if (!$data->has_details) return null;
+    if (!$data->has_details) return null; // null = disable for this row
 
     return MrCatzDataTables::getExpandView($data, [
-        'Email' => 'email', 'Created' => 'created_at',
+        // Text fields
+        'Email' => 'email',
+        'Created' => 'created_at',
+
+        // Image with lightbox (click to zoom)
+        'Photo' => [
+            'type' => 'image',
+            'key' => 'avatar',
+            'width' => 64, 'height' => 64,
+            'previewClass' => 'rounded-lg shadow-sm',
+            'fallback' => 'name',
+        ],
+
+        // Download link (attachment style)
+        'Document' => [
+            'type' => 'button',
+            'label' => 'Download PDF',
+            'url' => fn($d) => asset('storage/' . $d->file_path),
+            'icon' => 'download',
+            'download' => true,
+            'newTab' => true,
+        ],
+
+        // Action button (navigate)
+        'Profile' => [
+            'type' => 'link',
+            'label' => 'View Profile',
+            'url' => fn($d) => route('profile.show', $d->id),
+            'icon' => 'person',
+            'style' => 'info',
+            'newTab' => true,
+        ],
     ]);
 })
 ```
+
+#### Expand Field Types
+
+| Type | Format | Description |
+|---|---|---|
+| text | `'Label' => 'db_key'` | Simple text display (default) |
+| image | `'Label' => ['type' => 'image', 'key' => '...', ...]` | Image with clickable lightbox zoom |
+| button | `'Label' => ['type' => 'button', 'label' => '...', ...]` | Attachment link (download) |
+| link | `'Label' => ['type' => 'link', 'label' => '...', ...]` | Action button (navigate) |
+
+**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter)
+
+**Button/Link options:** `label`, `url` (string or Closure), `icon`, `style` (DaisyUI), `download` (bool), `newTab` (bool), `target`
 
 Return `null` from the callback to disable expand for a specific row — the chevron (desktop) and Details button (mobile) will be hidden for that row.
 
