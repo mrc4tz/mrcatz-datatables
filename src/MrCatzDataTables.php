@@ -559,14 +559,70 @@ class MrCatzDataTables
         ])->render();
     }
 
+    /**
+     * Render expand view with support for text, image, and button fields.
+     *
+     * Field formats:
+     *   'Label' => 'db_key'                                    // simple text
+     *   'Label' => ['key' => 'db_key', 'type' => 'image', 'width' => 64, 'height' => 64, 'previewClass' => 'rounded-lg']
+     *   'Label' => ['type' => 'button', 'label' => 'Download', 'url' => $data->file_url, 'icon' => 'download', 'style' => 'primary']
+     *   'Label' => ['type' => 'button', 'label' => 'Download', 'url' => fn($data) => route('download', $data->id)]
+     */
     public static function getExpandView(mixed $data, array $fields): string
     {
         $mapped = [];
-        foreach ($fields as $label => $key) {
-            $mapped[] = [
-                'label' => $label,
-                'value' => $data->{$key} ?? '-',
-            ];
+        foreach ($fields as $label => $value) {
+            if (is_string($value)) {
+                // Simple text field
+                $mapped[] = [
+                    'label' => $label,
+                    'type' => 'text',
+                    'value' => $data->{$value} ?? '-',
+                ];
+            } elseif (is_array($value)) {
+                $type = $value['type'] ?? 'text';
+
+                if ($type === 'image') {
+                    $key = $value['key'] ?? '';
+                    $url = $data->{$key} ?? null;
+                    if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
+                        $url = asset('storage/' . $url);
+                    }
+                    $fallbackKey = $value['fallback'] ?? null;
+                    $mapped[] = [
+                        'label' => $label,
+                        'type' => 'image',
+                        'url' => $url,
+                        'width' => $value['width'] ?? 64,
+                        'height' => $value['height'] ?? 64,
+                        'previewClass' => $value['previewClass'] ?? 'rounded-lg',
+                        'fallback' => $fallbackKey ? ($data->{$fallbackKey} ?? null) : null,
+                    ];
+                } elseif ($type === 'button') {
+                    $url = $value['url'] ?? '#';
+                    if ($url instanceof \Closure) {
+                        $url = $url($data);
+                    }
+                    $mapped[] = [
+                        'label' => $label,
+                        'type' => 'button',
+                        'buttonLabel' => $value['label'] ?? $label,
+                        'url' => $url,
+                        'icon' => $value['icon'] ?? null,
+                        'style' => $value['style'] ?? 'primary',
+                        'download' => $value['download'] ?? false,
+                        'target' => $value['target'] ?? null,
+                    ];
+                } else {
+                    // Text with key
+                    $key = $value['key'] ?? '';
+                    $mapped[] = [
+                        'label' => $label,
+                        'type' => 'text',
+                        'value' => $data->{$key} ?? '-',
+                    ];
+                }
+            }
         }
         return view('mrcatz::components.ui.datatable-expand', ['fields' => $mapped])->render();
     }
