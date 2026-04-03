@@ -11,7 +11,7 @@
             {{-- Image field — click dispatches global lightbox event --}}
             <div class="px-3 py-2 rounded-lg bg-base-200/40">
                 <span class="text-[11px] text-base-content/40 block mb-1">{{ $field['label'] }}</span>
-                <div class="flex justify-center" @click.stop>
+                <div class="flex justify-start" @click.stop>
                     <div class="shrink-0 overflow-hidden {{ $field['previewClass'] }} {{ $field['url'] ? 'cursor-zoom-in transition-opacity hover:opacity-80' : '' }}"
                          style="width: {{ $field['width'] }}px; height: {{ $field['height'] }}px;"
                          @if($field['url']) @click="$dispatch('mrcatz-lightbox', { url: '{{ $field['url'] }}' })" @endif>
