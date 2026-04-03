@@ -49,7 +49,7 @@
             $onChangeAttr = ($field['onChange'] ?? null) ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
             $rowSpan = $field['rowSpan'] ?? null;
-            $rowStyle = $rowSpan ? "grid-row: span {$rowSpan}" : '';
+            $rowStyle = $rowSpan ? "grid-row: 1 / span {$rowSpan}" : '';
         @endphp
 
         <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($rowStyle) style="{{ $rowStyle }}" @endif>
