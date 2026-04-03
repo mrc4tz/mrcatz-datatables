@@ -9,21 +9,35 @@
 
 # MrCatz DataTable
 
-Full-featured DataTable + CRUD base class for **Laravel Livewire** — from install to a complete admin page in minutes.
+**DataTable + Form Builder** for **Laravel Livewire** — build complete admin pages in minutes.
 
 **[View Live Demo](https://mrcatz-datatables-demo.xo.je)** | **[Demo Source Code](https://github.com/mrc4tz/mrcatz-datatable-demo)**
 
-One command, four files, ready to go:
-
 ```bash
+# Generate a full CRUD page (table + form) with one command
 php artisan mrcatz:make Product --path=Admin
 ```
 
-## Why MrCatz DataTable?
+```php
+// Or define forms in PHP — no Blade needed
+public function setForm(): array
+{
+    return [
+        MrCatzFormField::text('name', label: 'Name', rules: 'required', icon: 'person'),
+        MrCatzFormField::email('email', label: 'Email', rules: 'required|email'),
+        MrCatzFormField::select('role', label: 'Role', data: $roles, value: 'id', option: 'name'),
+        MrCatzFormField::button('Check', onClick: 'checkAvail', style: 'info')->span(4),
+    ];
+}
+```
+
+## Why MrCatz?
 
 | Problem | MrCatz Solution |
 |---|---|
 | Building CRUD pages over and over | `mrcatz:make` generates 4 files at once |
+| Writing Blade forms for every model | **Form Builder** — define fields in PHP, auto-render with validation |
+| Forms only work inside DataTable modal | **Standalone forms** — use Form Builder on any page (profile, settings, etc.) |
 | Search is just basic LIKE | Multi-keyword search with **relevance scoring** |
 | Filter state lost on reload | **URL persistence** — all state in URL, shareable & bookmarkable |
 | Export requires manual coding | **Excel & PDF export** built-in with preview |
@@ -37,12 +51,25 @@ php artisan mrcatz:make Product --path=Admin
 
 ## Features
 
+**Form Builder**
+- Define form fields in PHP — no Blade form file needed
+- 25+ field types — text, email, password, number, select, textarea, file, toggle, checkbox, chooser, radio, date, time, datetime, color, range, url, tel, search, rating, hidden
+- Button with Livewire hook — `onClick`, `withLoading()` for action buttons inside form
+- Static elements — section, note, alert, divider, raw HTML
+- DaisyUI style & size — `->style('primary')`, `->size('lg')` on any field
+- Grid layout — 12-column grid with `->span()` for multi-column forms
+- Dynamic/dependent fields — `->visibleWhen()`, `->visibleWhenAll()`, `->onChange()`, `->dependsOn()`
+- Wire model modes — `->live()`, `->lazy()`, `->debounce()`
+- Prefix, suffix, hint (with color), file preview, password confirmation
+- Validation — auto-extracted rules & custom messages from field definitions
+- Icon system — built-in SVG, raw HTML, or custom config `form_icons`
+- Works in DataTable modal AND standalone pages (profile, settings, any Livewire component)
+
 **CRUD & Data**
 - CRUD lifecycle hooks — prepareAdd, prepareEdit, save, delete, bulk delete
 - Inline editing — double-click cells to edit, Enter to save, with server-side validation
 - Row click hook — custom action when row is clicked
 - Fluent DataTable API — `->withColumn()`, `->withCustomColumn()`, `->enableExpand()`
-- **Form Builder** — define form fields in PHP, no Blade form file needed
 
 **Search & Filter**
 - Multi-keyword search with relevance scoring and highlight
@@ -1032,6 +1059,65 @@ public function checkUsername()
         $this->usernameHint = '✓ Username available!';
     }
 }
+```
+
+### Standalone Form (Outside DataTable)
+
+Form Builder works on **any Livewire component** — not just DataTable pages. Use the `HasFormBuilder` trait directly:
+
+```php
+use Livewire\Component;
+use MrCatz\DataTable\Concerns\HasFormBuilder;
+use MrCatz\DataTable\MrCatzFormField;
+
+class ProfilePage extends Component
+{
+    use HasFormBuilder;  // Just the trait, no MrCatzComponent needed
+
+    public $name, $email;
+
+    public function setForm(): array
+    {
+        return [
+            MrCatzFormField::text('name', label: 'Name', rules: 'required', icon: 'person'),
+            MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
+        ];
+    }
+
+    public function save()
+    {
+        $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
+        // save logic...
+    }
+
+    public function render()
+    {
+        return view('profile');
+    }
+}
+```
+
+In your Blade view, use the standalone form include:
+
+```blade
+{{-- resources/views/profile.blade.php --}}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        @include('mrcatz::components.ui.form-standalone', [
+            'submitMethod' => 'save',
+            'submitLabel'  => 'Save Changes',
+            'submitIcon'   => 'check_circle',
+            'cancelUrl'    => route('dashboard'),
+        ])
+    </div>
+</div>
+```
+
+Or for full control, include just the fields:
+
+```blade
+@include('mrcatz::components.ui.form-builder')
+<button class="btn btn-primary mt-4" wire:click="save">Save</button>
 ```
 
 ---
