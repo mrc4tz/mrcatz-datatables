@@ -412,7 +412,7 @@ class MrCatzFormField
         ?string $icon = null,
         string $style = 'primary',
     ): static {
-        $field = new static('button', null, $label);
+        $field = new static('button', 'btn_' . $onClick, $label);
         $field->onClickMethod = $onClick;
         $field->icon = $icon;
         $field->buttonStyle = $style;

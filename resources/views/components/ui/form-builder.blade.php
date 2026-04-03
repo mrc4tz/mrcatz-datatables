@@ -38,7 +38,7 @@
 @endphp
 
 <div class="grid grid-cols-12 gap-4">
-    @foreach($formFields as $field)
+    @foreach($formFields as $fieldIndex => $field)
         @if(!$this->shouldShowField($field))
             @continue
         @endif
@@ -53,7 +53,7 @@
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
         @endphp
 
-        <div class="{{ $spanClass }}">
+        <div class="{{ $spanClass }}" wire:key="mrcatz-fb-{{ $fieldIndex }}">
 
             {{-- ═══ HIDDEN ═══ --}}
             @if($type === 'hidden')
