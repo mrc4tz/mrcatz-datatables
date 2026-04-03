@@ -337,6 +337,7 @@
                 @php
                     $sc = mrcatz_fb_classes('file-input', $field);
                     $modalId = 'modal_delete_' . $id;
+                    $lightboxId = 'lightbox_' . $id;
 
                     $pvClass = $field['previewClass'] ?? 'rounded-full ring ring-primary ring-offset-base-100 ring-offset-2';
                     $pw = $field['previewWidth'] ?? 128;
@@ -345,8 +346,10 @@
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
-                        {{-- Preview: wrapper div controls size, previewClass controls shape/decoration --}}
-                        <div class="shrink-0 overflow-hidden {{ $pvClass }}" style="width: {{ $pw }}px; height: {{ $ph }}px;">
+                        {{-- Preview: clickable for lightbox --}}
+                        <div class="shrink-0 overflow-hidden cursor-pointer transition-opacity hover:opacity-80 {{ $pvClass }}"
+                             style="width: {{ $pw }}px; height: {{ $ph }}px;"
+                             @if($field['preview']) onclick="document.getElementById('{{ $lightboxId }}').showModal()" @endif>
                             @if($field['preview'])
                                 <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
                                      style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;" />
@@ -442,6 +445,33 @@
                             </div>
                         </div>
                         <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                    </dialog>
+                @endif
+
+                {{-- Lightbox modal (zoom) --}}
+                @if($field['preview'])
+                    <dialog id="{{ $lightboxId }}" class="modal" onclick="if(event.target===this)this.close()">
+                        <div class="modal-box max-w-4xl bg-base-100 p-2 sm:p-4" x-data="{ scale: 1 }">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-semibold text-base-content/70">{{ $field['label'] }}</span>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = Math.max(0.5, scale - 0.25)">-</button>
+                                    <span class="text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
+                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = Math.min(3, scale + 0.25)">+</button>
+                                    <button type="button" class="btn btn-ghost btn-xs btn-circle" @click="scale = 1">
+                                        {!! mrcatz_icon('restart_alt', 'text-xs') !!}
+                                    </button>
+                                    <form method="dialog" class="inline">
+                                        <button class="btn btn-ghost btn-xs btn-circle">{!! mrcatz_icon('close', 'text-xs') !!}</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="overflow-auto max-h-[80vh] flex justify-center rounded-lg bg-base-200/50">
+                                <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
+                                     class="transition-transform duration-200 origin-center"
+                                     :style="'transform: scale(' + scale + ')'" />
+                            </div>
+                        </div>
                     </dialog>
                 @endif
 
