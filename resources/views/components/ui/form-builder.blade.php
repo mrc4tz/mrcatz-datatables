@@ -454,33 +454,26 @@
                     </dialog>
                 @endif
 
-                {{-- Lightbox: transparent backdrop, scroll zoom --}}
+                {{-- Lightbox: scroll/drag zoom, click to reset or close --}}
                 @if($field['preview'])
-                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm"
-                            x-data="{ scale: 1 }"
+                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm cursor-zoom-out"
+                            x-data="{ scale: 1, dragging: false, startY: 0 }"
                             @close="scale = 1"
                             @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
                             onclick="if(event.target===this)this.close()">
-                        {{-- Controls: fixed top, always above image --}}
-                        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/50 backdrop-blur rounded-full px-3 py-1.5">
-                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.max(0.25, scale - 0.25)">-</button>
-                            <span class="text-white/80 text-xs w-12 text-center" x-text="Math.round(scale * 100) + '%'"></span>
-                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = Math.min(5, scale + 0.25)">+</button>
-                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" @click="scale = 1">
-                                {!! mrcatz_icon('restart_alt', 'text-xs') !!}
-                            </button>
-                            <div class="w-px h-4 bg-white/20"></div>
-                            <button type="button" class="btn btn-xs btn-circle bg-white/10 border-0 text-white hover:bg-white/20" onclick="this.closest('dialog').close()">
-                                {!! mrcatz_icon('close', 'text-xs') !!}
-                            </button>
-                        </div>
-                        {{-- Image: centered, scrollable when zoomed --}}
-                        <div class="flex items-center justify-center w-full h-full overflow-auto p-8"
+                        <div class="flex items-center justify-center w-full h-full p-8"
                              onclick="if(event.target===this)this.closest('dialog').close()">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
                                  class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-150 origin-center select-none"
+                                 :class="scale > 1 ? 'cursor-zoom-out' : 'cursor-default'"
                                  draggable="false"
-                                 :style="'transform: scale(' + scale + ')'" />
+                                 :style="'transform: scale(' + scale + ')'"
+                                 @click.stop="if(scale > 1) { scale = 1 } else { $el.closest('dialog').close() }"
+                                 @mousedown.prevent="dragging = true; startY = $event.clientY"
+                                 @mousemove.window="if(dragging) { let delta = ($event.clientY - startY) * -0.01; scale = Math.min(5, Math.max(0.25, scale + delta)); startY = $event.clientY }"
+                                 @mouseup.window="dragging = false"
+                                 @touchstart.prevent="startY = $event.touches[0].clientY"
+                                 @touchmove.prevent="let delta = ($event.touches[0].clientY - startY) * -0.01; scale = Math.min(5, Math.max(0.25, scale + delta)); startY = $event.touches[0].clientY" />
                         </div>
                     </dialog>
                 @endif
