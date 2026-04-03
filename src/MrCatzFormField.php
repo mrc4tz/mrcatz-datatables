@@ -65,6 +65,7 @@ class MrCatzFormField
     private ?string $onDeleteMethod = null;
     private ?string $fallbackText = null;
     private ?string $deleteConfirmText = null;
+    private ?string $previewClass = null;
 
     // Grid row span
     private ?int $rowSpan = null;
@@ -607,6 +608,25 @@ class MrCatzFormField
         return $this;
     }
 
+    /**
+     * Set Tailwind/DaisyUI classes for the image preview container.
+     * Full control over size, shape, border, shadow, ring, etc.
+     *
+     * Examples:
+     *   ->previewClass('w-32 h-32 rounded-full ring ring-primary ring-offset-2')
+     *   ->previewClass('w-full h-64 rounded-lg border-2 border-primary shadow-xl')
+     *   ->previewClass('w-24 h-24 rounded-lg shadow-md')
+     *   ->previewClass('w-48 h-48 mask mask-squircle')           // DaisyUI mask
+     *   ->previewClass('w-full aspect-square rounded-none')       // square, natural
+     *
+     * If not set, defaults to circular with ring using pixel width/height from preview().
+     */
+    public function previewClass(string $class): static
+    {
+        $this->previewClass = $class;
+        return $this;
+    }
+
     public function withConfirmation(?string $label = null): static
     {
         $this->confirmationLabel = $label ?? mrcatz_lang('confirm_password', []) ?: 'Konfirmasi Password';
@@ -683,6 +703,7 @@ class MrCatzFormField
             'onDelete' => $this->onDeleteMethod,
             'fallback' => $this->fallbackText,
             'deleteConfirm' => $this->deleteConfirmText,
+            'previewClass' => $this->previewClass,
             'confirmation' => $this->confirmationLabel,
             'visibleWhenField' => $this->visibleWhenField,
             'visibleWhenValue' => $this->visibleWhenValue,
