@@ -401,13 +401,21 @@ public function setTable()
 Display images in table cells with clickable lightbox (scroll zoom, click to reset/close):
 
 ```php
+// Storage (default) — asset('storage/' . value)
 ->withColumnImage('Avatar', 'avatar',
-    width: 40,                    // Preview width in px
-    height: 40,                   // Preview height in px
-    previewClass: 'rounded-full ring ring-primary',  // Tailwind shape/decoration
-    fallback: 'name',             // DB column for initial letter fallback
-    showOn: 'desktop',            // 'both', 'desktop', 'mobile'
+    width: 40, height: 40,
+    previewClass: 'rounded-full ring ring-primary',
+    fallback: 'name',
 )
+
+// Public directory — asset(value)
+->withColumnImage('Image', 'image', 36, 36, 'rounded-lg', 'name', urlPrefix: 'public')
+
+// External CDN — prefix + '/' + value
+->withColumnImage('Photo', 'photo', 40, 40, 'rounded-full', urlPrefix: 'https://cdn.example.com')
+
+// DB value is already full URL — use as-is
+->withColumnImage('Photo', 'photo_url', 40, 40, 'rounded-full', urlPrefix: null)
 ```
 
 | Parameter | Default | Description |
@@ -416,13 +424,29 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 | `$height` | `40` | Preview height in pixels |
 | `$previewClass` | `'rounded-full'` | Tailwind classes for shape/border/shadow |
 | `$fallback` | `null` | DB column name — shows first letter when no image |
+| `$urlPrefix` | `'storage'` | URL resolution mode (see below) |
 | `$sort` | `false` | Sortable column |
 | `$visible` | `true` | Column visibility |
 | `$showOn` | `'both'` | Responsive visibility |
 
-Image paths are auto-resolved: if the value doesn't start with `http` or `/`, it's prefixed with `asset('storage/')`.
+**`urlPrefix` modes:**
 
-Clicking the image opens a lightbox with the same interaction as Form Builder: scroll to zoom, click to reset/close.
+| Value | DB Value | Resolved URL |
+|---|---|---|
+| `'storage'` (default) | `users/avatar.jpg` | `asset('storage/users/avatar.jpg')` |
+| `'public'` | `uploads/img.jpg` | `asset('uploads/img.jpg')` |
+| `'https://cdn.ex.com'` | `photos/1.jpg` | `https://cdn.ex.com/photos/1.jpg` |
+| `null` | `https://full-url.com/img.jpg` | `https://full-url.com/img.jpg` |
+
+If the DB value already starts with `http://`, `https://`, or `/`, it's used as-is regardless of prefix.
+
+The same `urlPrefix` option is available in expand view image type:
+
+```php
+'Photo' => ['type' => 'image', 'key' => 'avatar', 'urlPrefix' => 'public', ...]
+```
+
+Clicking the image opens a lightbox with scroll zoom, click to reset/close.
 
 #### Responsive Column Visibility (`showOn`)
 
