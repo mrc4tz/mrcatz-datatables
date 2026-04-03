@@ -787,10 +787,33 @@ When `setForm()` returns fields, the form modal auto-renders them. If `setForm()
 | `select(id, label, data, value, option, ...)` | Dropdown select |
 | `textarea(id, label, ...)` | Multi-line text |
 | `file(id, label, ...)` | File upload with optional `accept` |
-| `toggle(id, label)` | Checkbox toggle |
+| `toggle(id, label)` | Checkbox toggle (switch) |
+| `checkbox(id, label)` | Single checkbox (square) |
 | `chooser(id, label, data, value, option)` | Multi-checkbox buttons |
 | `radio(id, label, options)` | Radio buttons (`options: ['val' => 'Label']`) |
 | `hidden(id)` | Hidden input |
+| `date(id, label, ...)` | Date picker |
+| `time(id, label, ...)` | Time picker |
+| `datetime(id, label, ...)` | Date & time picker |
+| `color(id, label, ...)` | Color picker |
+| `range(id, label, min, max, step)` | Range slider with min/max labels |
+| `url(id, label, ...)` | URL input |
+| `tel(id, label, ...)` | Phone number input |
+| `search(id, label, ...)` | Search input (default icon: search) |
+| `rating(id, label, max)` | Star rating (default: 5 stars) |
+
+**Button:**
+
+| Method | Description |
+|---|---|
+| `button(label, onClick, icon?, style?)` | Action button with Livewire method hook |
+
+```php
+// Button that calls a Livewire method on click
+MrCatzFormField::button('Check Username', onClick: 'checkUsername', icon: 'search', style: 'info')
+    ->withLoading()  // Show spinner while method runs
+    ->span(4)
+```
 
 **Static content elements:**
 
@@ -800,15 +823,19 @@ When `setForm()` returns fields, the form modal auto-renders them. If `setForm()
 | `note(text)` | Small muted text |
 | `alert(text, type)` | Alert box: `'info'`, `'warning'`, `'success'`, `'error'` |
 | `html(content)` | Raw HTML block |
+| `divider(text?)` | Horizontal divider, optional text in center |
 
 ### Modifiers (Chainable)
 
 ```php
 MrCatzFormField::text('name', label: 'Name')
     ->span(6)                    // Grid column span (1-12, default: 12)
-    ->hint('Max 255 characters') // Helper text below field
+    ->hint('Max 255 chars')      // Helper text below field
+    ->hint('Available!', 'success') // Colored hint: success, error, warning, info
     ->prefix('Rp')               // Text before input
     ->suffix('kg')               // Text after input
+    ->style('primary')           // DaisyUI style variant (see below)
+    ->size('lg')                 // DaisyUI size (see below)
     ->live()                     // wire:model.live (realtime)
     ->lazy()                     // wire:model.blur (on blur)
     ->debounce(300)              // wire:model.live.debounce.300ms
@@ -820,6 +847,36 @@ MrCatzFormField::text('name', label: 'Name')
     ->visibleWhen('field', 'value')     // Show when field == value
     ->visibleWhen('field', ['a', 'b'])  // Show when field is 'a' or 'b'
     ->visibleWhenAll(['type' => 'x', 'role' => 'admin'])  // Multiple conditions
+```
+
+**Style & Size (DaisyUI):**
+
+```php
+->style('primary')   // Adds input-primary, select-primary, textarea-primary, etc.
+->size('lg')         // Adds input-lg, select-lg, textarea-lg, etc.
+```
+
+| Style values | `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error`, `ghost`, `neutral` |
+|---|---|
+| **Size values** | `xs`, `sm`, `md`, `lg`, `xl` |
+
+**Hint with color:**
+
+```php
+->hint('Helper text')                    // Default muted gray
+->hint('Username available!', 'success') // Green (text-success)
+->hint('Field required', 'error')        // Red (text-error)
+->hint('Check format', 'warning')        // Yellow (text-warning)
+->hint('Optional field', 'info')         // Blue (text-info)
+```
+
+**Button-specific:**
+
+```php
+MrCatzFormField::button('Check', onClick: 'checkUsername', icon: 'search', style: 'info')
+    ->withLoading()              // Show loading spinner during method execution
+    ->withLoading('targetMethod') // Targeted loading via wire:target
+    ->span(4)
 ```
 
 **File-specific:**
@@ -925,28 +982,55 @@ Config `form_icons` values can be SVG paths (auto-wrapped in `<svg>`) or raw HTM
 ### Full Example
 
 ```php
+public $usernameHint = '';
+
 public function setForm(): array
 {
     return [
         MrCatzFormField::section('Account Information'),
         MrCatzFormField::text('first_name', label: 'First Name', rules: 'required')->span(6),
         MrCatzFormField::text('last_name', label: 'Last Name', rules: 'required')->span(6),
+        MrCatzFormField::text('username', label: 'Username', rules: 'required|min:3', icon: 'person')
+            ->span(10)->hint($this->usernameHint ?: null, 'success'),
+        MrCatzFormField::button('Check', onClick: 'checkUsername', icon: 'search', style: 'info')
+            ->withLoading()->span(2),
         MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
 
         MrCatzFormField::section('Pricing'),
         MrCatzFormField::number('price', label: 'Price', rules: 'required|numeric')
-            ->prefix('Rp')->suffix('/unit'),
+            ->prefix('Rp')->suffix('/unit')->style('primary'),
+
+        MrCatzFormField::divider('Optional Settings'),
+        MrCatzFormField::date('birth_date', label: 'Birth Date')->span(6),
+        MrCatzFormField::color('theme_color', label: 'Theme Color')->span(6),
+        MrCatzFormField::range('satisfaction', label: 'Satisfaction', min: 0, max: 100, step: 10),
+        MrCatzFormField::rating('stars', label: 'Rating', max: 5),
+        MrCatzFormField::toggle('is_active', label: 'Active')->style('success'),
+        MrCatzFormField::checkbox('agree_tos', label: 'I agree to Terms of Service'),
+        MrCatzFormField::tel('phone', label: 'Phone', icon: 'phone')->size('sm'),
 
         MrCatzFormField::section('Document'),
         MrCatzFormField::alert('Max upload 2MB, JPG/PNG only.', type: 'info'),
         MrCatzFormField::radio('doc_type', label: 'Document Type', options: ['url' => 'URL', 'file' => 'FILE']),
-        MrCatzFormField::text('doc_url', label: 'URL')->visibleWhen('doc_type', 'url'),
+        MrCatzFormField::url('doc_url', label: 'URL')->visibleWhen('doc_type', 'url'),
         MrCatzFormField::file('doc_file', label: 'File', accept: 'image/*')
             ->visibleWhen('doc_type', 'file')
             ->preview($this->isEdit ? $this->existingFileUrl : null),
 
         MrCatzFormField::note('Changes will take effect immediately.'),
     ];
+}
+
+public function checkUsername()
+{
+    $this->usernameHint = '';
+    $this->resetValidation('username');
+
+    if (User::where('username', $this->username)->exists()) {
+        $this->addError('username', 'Username already taken!');
+    } else {
+        $this->usernameHint = '✓ Username available!';
+    }
 }
 ```
 
