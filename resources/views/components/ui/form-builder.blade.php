@@ -473,7 +473,8 @@
                                  class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none pointer-events-auto cursor-zoom-out"
                                  draggable="false"
                                  :style="'transform: scale(' + scale + ')'"
-                                 @click.stop="if(scale > 1) { scale = 1 } else { closing = true; setTimeout(() => $el.closest('dialog').close(), 300) }" />
+                                 x-data="{ justReset: false }"
+                                 @click.stop="if(justReset) { justReset = false; return; } if(scale > 1) { scale = 1; justReset = true; } else { closing = true; setTimeout(() => $el.closest('dialog').close(), 300) }" />
                         </div>
                     </dialog>
                 @endif
