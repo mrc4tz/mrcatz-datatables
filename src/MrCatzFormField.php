@@ -66,6 +66,9 @@ class MrCatzFormField
     private ?string $fallbackText = null;
     private ?string $deleteConfirmText = null;
 
+    // Grid row span
+    private ?int $rowSpan = null;
+
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
         $this->type = $type;
@@ -529,6 +532,16 @@ class MrCatzFormField
         return $this;
     }
 
+    /**
+     * Span multiple grid rows. Use with span() for 2-column layouts.
+     * E.g. ->span(4)->rowSpan(10) pins field to the side while others fill beside it.
+     */
+    public function rowSpan(int $rows): static
+    {
+        $this->rowSpan = $rows;
+        return $this;
+    }
+
     public function hint(?string $text, ?string $color = null): static
     {
         $this->hint = $text;
@@ -658,6 +671,7 @@ class MrCatzFormField
             'min' => $this->min,
             'max' => $this->max,
             'span' => $this->span,
+            'rowSpan' => $this->rowSpan,
             'hint' => $this->hint,
             'hintColor' => $this->hintColor,
             'prefix' => $this->prefixText,

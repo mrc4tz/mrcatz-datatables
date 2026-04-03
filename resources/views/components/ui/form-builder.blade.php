@@ -48,9 +48,11 @@
             $wireDirective = $field['wireDirective'] ?? '';
             $onChangeAttr = ($field['onChange'] ?? null) ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
+            $rowSpan = $field['rowSpan'] ?? null;
+            $rowStyle = $rowSpan ? "grid-row: span {$rowSpan}" : '';
         @endphp
 
-        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}">
+        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($rowStyle) style="{{ $rowStyle }}" @endif>
         @if($show)
 
             {{-- ═══ HIDDEN ═══ --}}
