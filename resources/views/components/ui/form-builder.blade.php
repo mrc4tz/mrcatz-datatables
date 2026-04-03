@@ -39,7 +39,11 @@
 
 <style>
     @media (max-width: 640px) {
-        .mrcatz-form-grid > div { grid-column: 1 / -1 !important; grid-row: auto !important; }
+        .mrcatz-form-grid > div {
+            grid-column: 1 / -1 !important;
+            grid-row: auto !important;
+            order: var(--mrcatz-mobile-order, 0);
+        }
     }
 </style>
 <div class="mrcatz-form-grid grid grid-cols-12 gap-4">
@@ -54,10 +58,15 @@
             $onChangeAttr = ($field['onChange'] ?? null) ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
             $rowSpan = $field['rowSpan'] ?? null;
-            $rowStyle = $rowSpan ? "grid-row: 1 / span {$rowSpan}" : '';
+            $mobileOrder = $field['mobileOrder'] ?? null;
+
+            $inlineStyles = collect([
+                $rowSpan ? "grid-row: 1 / span {$rowSpan}" : null,
+                $mobileOrder !== null ? "--mrcatz-mobile-order: {$mobileOrder}" : null,
+            ])->filter()->implode('; ');
         @endphp
 
-        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($rowStyle) style="{{ $rowStyle }}" @endif>
+        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($inlineStyles) style="{{ $inlineStyles }}" @endif>
         @if($show)
 
             {{-- ═══ HIDDEN ═══ --}}
@@ -343,17 +352,19 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
                         {{-- Preview --}}
-                        <div class="shrink-0 overflow-hidden {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                        <div class="w-full flex justify-center">
                             @if($field['preview'])
                                 <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                            @elseif($field['fallback'])
-                                <div style="width: 100%; height: 100%;" class="bg-primary/10 flex items-center justify-center">
-                                    <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
-                                </div>
+                                     class="shrink-0 object-cover object-center {{ $pvClass }}"
+                                     @if($pvStyle) style="{{ $pvStyle }}" @endif />
                             @else
-                                <div style="width: 100%; height: 100%;" class="bg-base-300 flex items-center justify-center">
-                                    {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
+                                <div class="shrink-0 overflow-hidden flex items-center justify-center {{ $pvClass }} {{ $field['fallback'] ? 'bg-primary/10' : 'bg-base-300' }}"
+                                     @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                                    @if($field['fallback'])
+                                        <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
+                                    @else
+                                        {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
+                                    @endif
                                 </div>
                             @endif
                         </div>

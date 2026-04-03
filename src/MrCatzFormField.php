@@ -67,8 +67,9 @@ class MrCatzFormField
     private ?string $deleteConfirmText = null;
     private ?string $previewClass = null;
 
-    // Grid row span
+    // Grid row span & mobile order
     private ?int $rowSpan = null;
+    private ?int $mobileOrder = null;
 
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
@@ -543,6 +544,17 @@ class MrCatzFormField
         return $this;
     }
 
+    /**
+     * Set visual order on mobile (< 640px). Lower numbers appear first.
+     * Use negative values (e.g. -1) to move a field to the top on mobile.
+     * Does not affect desktop layout.
+     */
+    public function mobileOrder(int $order): static
+    {
+        $this->mobileOrder = $order;
+        return $this;
+    }
+
     public function hint(?string $text, ?string $color = null): static
     {
         $this->hint = $text;
@@ -692,6 +704,7 @@ class MrCatzFormField
             'max' => $this->max,
             'span' => $this->span,
             'rowSpan' => $this->rowSpan,
+            'mobileOrder' => $this->mobileOrder,
             'hint' => $this->hint,
             'hintColor' => $this->hintColor,
             'prefix' => $this->prefixText,
