@@ -25,6 +25,7 @@ class MrCatzFormField
     private mixed $max = null;
     private int $span = 12;
     private ?string $hint = null;
+    private ?string $hintColor = null; // success, error, warning, info
     private ?string $prefixText = null;
     private ?string $suffixText = null;
     private ?string $previewUrl = null;
@@ -501,9 +502,10 @@ class MrCatzFormField
         return $this;
     }
 
-    public function hint(string $text): static
+    public function hint(?string $text, ?string $color = null): static
     {
         $this->hint = $text;
+        if ($color) $this->hintColor = $color;
         return $this;
     }
 
@@ -609,6 +611,7 @@ class MrCatzFormField
             'max' => $this->max,
             'span' => $this->span,
             'hint' => $this->hint,
+            'hintColor' => $this->hintColor,
             'prefix' => $this->prefixText,
             'suffix' => $this->suffixText,
             'preview' => $this->previewUrl,

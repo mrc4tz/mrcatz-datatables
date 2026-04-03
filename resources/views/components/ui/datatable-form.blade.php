@@ -14,15 +14,15 @@
         </div>
 
         {{-- Body --}}
-        <form>
-            <div class="max-h-[60vh] overflow-y-auto pr-1 -mr-1">
-                @if($this->hasFormBuilder())
-                    @include('mrcatz::components.ui.form-builder')
-                @else
+        <div class="max-h-[60vh] overflow-y-auto pr-1 -mr-1">
+            @if($this->hasFormBuilder())
+                @include('mrcatz::components.ui.form-builder')
+            @else
+                <form>
                     @yield('forms')
-                @endif
-            </div>
-        </form>
+                </form>
+            @endif
+        </div>
 
         {{-- Footer --}}
         <div class="modal-action pt-4 mt-4 border-t border-base-content/10">

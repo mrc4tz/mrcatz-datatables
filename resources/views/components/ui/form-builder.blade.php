@@ -137,7 +137,16 @@
                         {{ $field['label'] }}
                     </button>
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -173,7 +182,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -212,7 +230,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -244,7 +271,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -268,7 +304,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -303,7 +348,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -321,7 +375,16 @@
                         <span class="text-base-content text-sm font-medium">{{ $field['label'] }}</span>
                     </label>
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -339,7 +402,16 @@
                         <span class="text-base-content text-sm font-medium">{{ $field['label'] }}</span>
                     </label>
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -371,7 +443,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -396,7 +477,16 @@
                         @endforeach
                     </div>
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -417,7 +507,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -446,7 +545,16 @@
                         </p>
                     @enderror
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
@@ -466,7 +574,16 @@
                         @endfor
                     </div>
                     @if($field['hint'])
-                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
                 </fieldset>
 
