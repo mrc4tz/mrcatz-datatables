@@ -48,3 +48,5 @@
         }
     }
 </script>
+
+@include('mrcatz::components.ui.lightbox')
