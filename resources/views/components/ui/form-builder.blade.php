@@ -134,15 +134,6 @@
                     $btnClass = 'btn btn-' . $btnStyle . ' ' . $btnSizeClass;
                     $btnTarget = $field['target'] ?? $field['onClick'];
                 @endphp
-                @if($field['loading'])
-                    <div wire:loading wire:target="{{ $btnTarget }}"
-                         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div class="flex flex-col items-center gap-3">
-                            <span class="loading loading-spinner loading-lg text-primary"></span>
-                            <span class="text-white text-sm font-medium">Loading...</span>
-                        </div>
-                    </div>
-                @endif
                 <fieldset class="fieldset">
                     {{-- Empty legend to align with adjacent input fields --}}
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">&nbsp;</legend>
@@ -151,10 +142,8 @@
                             wire:click="{{ $field['onClick'] }}"
                             wire:loading.attr="disabled" wire:target="{{ $btnTarget }}"
                             @if($disabled) disabled @endif>
-                        @if(!$field['loading'])
-                            <span class="loading loading-spinner loading-xs"
-                                  wire:loading wire:target="{{ $btnTarget }}"></span>
-                        @endif
+                        <span class="loading loading-spinner loading-xs"
+                              wire:loading wire:target="{{ $btnTarget }}"></span>
                         @if($field['icon'])
                             {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
                         @endif
