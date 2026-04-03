@@ -894,6 +894,7 @@ public function setForm(): array
 | `addOrderBy($key, $dir)` | Additional sort |
 | `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons |
 | `getExpandView($data, $fields)` | Render expand grid |
+| `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$sort`, `$visible`, `$showOn`) |
 
 ### Filter Factory
 

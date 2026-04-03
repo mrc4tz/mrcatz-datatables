@@ -121,8 +121,17 @@ MrCatzFormField::button('Check Username', onClick: 'checkUsername', icon: 'searc
 **Form gap** — set on your component:
 
 ```php
-public string $formGap = '1rem';   // default, equivalent to Tailwind gap-4
-// Other values: '0.5rem', '1.25rem', '1.5rem', '2rem'
+public string $formGap = '1rem';        // Row gap between fields (default, Tailwind gap-4)
+public string $formColumnGap = '1.5rem'; // Column gap between side-by-side sections
+```
+
+**Spacing per field:**
+
+```php
+->margin('mt-4')                 // Tailwind margin classes
+->margin('mt-2 sm:mt-6')        // Responsive margin
+->padding('p-4')                 // Tailwind padding classes
+->padding('px-2 sm:px-6')       // Responsive padding
 ```
 
 **Responsive:** On mobile (< 640px), all fields automatically become full-width and `rowSpan` is reset. Use `mobileOrder()` to control which field appears first on mobile.
@@ -242,15 +251,19 @@ Size and shape are controlled separately:
 
 ### Image Lightbox (Click to Zoom)
 
-Clicking the image preview opens a fullscreen modal with zoom controls:
+Clicking the image preview opens a fullscreen lightbox with transparent backdrop. No buttons — interaction is purely mouse-driven:
 
-- **Zoom in/out** — `+` / `-` buttons (25% increments, range 50%–300%)
-- **Percentage display** — shows current zoom level
-- **Reset** — button to return to 100%
-- **Close** — X button, backdrop click, or Escape key
-- Smooth transition animation on zoom
+| Interaction | Action |
+|---|---|
+| **Scroll wheel** | Zoom in/out (0.15 increments, range 25%–500%) |
+| **Click** (zoomed != 100%) | Reset to 100% |
+| **Click** (at 100%) | Close lightbox |
+| **Click backdrop** | Reset or close |
 
-Lightbox is automatic — no configuration needed. Only active when a preview image exists.
+- Preview cursor: `cursor-zoom-in` (indicates image can be zoomed)
+- Lightbox cursor: default
+- Open animation: fade + scale (200ms CSS keyframe)
+- Automatic — no configuration needed. Only active when a preview image exists.
 
 ### Delete Confirmation Modal
 

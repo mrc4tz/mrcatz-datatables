@@ -482,6 +482,63 @@ class MrCatzDataTables
         ]);
     }
 
+    /**
+     * Add an image column with preview and clickable lightbox.
+     *
+     * @param string $head         Column header text
+     * @param string $key          DB column key containing image URL/path
+     * @param int    $width        Preview width in px (default: 40)
+     * @param int    $height       Preview height in px (default: 40)
+     * @param string $previewClass Tailwind classes for shape/decoration (default: 'rounded-full')
+     * @param string|null $fallback  Fallback DB column for initial letter when no image
+     * @param bool   $sort         Sortable column
+     * @param bool   $visible      Column visibility
+     * @param string $showOn       'both', 'desktop', 'mobile'
+     */
+    public function withColumnImage(
+        string $head,
+        string $key,
+        int $width = 40,
+        int $height = 40,
+        string $previewClass = 'rounded-full',
+        ?string $fallback = null,
+        bool $sort = false,
+        bool $visible = true,
+        string $showOn = 'both',
+    ): self {
+        return $this->withCustomColumn($head, function ($data, $i) use ($key, $width, $height, $previewClass, $fallback) {
+            $url = $data->{$key} ?? null;
+            if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
+                $url = asset('storage/' . $url);
+            }
+            $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
+            return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key);
+        }, $key, $sort, $visible, $showOn);
+    }
+
+    /**
+     * Render an image cell with lightbox support.
+     */
+    public static function getImageView(
+        ?string $url,
+        int $index,
+        int $width = 40,
+        int $height = 40,
+        string $previewClass = 'rounded-full',
+        ?string $fallback = null,
+        string $columnKey = 'image',
+    ): string {
+        return view('mrcatz::components.ui.datatable-image', [
+            'url' => $url,
+            'index' => $index,
+            'width' => $width,
+            'height' => $height,
+            'previewClass' => $previewClass,
+            'fallback' => $fallback,
+            'columnKey' => $columnKey,
+        ])->render();
+    }
+
     public static function getExpandView(mixed $data, array $fields): string
     {
         $mapped = [];
