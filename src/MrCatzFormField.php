@@ -621,17 +621,17 @@ class MrCatzFormField
     }
 
     /**
-     * Set Tailwind/DaisyUI classes for the image preview container.
-     * Full control over size, shape, border, shadow, ring, etc.
+     * Set Tailwind/DaisyUI classes for image preview shape & decoration.
+     * Size is controlled by preview(url, width, height) via inline style.
      *
      * Examples:
-     *   ->previewClass('w-32 h-32 rounded-full ring ring-primary ring-offset-2')
-     *   ->previewClass('w-full h-64 rounded-lg border-2 border-primary shadow-xl')
-     *   ->previewClass('w-24 h-24 rounded-lg shadow-md')
-     *   ->previewClass('w-48 h-48 mask mask-squircle')           // DaisyUI mask
-     *   ->previewClass('w-full aspect-square rounded-none')       // square, natural
+     *   ->previewClass('rounded-full ring ring-primary ring-offset-2')
+     *   ->previewClass('rounded-lg border-2 border-primary shadow-xl')
+     *   ->previewClass('rounded-lg shadow-md')
+     *   ->previewClass('mask mask-squircle')
+     *   ->previewClass('rounded-none border border-base-300')
      *
-     * If not set, defaults to circular with ring using pixel width/height from preview().
+     * If not set, defaults to: rounded-full ring ring-primary ring-offset-base-100 ring-offset-2
      */
     public function previewClass(string $class): static
     {

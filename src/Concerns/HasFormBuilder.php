@@ -7,6 +7,12 @@ use Closure;
 trait HasFormBuilder
 {
     /**
+     * Form grid gap. Set to any CSS value: '1rem', '1.5rem', '0.5rem', '2rem', etc.
+     * Default: '1rem' (equivalent to Tailwind gap-4).
+     */
+    public string $formGap = '1rem';
+
+    /**
      * Override this method to define form fields using MrCatzFormField.
      * Return empty array to use traditional Blade @yield('forms') instead.
      */

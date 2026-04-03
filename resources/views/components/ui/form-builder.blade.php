@@ -46,7 +46,8 @@
         }
     }
 </style>
-<div class="mrcatz-form-grid grid grid-cols-12 gap-4">
+@php $formGap = $this->formGap ?? '1rem'; @endphp
+<div class="mrcatz-form-grid grid grid-cols-12" style="gap: {{ $formGap }}">
     @foreach($formFields as $fieldIndex => $field)
         @php
             $show = $this->shouldShowField($field);
@@ -337,29 +338,20 @@
                     $sc = mrcatz_fb_classes('file-input', $field);
                     $modalId = 'modal_delete_' . $id;
 
-                    // Preview styling: previewClass takes full control, otherwise fallback to pixel w/h + circle
-                    $pvClass = $field['previewClass'] ?? null;
-                    if (!$pvClass) {
-                        $pw = $field['previewWidth'] ?? 128;
-                        $ph = $field['previewHeight'] ?? 128;
-                        $pvStyle = "width: {$pw}px; height: {$ph}px;";
-                        $pvClass = 'rounded-full ring ring-primary ring-offset-base-100 ring-offset-2';
-                    } else {
-                        $pvStyle = '';
-                    }
+                    $pvClass = $field['previewClass'] ?? 'rounded-full ring ring-primary ring-offset-base-100 ring-offset-2';
+                    $pw = $field['previewWidth'] ?? 128;
+                    $ph = $field['previewHeight'] ?? 128;
                 @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
-                        {{-- Preview --}}
-                        <div class="w-full flex justify-center">
+                        {{-- Preview: wrapper div controls size, previewClass controls shape/decoration --}}
+                        <div class="shrink-0 overflow-hidden {{ $pvClass }}" style="width: {{ $pw }}px; height: {{ $ph }}px;">
                             @if($field['preview'])
                                 <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                     class="shrink-0 object-cover object-center {{ $pvClass }}"
-                                     @if($pvStyle) style="{{ $pvStyle }}" @endif />
+                                     style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;" />
                             @else
-                                <div class="shrink-0 overflow-hidden flex items-center justify-center {{ $pvClass }} {{ $field['fallback'] ? 'bg-primary/10' : 'bg-base-300' }}"
-                                     @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                                <div class="w-full h-full flex items-center justify-center {{ $field['fallback'] ? 'bg-primary/10' : 'bg-base-300' }}">
                                     @if($field['fallback'])
                                         <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
                                     @else
