@@ -506,14 +506,34 @@ class MrCatzDataTables
         bool $visible = true,
         string $showOn = 'both',
     ): self {
-        return $this->withCustomColumn($head, function ($data, $i) use ($key, $width, $height, $previewClass, $fallback) {
+        $imgMeta = compact('width', 'height', 'previewClass', 'fallback');
+        $this->dataTableSet[$this->index] = [
+            'head' => $head, 'order' => null, 'key' => $key, 'index' => null,
+            'i' => $this->index, 'uppercase' => false, 'th' => false,
+            'sort' => $sort, 'gravity' => 'center', 'editable' => false,
+            'visible' => $visible, 'showOn' => $showOn,
+            'type' => 'image', 'imageMeta' => $imgMeta,
+        ];
+        $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback) {
             $url = $data->{$key} ?? null;
             if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
                 $url = asset('storage/' . $url);
             }
             $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
             return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key);
-        }, $key, $sort, $visible, $showOn);
+        };
+        $this->index++;
+        return $this;
+    }
+
+    public function getColumnType(int $i): ?string
+    {
+        return $this->dataTableSet[$i]['type'] ?? null;
+    }
+
+    public function getImageMeta(int $i): ?array
+    {
+        return $this->dataTableSet[$i]['imageMeta'] ?? null;
     }
 
     /**

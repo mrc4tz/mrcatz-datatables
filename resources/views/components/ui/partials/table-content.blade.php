@@ -13,8 +13,17 @@
                     $firstDataCol = null;
                     $restCols = [];
                     $actionCols = [];
+                    $imageCol = null;
+                    // Find image column from ALL visible columns (not just mobile-filtered)
+                    foreach ($visibleColOrder as $ci) {
+                        if (($posts->getColumnType($ci) ?? null) === 'image') {
+                            $imageCol = $ci;
+                            break;
+                        }
+                    }
                     foreach ($visibleColOrderMobile as $ci) {
                         if ($posts->getIndex($ci) != null) continue;
+                        if ($imageCol !== null && $ci === $imageCol) continue;
                         if ($posts->getKey($ci) == null && !$posts->isEditable($ci)) {
                             $actionCols[] = $ci;
                         } elseif ($firstDataCol === null) {
@@ -25,7 +34,13 @@
                     }
                 @endphp
 
-                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
+                <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-3">
+                    {{-- Avatar from image column --}}
+                    @if($imageCol !== null)
+                        <div class="shrink-0 mt-0.5">
+                            {!! $posts->getData($i, $imageCol) !!}
+                        </div>
+                    @endif
                     <div class="flex-1 min-w-0 overflow-hidden">
                         @if($firstDataCol !== null)
                             @if($posts->isEditable($firstDataCol) && $posts->isEditableRow($i, $posts->getKey($firstDataCol)))
