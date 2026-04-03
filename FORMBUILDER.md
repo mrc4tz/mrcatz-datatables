@@ -114,8 +114,18 @@ MrCatzFormField::button('Check Username', onClick: 'checkUsername', icon: 'searc
 
 ```php
 ->span(6)           // Grid column span (1-12, default: 12)
-->rowSpan(10)        // Span multiple grid rows (for side-by-side layouts)
+->rowSpan(10)        // Span multiple grid rows (for side-by-side layouts, pinned to row 1)
+->mobileOrder(-1)    // Visual order on mobile only (< 640px). Negative = appear first
 ```
+
+**Form gap** — set on your component:
+
+```php
+public string $formGap = '1rem';   // default, equivalent to Tailwind gap-4
+// Other values: '0.5rem', '1.25rem', '1.5rem', '2rem'
+```
+
+**Responsive:** On mobile (< 640px), all fields automatically become full-width and `rowSpan` is reset. Use `mobileOrder()` to control which field appears first on mobile.
 
 ### Content
 
@@ -187,101 +197,118 @@ MrCatzFormField::button('Check Username', onClick: 'checkUsername', icon: 'searc
 
 ## Image Field
 
-The `image()` field type provides a complete image upload experience with preview, upload/delete buttons, and a confirmation modal for deletion.
+The `image()` field type provides a complete image upload experience: preview with lightbox zoom, upload/delete buttons, delete confirmation modal, and fallback initial letter.
 
 ### Basic Usage
 
 ```php
 MrCatzFormField::image('avatar_file', label: 'Photo')
-    ->preview($this->avatarUrl)
-    ->fallback($this->name)              // Shows first letter as fallback
+    ->preview($this->avatarUrl, width: 128, height: 128)  // URL + pixel size
+    ->previewClass('rounded-full ring ring-primary ring-offset-2')  // shape/decoration
+    ->fallback($this->name)              // First letter as fallback when no image
     ->onUpload('uploadPhoto')            // Upload button → calls Livewire method
-    ->onDelete('deletePhoto', 'Delete this photo?')  // Delete button → confirmation modal
+    ->onDelete('deletePhoto', 'Delete this photo?')  // Delete → confirmation modal
     ->hint('JPG, PNG, WEBP. Max 2MB.')
 ```
 
-### Preview Styling with `previewClass()`
+### Preview Size & Shape
 
-Full control over preview appearance via Tailwind/DaisyUI classes:
+Size and shape are controlled separately:
+
+- **`preview(url, width, height)`** — pixel dimensions via inline style (default: 128x128). Immune to CSS resets.
+- **`previewClass(class)`** — shape & decoration via Tailwind classes (default: circle + ring).
 
 ```php
-// Circle with ring (like avatar)
-->previewClass('w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2')
+// Circle avatar
+->preview($url, width: 128, height: 128)
+->previewClass('rounded-full ring ring-primary ring-offset-2')
 
-// Large rounded rectangle with border and shadow
-->previewClass('w-48 h-48 rounded-lg border-2 border-primary shadow-xl')
+// Large rounded rectangle
+->preview($url, width: 200, height: 200)
+->previewClass('rounded-lg border-2 border-primary shadow-xl')
 
-// Full width, maintain aspect ratio
-->previewClass('w-full aspect-video rounded-lg')
+// Small circle, no ring
+->preview($url, width: 64, height: 64)
+->previewClass('rounded-full shadow-sm')
 
-// Square with no rounding
-->previewClass('w-64 h-64 rounded-none border border-base-300')
+// DaisyUI mask shape
+->preview($url, width: 160, height: 160)
+->previewClass('mask mask-squircle')
 
-// DaisyUI mask shapes
-->previewClass('w-40 h-40 mask mask-squircle')
-->previewClass('w-40 h-40 mask mask-hexagon')
-
-// Small, subtle
-->previewClass('w-16 h-16 rounded-full shadow-sm')
-
-// Natural image size
-->previewClass('max-w-full rounded-lg shadow-md')
-
-// With ring offset and shadow
-->previewClass('w-36 h-36 rounded-full ring-4 ring-primary/30 ring-offset-4 ring-offset-base-100 shadow-lg')
+// Square, no rounding
+->preview($url, width: 256, height: 256)
+->previewClass('rounded-none border border-base-300')
 ```
 
-**Without `previewClass()`** — falls back to pixel `width`/`height` from `preview()` + circle + ring (default 128x128).
+### Image Lightbox (Click to Zoom)
+
+Clicking the image preview opens a fullscreen modal with zoom controls:
+
+- **Zoom in/out** — `+` / `-` buttons (25% increments, range 50%–300%)
+- **Percentage display** — shows current zoom level
+- **Reset** — button to return to 100%
+- **Close** — X button, backdrop click, or Escape key
+- Smooth transition animation on zoom
+
+Lightbox is automatic — no configuration needed. Only active when a preview image exists.
 
 ### Delete Confirmation Modal
 
-When `->onDelete('method', 'Confirm text?')` is set and a preview exists, the delete button opens a DaisyUI dialog modal with:
-- Warning icon
-- Custom confirmation text
-- "Delete" and "Cancel" buttons
+When `->onDelete('method', 'Confirm text?')` is set and a preview exists, the delete button opens a DaisyUI dialog modal with warning icon, custom confirmation text, and Delete/Cancel buttons.
 
 ### Side-by-side Layout
 
-Use `->span()` + `->rowSpan()` to place the image beside form fields:
+Use `->span()` + `->rowSpan()` + `->mobileOrder()`:
 
 ```php
 return [
-    // Left: form fields (span 8)
-    MrCatzFormField::section('Profile Information')->span(8),
-    MrCatzFormField::text('name', label: 'Name', icon: 'person')->span(8),
-    MrCatzFormField::email('email', label: 'Email', icon: 'mail')->span(8),
-
-    // Right: avatar (span 4, pinned to row 1, spanning all rows)
+    // Left: avatar (span 4, pinned row 1, appear first on mobile)
     MrCatzFormField::image('avatar_file', label: 'Photo')
-        ->span(4)->rowSpan(20)
-        ->preview($this->avatarUrl)
-        ->previewClass('w-32 h-32 rounded-full ring ring-primary ring-offset-2')
+        ->span(4)->rowSpan(20)->mobileOrder(-1)
+        ->preview($this->avatarUrl, width: 128, height: 128)
+        ->previewClass('rounded-full ring ring-primary ring-offset-2')
         ->fallback($this->name)
         ->onUpload('updateAvatar')
         ->onDelete('deleteAvatar', 'Delete photo?')
         ->hint('JPG, PNG. Max 2MB.'),
+
+    // Right: form fields (span 8)
+    MrCatzFormField::section('Profile Information')->span(8),
+    MrCatzFormField::text('name', label: 'Name', icon: 'person')->span(8),
+    MrCatzFormField::email('email', label: 'Email', icon: 'mail')->span(8),
 ];
 ```
 
-This creates a layout where form fields fill the left 8 columns and the image is pinned to the right 4 columns:
-
+**Desktop (> 640px):**
 ```
-┌────── form fields (span 8) ─────┐ ┌── image (span 4) ──┐
-│ ▍ Profile Information            │ │   Foto Profil       │
-│ [👤] Name ______________________ │ │      ┌──────┐       │
-│ [✉] Email ______________________ │ │      │ foto │       │
-│                                  │ │      └──────┘       │
-│ ▍ Change Password                │ │   [Choose file]     │
-│ [🔒] Current Password __________ │ │   [Upload] [🗑]    │
-│ [🔒] New Password _____________  │ │   JPG, PNG. 2MB     │
-└──────────────────────────────────┘ └─────────────────────┘
+┌── image (span 4) ──┐ ┌────── form (span 8) ─────┐
+│    ┌──────┐         │ │ ▍ Profile Information     │
+│    │ foto │ (click  │ │ [Name] __________________ │
+│    │128x128│ zoom)  │ │ [Email] _________________ │
+│    └──────┘         │ │ ▍ Change Password         │
+│   [Choose file]     │ │ [Password] ______________ │
+│   [Upload] [🗑]    │ └───────────────────────────┘
+└─────────────────────┘
+```
+
+**Mobile (< 640px):** — image moves to top via `mobileOrder(-1)`
+```
+┌──────── full width ────────┐
+│ Photo (order: -1 = first)  │
+│ [foto] [upload] [🗑]       │
+├─────────────────────────────┤
+│ Profile Information         │
+│ Name, Email, Password...    │
+└─────────────────────────────┘
 ```
 
 ---
 
 ## Grid Layout
 
-Form uses a 12-column CSS grid. Use `->span()` for multi-column layouts:
+Form uses a 12-column CSS grid.
+
+### Column Span
 
 ```php
 MrCatzFormField::text('first_name', label: 'First Name')->span(6),
@@ -289,12 +316,42 @@ MrCatzFormField::text('last_name', label: 'Last Name')->span(6),
 MrCatzFormField::textarea('bio', label: 'Bio'),  // full width (default: span 12)
 ```
 
-Use `->rowSpan(n)` to make a field span multiple rows (pinned to row 1):
+### Row Span (Side-by-side)
+
+Pin a field to row 1 and span multiple rows:
 
 ```php
+MrCatzFormField::image('avatar', ...)->span(4)->rowSpan(20),
 MrCatzFormField::text('name', ...)->span(8),
-MrCatzFormField::image('avatar', ...)->span(4)->rowSpan(10),
+MrCatzFormField::email('email', ...)->span(8),
 ```
+
+### Mobile Order
+
+Control which fields appear first on mobile (< 640px). On mobile, all fields become full-width and `rowSpan` is reset.
+
+```php
+->mobileOrder(-1)    // Appear first on mobile
+->mobileOrder(0)     // Default order
+->mobileOrder(10)    // Appear last on mobile
+```
+
+### Form Gap
+
+Set the spacing between fields on your component:
+
+```php
+public string $formGap = '1rem';     // Default (Tailwind gap-4 equivalent)
+public string $formGap = '0.5rem';   // Compact
+public string $formGap = '1.5rem';   // Spacious
+public string $formGap = '2rem';     // Very spacious
+```
+
+### Responsive Behavior
+
+The form grid is automatically responsive:
+- **Desktop (> 640px)** — `span()` and `rowSpan()` layout applies
+- **Mobile (< 640px)** — all fields become full-width, `rowSpan` resets, `mobileOrder` controls visual order
 
 ---
 
@@ -435,55 +492,87 @@ Or include just the fields for full layout control:
 <button class="btn btn-primary mt-4" wire:click="save">Save</button>
 ```
 
+### Notifications
+
+When extending `MrCatzComponent`, use **`$this->notice()`** for toast notifications on standalone pages:
+
+```php
+$this->notice('success', 'Profile updated!');
+$this->notice('error', 'Something went wrong.');
+$this->notice('warning', 'Check your input.');
+$this->notice('info', 'Processing...');
+```
+
+> **Note:** `show_notif()` only works on pages with DataTable JS. For standalone pages (profile, settings, etc.), always use `notice()` instead — it dispatches the `notice` browser event that the notification component listens for.
+
 ---
 
 ## Full Example
 
+Profile edit page with avatar upload, username check, password change — all via Form Builder:
+
 ```php
-public $usernameHint = '';
-public $avatarUrl;
-
-public function setForm(): array
+class ProfilePage extends MrCatzComponent
 {
-    return [
-        // Left column
-        MrCatzFormField::section('Account Information')->span(8),
-        MrCatzFormField::text('username', label: 'Username', rules: 'required|min:3', icon: 'person')
-            ->span(6)->hint($this->usernameHint ?: null, 'success'),
-        MrCatzFormField::button('Check', onClick: 'checkUsername', icon: 'search', style: 'info')
-            ->withLoading()->span(2),
-        MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail')->span(8),
+    use WithFileUploads;
 
-        MrCatzFormField::section('Pricing')->span(8),
-        MrCatzFormField::number('price', label: 'Price', rules: 'required|numeric')
-            ->prefix('Rp')->suffix('/unit')->style('primary')->span(8),
+    public $name, $username, $email, $avatarUrl;
+    public $current_password, $password, $password_confirmation;
+    public $avatar_file, $usernameHint = '', $oldUsername;
 
-        MrCatzFormField::divider('Optional')->span(8),
-        MrCatzFormField::date('birth_date', label: 'Birth Date')->span(4),
-        MrCatzFormField::color('theme_color', label: 'Theme Color')->span(4),
-        MrCatzFormField::toggle('is_active', label: 'Active')->span(8)->style('success'),
+    public string $formGap = '1.25rem';
 
-        // Right column — avatar pinned
-        MrCatzFormField::image('avatar_file', label: 'Photo')
-            ->span(4)->rowSpan(20)
-            ->preview($this->avatarUrl)
-            ->previewClass('w-32 h-32 rounded-full ring ring-primary ring-offset-2')
-            ->fallback($this->name)
-            ->onUpload('updateAvatar')
-            ->onDelete('deleteAvatar', 'Delete photo?')
-            ->hint('JPG, PNG. Max 2MB.'),
-    ];
-}
+    public function setForm(): array
+    {
+        return [
+            // Left: avatar (click to zoom, upload, delete with modal confirm)
+            MrCatzFormField::image('avatar_file', label: 'Photo')
+                ->span(4)->rowSpan(20)->mobileOrder(-1)
+                ->preview($this->avatarUrl, width: 128, height: 128)
+                ->previewClass('rounded-full ring ring-primary ring-offset-2')
+                ->fallback($this->name)
+                ->onUpload('updateAvatar')
+                ->onDelete('deleteAvatar', 'Delete photo?')
+                ->hint('JPG, PNG. Max 2MB.'),
 
-public function checkUsername()
-{
-    $this->usernameHint = '';
-    $this->resetValidation('username');
+            // Right: form fields
+            MrCatzFormField::section('Account Information')->span(8),
+            MrCatzFormField::text('name', label: 'Name', rules: 'required', icon: 'person')->span(8),
+            MrCatzFormField::text('username', label: 'Username', rules: 'required|min:3', icon: 'alternate_email')
+                ->span(6)->hint($this->usernameHint ?: null, 'success'),
+            MrCatzFormField::button('Check', onClick: 'checkUsername', icon: 'search', style: 'info')
+                ->withLoading()->span(2),
+            MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail')->span(8),
 
-    if (User::where('username', $this->username)->exists()) {
-        $this->addError('username', 'Username already taken!');
-    } else {
-        $this->usernameHint = '✓ Username available!';
+            MrCatzFormField::section('Change Password')->span(8),
+            MrCatzFormField::note('Leave empty to keep current password.')->span(8),
+            MrCatzFormField::password('current_password', label: 'Current Password', icon: 'lock')->span(8),
+            MrCatzFormField::password('password', label: 'New Password', icon: 'lock')
+                ->span(8)->withConfirmation(label: 'Confirm New Password'),
+        ];
+    }
+
+    public function checkUsername()
+    {
+        $this->usernameHint = '';
+        $this->resetValidation('username');
+
+        if ($this->username === $this->oldUsername) {
+            $this->usernameHint = '✓ Username unchanged.';
+            return;
+        }
+        if (User::where('username', $this->username)->exists()) {
+            $this->addError('username', 'Username already taken!');
+        } else {
+            $this->usernameHint = '✓ Username available!';
+        }
+    }
+
+    public function save()
+    {
+        $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
+        // ... save logic
+        $this->notice('success', 'Profile updated!');  // use notice() for standalone pages
     }
 }
 ```
