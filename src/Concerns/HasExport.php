@@ -126,6 +126,14 @@ trait HasExport
         $headers = [];
         $exportableColumns = [];
         foreach ($dataTableSet as $i => $col) {
+            // Skip action columns (custom column with no key and not editable)
+            if ($col['key'] === null && ($col['index'] ?? null) === null && !$col['editable']) {
+                continue;
+            }
+            // Skip image columns
+            if (($col['type'] ?? null) === 'image') {
+                continue;
+            }
             $headers[] = $col['head'];
             $exportableColumns[] = $i;
         }
