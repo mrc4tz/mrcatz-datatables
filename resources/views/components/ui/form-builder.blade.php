@@ -338,16 +338,16 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 p-4 border border-base-content/10 rounded-lg bg-base-200/20">
                         {{-- Preview --}}
-                        <div class="overflow-hidden shrink-0 aspect-square {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
+                        <div class="relative overflow-hidden shrink-0 {{ $pvClass }}" @if($pvStyle) style="{{ $pvStyle }}" @endif>
                             @if($field['preview'])
                                 <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                     class="object-cover w-full h-full" />
+                                     class="absolute inset-0 w-full h-full object-cover object-center" />
                             @elseif($field['fallback'])
-                                <div class="bg-primary/10 w-full h-full flex items-center justify-center">
+                                <div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
                                     <span class="text-4xl font-bold text-primary">{{ strtoupper(substr($field['fallback'], 0, 1)) }}</span>
                                 </div>
                             @else
-                                <div class="bg-base-300 w-full h-full flex items-center justify-center">
+                                <div class="absolute inset-0 bg-base-300 flex items-center justify-center">
                                     {!! mrcatz_form_icon('person', 'text-base-content/30 w-12 h-12') !!}
                                 </div>
                             @endif
