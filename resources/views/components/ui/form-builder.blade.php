@@ -4,16 +4,35 @@
 
     // Helper: build DaisyUI style class for a component prefix (input, select, textarea, etc.)
     // e.g. buildStyleClass('input', $field) => 'input-primary input-lg'
-    function mrcatz_fb_classes(string $component, array $field): string {
-        $classes = '';
-        if (!empty($field['style'])) {
-            $classes .= $component . '-' . $field['style'] . ' ';
+    if (!function_exists('mrcatz_fb_classes')) {
+        function mrcatz_fb_classes(string $component, array $field): string {
+            $classes = '';
+            if (!empty($field['style'])) {
+                $classes .= $component . '-' . $field['style'] . ' ';
+            }
+            if (!empty($field['size'])) {
+                $classes .= $component . '-' . $field['size'] . ' ';
+            }
+            return trim($classes);
         }
-        if (!empty($field['size'])) {
-            $classes .= $component . '-' . $field['size'] . ' ';
-        }
-        return trim($classes);
     }
+
+    // Full class map so Tailwind JIT can detect them at build time.
+    // Dynamic interpolation like sm:col-span-{{ $span }} does NOT work with Tailwind.
+    $spanClassMap = [
+        1  => 'sm:col-span-1',
+        2  => 'sm:col-span-2',
+        3  => 'sm:col-span-3',
+        4  => 'sm:col-span-4',
+        5  => 'sm:col-span-5',
+        6  => 'sm:col-span-6',
+        7  => 'sm:col-span-7',
+        8  => 'sm:col-span-8',
+        9  => 'sm:col-span-9',
+        10 => 'sm:col-span-10',
+        11 => 'sm:col-span-11',
+        12 => 'sm:col-span-12',
+    ];
 @endphp
 
 <div class="grid grid-cols-12 gap-4">
@@ -29,9 +48,10 @@
             $disabled = $field['disabled'] ?? false;
             $wireDirective = $field['wireDirective'] ?? '';
             $onChangeAttr = $field['onChange'] ? 'wire:change=formFieldChanged(\'' . $id . '\',$event.target.value)' : '';
+            $spanClass = $spanClassMap[$span] ?? 'sm:col-span-12';
         @endphp
 
-        <div class="col-span-12 sm:col-span-{{ $span }}">
+        <div class="col-span-12 {{ $spanClass }}">
 
             {{-- ═══ HIDDEN ═══ --}}
             @if($type === 'hidden')
@@ -89,28 +109,35 @@
                     $btnSizeClass = !empty($field['size']) ? 'btn-' . $field['size'] : '';
                     $btnClass = 'btn btn-' . $btnStyle . ' ' . $btnSizeClass;
                 @endphp
-                <button type="button"
-                        class="{{ trim($btnClass) }} gap-2"
-                        wire:click="{{ $field['onClick'] }}"
-                        @if($field['loading'] && $field['target'])
-                            wire:loading.attr="disabled" wire:target="{{ $field['target'] }}"
-                        @elseif($field['loading'])
-                            wire:loading.attr="disabled" wire:target="{{ $field['onClick'] }}"
+                <fieldset class="fieldset">
+                    {{-- Empty legend to align with adjacent input fields --}}
+                    <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">&nbsp;</legend>
+                    <button type="button"
+                            class="{{ trim($btnClass) }} gap-2 w-full"
+                            wire:click="{{ $field['onClick'] }}"
+                            @if($field['loading'] && $field['target'])
+                                wire:loading.attr="disabled" wire:target="{{ $field['target'] }}"
+                            @elseif($field['loading'])
+                                wire:loading.attr="disabled" wire:target="{{ $field['onClick'] }}"
+                            @endif
+                            @if($disabled) disabled @endif>
+                        @if($field['loading'])
+                            <span class="loading loading-spinner loading-xs"
+                                  @if($field['target'])
+                                      wire:loading wire:target="{{ $field['target'] }}"
+                                  @else
+                                      wire:loading wire:target="{{ $field['onClick'] }}"
+                                  @endif></span>
                         @endif
-                        @if($disabled) disabled @endif>
-                    @if($field['loading'])
-                        <span class="loading loading-spinner loading-xs"
-                              @if($field['target'])
-                                  wire:loading wire:target="{{ $field['target'] }}"
-                              @else
-                                  wire:loading wire:target="{{ $field['onClick'] }}"
-                              @endif></span>
+                        @if($field['icon'])
+                            {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
+                        @endif
+                        {{ $field['label'] }}
+                    </button>
+                    @if($field['hint'])
+                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
                     @endif
-                    @if($field['icon'])
-                        {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
-                    @endif
-                    {{ $field['label'] }}
-                </button>
+                </fieldset>
 
             {{-- ═══ TEXT / EMAIL / PASSWORD / URL / TEL / SEARCH / DATE / TIME / DATETIME-LOCAL ═══ --}}
             @elseif(in_array($type, ['text', 'email', 'password', 'url', 'tel', 'search', 'date', 'time', 'datetime-local']))
