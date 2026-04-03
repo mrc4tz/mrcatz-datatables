@@ -211,6 +211,29 @@ class MrCatzFormField
     /**
      * Image upload field with circular preview, fallback initial, upload/delete buttons.
      */
+    /**
+     * File upload with inline image preview — standard form field layout.
+     * Looks consistent with other fields (text, select, etc.).
+     * Use for product images, document uploads, etc.
+     *
+     * For avatar/profile style upload, use image() instead.
+     */
+    public static function fileupload(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $accept = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('fileupload', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->accept = $accept;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
     public static function image(
         string $id,
         string $label,

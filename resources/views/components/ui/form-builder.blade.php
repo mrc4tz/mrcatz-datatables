@@ -501,6 +501,59 @@
                     @endif
                 </fieldset>
 
+            {{-- ═══ FILEUPLOAD (standard form field with preview) ═══ --}}
+            @elseif($type === 'fileupload')
+                @php $sc = mrcatz_fb_classes('file-input', $field); @endphp
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
+                    @if($field['preview'])
+                        <div class="mb-2 flex items-start gap-3">
+                            @if(preg_match('/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i', $field['preview']))
+                                <div class="shrink-0 overflow-hidden rounded-lg border border-base-content/10 cursor-zoom-in transition-opacity hover:opacity-80 {{ $field['previewClass'] ?? '' }}"
+                                     style="width: {{ $field['previewWidth'] ?? 80 }}px; height: {{ $field['previewHeight'] ?? 80 }}px;"
+                                     x-data @click="$dispatch('mrcatz-lightbox', { url: '{{ $field['preview'] }}' })">
+                                    <img src="{{ $field['preview'] }}" alt=""
+                                         style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;" />
+                                </div>
+                                <div class="text-xs text-base-content/40 mt-1">
+                                    <p>File saat ini</p>
+                                    <p class="text-base-content/60">Klik gambar untuk memperbesar</p>
+                                </div>
+                            @else
+                                <a href="{{ $field['preview'] }}" target="_blank" class="inline-flex items-center gap-1.5 text-sm link link-primary">
+                                    {!! mrcatz_icon('download', 'text-sm') !!}
+                                    {{ basename($field['preview']) }}
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                    <input type="file"
+                           class="file-input file-input-bordered {{ $sc }} w-full
+                               @error($id) file-input-error @enderror
+                               @if($disabled) opacity-60 bg-base-200 @endif"
+                           {!! $wireDirective !!}
+                           @if($field['accept']) accept="{{ $field['accept'] }}" @endif
+                           @if($disabled) disabled @endif />
+                    @error($id)
+                        <p class="text-error text-xs mt-1 flex items-center gap-1">
+                            {!! mrcatz_icon('error', 'text-xs') !!}
+                            {{ $message }}
+                        </p>
+                    @enderror
+                    @if($field['hint'])
+                        @php
+                            $hintCls = match($field['hintColor'] ?? null) {
+                                'success' => 'text-success',
+                                'error'   => 'text-error',
+                                'warning' => 'text-warning',
+                                'info'    => 'text-info',
+                                default   => 'text-base-content/50',
+                            };
+                        @endphp
+                        <p class="{{ $hintCls }} text-xs mt-1">{{ $field['hint'] }}</p>
+                    @endif
+                </fieldset>
+
             {{-- ═══ TOGGLE ═══ --}}
             @elseif($type === 'toggle')
                 @php $sc = mrcatz_fb_classes('toggle', $field); @endphp
