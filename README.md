@@ -396,6 +396,34 @@ public function setTable()
 
 **`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`, `$showOn`
 
+#### Image Column (`withColumnImage`)
+
+Display images in table cells with clickable lightbox (scroll zoom, click to reset/close):
+
+```php
+->withColumnImage('Avatar', 'avatar',
+    width: 40,                    // Preview width in px
+    height: 40,                   // Preview height in px
+    previewClass: 'rounded-full ring ring-primary',  // Tailwind shape/decoration
+    fallback: 'name',             // DB column for initial letter fallback
+    showOn: 'desktop',            // 'both', 'desktop', 'mobile'
+)
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `$width` | `40` | Preview width in pixels |
+| `$height` | `40` | Preview height in pixels |
+| `$previewClass` | `'rounded-full'` | Tailwind classes for shape/border/shadow |
+| `$fallback` | `null` | DB column name — shows first letter when no image |
+| `$sort` | `false` | Sortable column |
+| `$visible` | `true` | Column visibility |
+| `$showOn` | `'both'` | Responsive visibility |
+
+Image paths are auto-resolved: if the value doesn't start with `http` or `/`, it's prefixed with `asset('storage/')`.
+
+Clicking the image opens a lightbox with the same interaction as Form Builder: scroll to zoom, click to reset/close.
+
 #### Responsive Column Visibility (`showOn`)
 
 Control which columns appear on mobile (card view) vs desktop (table view):
