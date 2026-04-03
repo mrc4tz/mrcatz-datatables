@@ -1,6 +1,19 @@
 {{-- MrCatz Form Builder — auto-generated form from setForm() --}}
 @php
     $formFields = $this->getFormFields();
+
+    // Helper: build DaisyUI style class for a component prefix (input, select, textarea, etc.)
+    // e.g. buildStyleClass('input', $field) => 'input-primary input-lg'
+    function mrcatz_fb_classes(string $component, array $field): string {
+        $classes = '';
+        if (!empty($field['style'])) {
+            $classes .= $component . '-' . $field['style'] . ' ';
+        }
+        if (!empty($field['size'])) {
+            $classes .= $component . '-' . $field['size'] . ' ';
+        }
+        return trim($classes);
+    }
 @endphp
 
 <div class="grid grid-cols-12 gap-4">
@@ -22,7 +35,7 @@
 
             {{-- ═══ HIDDEN ═══ --}}
             @if($type === 'hidden')
-                <input type="hidden" {{ $wireDirective }} />
+                <input type="hidden" {!! $wireDirective !!} />
 
             {{-- ═══ SECTION HEADER ═══ --}}
             @elseif($type === 'section')
@@ -33,6 +46,14 @@
             {{-- ═══ NOTE ═══ --}}
             @elseif($type === 'note')
                 <p class="text-sm text-base-content/60 mb-1">{{ $field['content'] }}</p>
+
+            {{-- ═══ DIVIDER ═══ --}}
+            @elseif($type === 'divider')
+                @if($field['content'])
+                    <div class="divider text-sm text-base-content/50">{{ $field['content'] }}</div>
+                @else
+                    <div class="divider"></div>
+                @endif
 
             {{-- ═══ ALERT ═══ --}}
             @elseif($type === 'alert')
@@ -61,12 +82,43 @@
             @elseif($type === 'html')
                 {!! $field['content'] !!}
 
-            {{-- ═══ TEXT / EMAIL / PASSWORD ═══ --}}
-            @elseif(in_array($type, ['text', 'email', 'password']))
+            {{-- ═══ BUTTON ═══ --}}
+            @elseif($type === 'button')
+                @php
+                    $btnStyle = $field['buttonStyle'] ?? 'primary';
+                    $btnSizeClass = !empty($field['size']) ? 'btn-' . $field['size'] : '';
+                    $btnClass = 'btn btn-' . $btnStyle . ' ' . $btnSizeClass;
+                @endphp
+                <button type="button"
+                        class="{{ trim($btnClass) }} gap-2"
+                        wire:click="{{ $field['onClick'] }}"
+                        @if($field['loading'] && $field['target'])
+                            wire:loading.attr="disabled" wire:target="{{ $field['target'] }}"
+                        @elseif($field['loading'])
+                            wire:loading.attr="disabled" wire:target="{{ $field['onClick'] }}"
+                        @endif
+                        @if($disabled) disabled @endif>
+                    @if($field['loading'])
+                        <span class="loading loading-spinner loading-xs"
+                              @if($field['target'])
+                                  wire:loading wire:target="{{ $field['target'] }}"
+                              @else
+                                  wire:loading wire:target="{{ $field['onClick'] }}"
+                              @endif></span>
+                    @endif
+                    @if($field['icon'])
+                        {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
+                    @endif
+                    {{ $field['label'] }}
+                </button>
+
+            {{-- ═══ TEXT / EMAIL / PASSWORD / URL / TEL / SEARCH / DATE / TIME / DATETIME-LOCAL ═══ --}}
+            @elseif(in_array($type, ['text', 'email', 'password', 'url', 'tel', 'search', 'date', 'time', 'datetime-local']))
+                @php $sc = mrcatz_fb_classes('input', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-                    <label class="input input-bordered flex items-center gap-3 w-full transition-all duration-200
-                        focus-within:input-primary focus-within:shadow-sm
+                    <label class="input input-bordered {{ $sc }} flex items-center gap-3 w-full transition-all duration-200
+                        focus-within:shadow-sm
                         @error($id) input-error @enderror
                         @if($disabled) opacity-60 bg-base-200 @endif">
                         @if($field['icon'])
@@ -98,10 +150,11 @@
 
             {{-- ═══ NUMBER ═══ --}}
             @elseif($type === 'number')
+                @php $sc = mrcatz_fb_classes('input', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-                    <label class="input input-bordered flex items-center gap-3 w-full transition-all duration-200
-                        focus-within:input-primary focus-within:shadow-sm
+                    <label class="input input-bordered {{ $sc }} flex items-center gap-3 w-full transition-all duration-200
+                        focus-within:shadow-sm
                         @error($id) input-error @enderror
                         @if($disabled) opacity-60 bg-base-200 @endif">
                         @if($field['icon'])
@@ -136,10 +189,11 @@
 
             {{-- ═══ SELECT ═══ --}}
             @elseif($type === 'select')
+                @php $sc = mrcatz_fb_classes('select', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-                    <select class="select select-bordered w-full text-sm transition-all duration-200
-                        focus:select-primary focus:shadow-sm
+                    <select class="select select-bordered {{ $sc }} w-full text-sm transition-all duration-200
+                        focus:shadow-sm
                         @error($id) select-error @enderror
                         @if($disabled) opacity-60 bg-base-200 @endif"
                             {!! $wireDirective !!}
@@ -167,10 +221,11 @@
 
             {{-- ═══ TEXTAREA ═══ --}}
             @elseif($type === 'textarea')
+                @php $sc = mrcatz_fb_classes('textarea', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-                    <textarea class="textarea w-full textarea-bordered h-28 text-sm transition-all duration-200
-                        focus:textarea-primary focus:shadow-sm
+                    <textarea class="textarea w-full textarea-bordered {{ $sc }} h-28 text-sm transition-all duration-200
+                        focus:shadow-sm
                         @error($id) textarea-error @enderror
                         @if($disabled) opacity-60 bg-base-200 @endif"
                               placeholder="{{ $field['placeholder'] ?? '...' }}"
@@ -190,6 +245,7 @@
 
             {{-- ═══ FILE ═══ --}}
             @elseif($type === 'file')
+                @php $sc = mrcatz_fb_classes('file-input', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     @if($field['preview'])
@@ -205,7 +261,7 @@
                         </div>
                     @endif
                     <input type="file"
-                           class="file-input file-input-bordered w-full
+                           class="file-input file-input-bordered {{ $sc }} w-full
                                @error($id) file-input-error @enderror
                                @if($disabled) opacity-60 bg-base-200 @endif"
                            {!! $wireDirective !!}
@@ -224,11 +280,30 @@
 
             {{-- ═══ TOGGLE ═══ --}}
             @elseif($type === 'toggle')
+                @php $sc = mrcatz_fb_classes('toggle', $field); @endphp
                 <fieldset class="fieldset">
                     <label class="label cursor-pointer justify-start gap-3 p-3 rounded-lg border border-base-content/10 hover:bg-base-200/50 transition-colors duration-200
                         @if($disabled) opacity-60 bg-base-200 @endif">
                         <input type="checkbox"
-                               class="toggle toggle-primary toggle-sm"
+                               class="toggle toggle-primary {{ $sc }}"
+                               {!! $wireDirective !!}
+                               {!! $onChangeAttr !!}
+                               @if($disabled) disabled @endif />
+                        <span class="text-base-content text-sm font-medium">{{ $field['label'] }}</span>
+                    </label>
+                    @if($field['hint'])
+                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                    @endif
+                </fieldset>
+
+            {{-- ═══ CHECKBOX (single) ═══ --}}
+            @elseif($type === 'checkbox')
+                @php $sc = mrcatz_fb_classes('checkbox', $field); @endphp
+                <fieldset class="fieldset">
+                    <label class="label cursor-pointer justify-start gap-3 p-3 rounded-lg border border-base-content/10 hover:bg-base-200/50 transition-colors duration-200
+                        @if($disabled) opacity-60 bg-base-200 @endif">
+                        <input type="checkbox"
+                               class="checkbox checkbox-primary {{ $sc }}"
                                {!! $wireDirective !!}
                                {!! $onChangeAttr !!}
                                @if($disabled) disabled @endif />
@@ -273,6 +348,7 @@
 
             {{-- ═══ RADIO ═══ --}}
             @elseif($type === 'radio')
+                @php $sc = mrcatz_fb_classes('radio', $field); @endphp
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-wrap gap-4 p-3 border border-base-content/10 rounded-lg
@@ -281,7 +357,7 @@
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="radio"
                                        name="radio_{{ $id }}"
-                                       class="radio radio-sm radio-primary"
+                                       class="radio radio-primary {{ $sc }}"
                                        value="{{ $val }}"
                                        {!! $wireDirective !!}
                                        {!! $onChangeAttr !!}
@@ -289,6 +365,76 @@
                                 <span class="text-sm">{{ $label }}</span>
                             </label>
                         @endforeach
+                    </div>
+                    @if($field['hint'])
+                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                    @endif
+                </fieldset>
+
+            {{-- ═══ COLOR ═══ --}}
+            @elseif($type === 'color')
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
+                    <input type="color"
+                           class="w-16 h-10 rounded-lg border border-base-content/15 cursor-pointer
+                               @if($disabled) opacity-60 @endif"
+                           {!! $wireDirective !!}
+                           {!! $onChangeAttr !!}
+                           @if($disabled) disabled @endif />
+                    @error($id)
+                        <p class="text-error text-xs mt-1 flex items-center gap-1">
+                            {!! mrcatz_icon('error', 'text-xs') !!}
+                            {{ $message }}
+                        </p>
+                    @enderror
+                    @if($field['hint'])
+                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                    @endif
+                </fieldset>
+
+            {{-- ═══ RANGE / SLIDER ═══ --}}
+            @elseif($type === 'range')
+                @php $sc = mrcatz_fb_classes('range', $field); @endphp
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
+                    <input type="range"
+                           class="range range-primary {{ $sc }} w-full
+                               @if($disabled) opacity-60 @endif"
+                           {!! $wireDirective !!}
+                           {!! $onChangeAttr !!}
+                           @if($field['min'] !== null) min="{{ $field['min'] }}" @endif
+                           @if($field['max'] !== null) max="{{ $field['max'] }}" @endif
+                           @if($field['step']) step="{{ $field['step'] }}" @endif
+                           @if($disabled) disabled @endif />
+                    <div class="flex justify-between text-xs text-base-content/50 px-1">
+                        <span>{{ $field['min'] ?? 0 }}</span>
+                        <span>{{ $field['max'] ?? 100 }}</span>
+                    </div>
+                    @error($id)
+                        <p class="text-error text-xs mt-1 flex items-center gap-1">
+                            {!! mrcatz_icon('error', 'text-xs') !!}
+                            {{ $message }}
+                        </p>
+                    @enderror
+                    @if($field['hint'])
+                        <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>
+                    @endif
+                </fieldset>
+
+            {{-- ═══ RATING ═══ --}}
+            @elseif($type === 'rating')
+                @php $sc = mrcatz_fb_classes('rating', $field); @endphp
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
+                    <div class="rating {{ $sc }} @if($disabled) opacity-60 @endif">
+                        @for($i = 1; $i <= ($field['max'] ?? 5); $i++)
+                            <input type="radio"
+                                   name="rating_{{ $id }}"
+                                   class="mask mask-star-2 bg-warning"
+                                   value="{{ $i }}"
+                                   {!! $wireDirective !!}
+                                   @if($disabled) disabled @endif />
+                        @endfor
                     </div>
                     @if($field['hint'])
                         <p class="text-base-content/50 text-xs mt-1">{{ $field['hint'] }}</p>

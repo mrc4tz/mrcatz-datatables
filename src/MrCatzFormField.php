@@ -21,8 +21,8 @@ class MrCatzFormField
     private ?array $options = null; // for radio
     private ?string $accept = null; // for file
     private ?int $step = null;
-    private ?int $min = null;
-    private ?int $max = null;
+    private mixed $min = null;
+    private mixed $max = null;
     private int $span = 12;
     private ?string $hint = null;
     private ?string $prefixText = null;
@@ -44,6 +44,18 @@ class MrCatzFormField
     // Static content
     private ?string $content = null; // for section, note, alert, html
     private ?string $alertType = null; // for alert: info, warning, success, error
+
+    // Button
+    private ?string $onClickMethod = null;
+    private ?string $buttonStyle = null; // btn style for button type
+
+    // Style & Size (DaisyUI)
+    private ?string $style = null;  // primary, secondary, accent, info, success, warning, error, ghost, neutral
+    private ?string $size = null;   // xs, sm, md, lg, xl
+
+    // Additional field-specific
+    private bool $loading = false; // for button: show loading spinner
+    private ?string $target = null; // for button: wire:target
 
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
@@ -110,8 +122,8 @@ class MrCatzFormField
         ?string $rules = null,
         ?array $messages = null,
         ?int $step = null,
-        ?int $min = null,
-        ?int $max = null,
+        mixed $min = null,
+        mixed $max = null,
         ?string $icon = null,
         mixed $disabled = false,
     ): static {
@@ -188,6 +200,16 @@ class MrCatzFormField
         return $field;
     }
 
+    public static function checkbox(
+        string $id,
+        string $label,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('checkbox', $id, $label);
+        $field->disabled = $disabled;
+        return $field;
+    }
+
     public static function chooser(
         string $id,
         string $label,
@@ -225,6 +247,177 @@ class MrCatzFormField
         return new static('hidden', $id);
     }
 
+    public static function date(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('date', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function time(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('time', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function datetime(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('datetime-local', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function color(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('color', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function range(
+        string $id,
+        string $label,
+        mixed $min = 0,
+        mixed $max = 100,
+        ?int $step = null,
+        ?string $rules = null,
+        ?array $messages = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('range', $id, $label);
+        $field->min = $min;
+        $field->max = $max;
+        $field->step = $step;
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function url(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?string $placeholder = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('url', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function tel(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?string $placeholder = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('tel', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function search(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?string $placeholder = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('search', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon ?? 'search';
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    public static function rating(
+        string $id,
+        string $label,
+        int $max = 5,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('rating', $id, $label);
+        $field->max = $max;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    // ─── Button ───────────────────────────────────────────────────
+
+    /**
+     * Create a button element inside the form.
+     *
+     * @param string $label  Button text
+     * @param string $onClick  Livewire method to call on click
+     * @param string|null $icon  Optional icon
+     * @param string $style  DaisyUI button style: primary, secondary, accent, info, success, warning, error, ghost, neutral, outline
+     */
+    public static function button(
+        string $label,
+        string $onClick,
+        ?string $icon = null,
+        string $style = 'primary',
+    ): static {
+        $field = new static('button', null, $label);
+        $field->onClickMethod = $onClick;
+        $field->icon = $icon;
+        $field->buttonStyle = $style;
+        return $field;
+    }
+
     // ─── Static Content Elements ──────────────────────────────────
 
     public static function section(string $title): static
@@ -253,6 +446,13 @@ class MrCatzFormField
     {
         $field = new static('html');
         $field->content = $content;
+        return $field;
+    }
+
+    public static function divider(?string $text = null): static
+    {
+        $field = new static('divider');
+        $field->content = $text;
         return $field;
     }
 
@@ -350,6 +550,37 @@ class MrCatzFormField
         return $this;
     }
 
+    /**
+     * Set DaisyUI style variant for the field.
+     * Values: primary, secondary, accent, info, success, warning, error, ghost, neutral
+     */
+    public function style(string $style): static
+    {
+        $this->style = $style;
+        return $this;
+    }
+
+    /**
+     * Set DaisyUI size for the field.
+     * Values: xs, sm, md, lg, xl
+     */
+    public function size(string $size): static
+    {
+        $this->size = $size;
+        return $this;
+    }
+
+    /**
+     * Show loading spinner on button while Livewire method runs.
+     * Optionally specify wire:target for targeted loading.
+     */
+    public function withLoading(?string $target = null): static
+    {
+        $this->loading = true;
+        $this->target = $target;
+        return $this;
+    }
+
     // ─── Output ───────────────────────────────────────────────────
 
     /**
@@ -391,6 +622,12 @@ class MrCatzFormField
             'debounceMs' => $this->debounceMs,
             'content' => $this->content,
             'alertType' => $this->alertType,
+            'onClick' => $this->onClickMethod,
+            'buttonStyle' => $this->buttonStyle,
+            'style' => $this->style,
+            'size' => $this->size,
+            'loading' => $this->loading,
+            'target' => $this->target,
         ];
     }
 
