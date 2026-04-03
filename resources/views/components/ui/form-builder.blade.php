@@ -64,6 +64,8 @@
             $spanClass = $spanClassMap[$span] ?? 'col-span-12';
             $rowSpan = $field['rowSpan'] ?? null;
             $mobileOrder = $field['mobileOrder'] ?? null;
+            $marginClass = $field['margin'] ?? '';
+            $paddingClass = $field['padding'] ?? '';
 
             $inlineStyles = collect([
                 $rowSpan ? "grid-row: 1 / span {$rowSpan}" : null,
@@ -72,7 +74,7 @@
             ])->filter()->implode('; ');
         @endphp
 
-        <div class="{{ $spanClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($inlineStyles) style="{{ $inlineStyles }}" @endif>
+        <div class="{{ $spanClass }} {{ $marginClass }} {{ $paddingClass }} @if(!$show) hidden @endif" wire:key="mrcatz-fb-{{ $fieldIndex }}" @if($inlineStyles) style="{{ $inlineStyles }}" @endif>
         @if($show)
 
             {{-- ═══ HIDDEN ═══ --}}
@@ -353,7 +355,7 @@
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
                     <div class="flex flex-col items-center gap-4 @if($isUploadMode) p-4 border border-base-content/10 rounded-lg bg-base-200/20 @endif">
                         {{-- Preview: clickable for lightbox --}}
-                        <div class="shrink-0 overflow-hidden {{ $field['preview'] ? 'cursor-pointer transition-opacity hover:opacity-80' : '' }} {{ $pvClass }}"
+                        <div class="shrink-0 overflow-hidden {{ $field['preview'] ? 'cursor-zoom-in transition-opacity hover:opacity-80' : '' }} {{ $pvClass }}"
                              style="width: {{ $pw }}px; height: {{ $ph }}px;"
                              @if($field['preview']) onclick="document.getElementById('{{ $lightboxId }}').showModal()" @endif>
                             @if($field['preview'])
@@ -454,26 +456,18 @@
                     </dialog>
                 @endif
 
-                {{-- Lightbox: scroll/drag zoom, click to reset or close --}}
+                {{-- Lightbox: scroll zoom, click to reset/close --}}
                 @if($field['preview'])
-                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm cursor-zoom-out"
-                            x-data="{ scale: 1, dragging: false, startY: 0 }"
+                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm"
+                            x-data="{ scale: 1 }"
                             @close="scale = 1"
-                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
-                            onclick="if(event.target===this)this.close()">
-                        <div class="flex items-center justify-center w-full h-full p-8"
-                             onclick="if(event.target===this)this.closest('dialog').close()">
+                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))">
+                        <div class="flex items-center justify-center w-full h-full p-8 cursor-zoom-out"
+                             @click="if(scale > 1) { scale = 1 } else { $el.closest('dialog').close() }">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-150 origin-center select-none"
-                                 :class="scale > 1 ? 'cursor-zoom-out' : 'cursor-default'"
+                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none pointer-events-none"
                                  draggable="false"
-                                 :style="'transform: scale(' + scale + ')'"
-                                 @click.stop="if(scale > 1) { scale = 1 } else { $el.closest('dialog').close() }"
-                                 @mousedown.prevent="dragging = true; startY = $event.clientY"
-                                 @mousemove.window="if(dragging) { let delta = ($event.clientY - startY) * -0.01; scale = Math.min(5, Math.max(0.25, scale + delta)); startY = $event.clientY }"
-                                 @mouseup.window="dragging = false"
-                                 @touchstart.prevent="startY = $event.touches[0].clientY"
-                                 @touchmove.prevent="let delta = ($event.touches[0].clientY - startY) * -0.01; scale = Math.min(5, Math.max(0.25, scale + delta)); startY = $event.touches[0].clientY" />
+                                 :style="'transform: scale(' + scale + ')'" />
                         </div>
                     </dialog>
                 @endif

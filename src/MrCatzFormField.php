@@ -31,6 +31,10 @@ class MrCatzFormField
     private ?string $previewUrl = null;
     private ?string $confirmationLabel = null;
 
+    // Spacing
+    private ?string $margin = null;
+    private ?string $padding = null;
+
     // Dynamic/dependency
     private ?string $visibleWhenField = null;
     private mixed $visibleWhenValue = null;
@@ -535,6 +539,26 @@ class MrCatzFormField
     }
 
     /**
+     * Set margin using Tailwind values.
+     * Examples: 'mt-4', 'mb-2', 'mx-auto', 'ml-4 mr-2', 'my-6', 'm-4'
+     */
+    public function margin(string $class): static
+    {
+        $this->margin = $class;
+        return $this;
+    }
+
+    /**
+     * Set padding using Tailwind values.
+     * Examples: 'pt-4', 'pb-2', 'px-6', 'pl-4 pr-2', 'py-3', 'p-4'
+     */
+    public function padding(string $class): static
+    {
+        $this->padding = $class;
+        return $this;
+    }
+
+    /**
      * Span multiple grid rows. Use with span() for 2-column layouts.
      * E.g. ->span(4)->rowSpan(10) pins field to the side while others fill beside it.
      */
@@ -703,6 +727,8 @@ class MrCatzFormField
             'min' => $this->min,
             'max' => $this->max,
             'span' => $this->span,
+            'margin' => $this->margin,
+            'padding' => $this->padding,
             'rowSpan' => $this->rowSpan,
             'mobileOrder' => $this->mobileOrder,
             'hint' => $this->hint,
