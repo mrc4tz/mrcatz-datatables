@@ -58,6 +58,14 @@ class MrCatzFormField
     private bool $loading = false; // for button: show loading spinner
     private ?string $target = null; // for button: wire:target
 
+    // Image field
+    private ?int $previewWidth = null;
+    private ?int $previewHeight = null;
+    private ?string $onUploadMethod = null;
+    private ?string $onDeleteMethod = null;
+    private ?string $fallbackText = null;
+    private ?string $deleteConfirmText = null;
+
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
         $this->type = $type;
@@ -184,6 +192,25 @@ class MrCatzFormField
         mixed $disabled = false,
     ): static {
         $field = new static('file', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->accept = $accept;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    /**
+     * Image upload field with circular preview, fallback initial, upload/delete buttons.
+     */
+    public static function image(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $accept = 'image/jpg,image/jpeg,image/png,image/webp',
+        mixed $disabled = false,
+    ): static {
+        $field = new static('image', $id, $label);
         $field->rules = $rules;
         $field->messages = $messages;
         $field->accept = $accept;
@@ -540,9 +567,30 @@ class MrCatzFormField
         return $this;
     }
 
-    public function preview(?string $url): static
+    public function preview(?string $url, ?int $width = null, ?int $height = null): static
     {
         $this->previewUrl = $url;
+        if ($width) $this->previewWidth = $width;
+        if ($height) $this->previewHeight = $height;
+        return $this;
+    }
+
+    public function onUpload(string $method): static
+    {
+        $this->onUploadMethod = $method;
+        return $this;
+    }
+
+    public function onDelete(string $method, ?string $confirmText = null): static
+    {
+        $this->onDeleteMethod = $method;
+        $this->deleteConfirmText = $confirmText;
+        return $this;
+    }
+
+    public function fallback(?string $text): static
+    {
+        $this->fallbackText = $text;
         return $this;
     }
 
@@ -615,6 +663,12 @@ class MrCatzFormField
             'prefix' => $this->prefixText,
             'suffix' => $this->suffixText,
             'preview' => $this->previewUrl,
+            'previewWidth' => $this->previewWidth,
+            'previewHeight' => $this->previewHeight,
+            'onUpload' => $this->onUploadMethod,
+            'onDelete' => $this->onDeleteMethod,
+            'fallback' => $this->fallbackText,
+            'deleteConfirm' => $this->deleteConfirmText,
             'confirmation' => $this->confirmationLabel,
             'visibleWhenField' => $this->visibleWhenField,
             'visibleWhenValue' => $this->visibleWhenValue,
