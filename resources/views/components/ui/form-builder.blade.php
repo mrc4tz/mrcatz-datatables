@@ -132,27 +132,27 @@
                     $btnStyle = $field['buttonStyle'] ?? 'primary';
                     $btnSizeClass = !empty($field['size']) ? 'btn-' . $field['size'] : '';
                     $btnClass = 'btn btn-' . $btnStyle . ' ' . $btnSizeClass;
+                    $btnTarget = $field['target'] ?? $field['onClick'];
                 @endphp
+                @if($field['loading'])
+                    <div wire:loading wire:target="{{ $btnTarget }}"
+                         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div class="flex flex-col items-center gap-3">
+                            <span class="loading loading-spinner loading-lg text-primary"></span>
+                            <span class="text-white text-sm font-medium">Loading...</span>
+                        </div>
+                    </div>
+                @endif
                 <fieldset class="fieldset">
                     {{-- Empty legend to align with adjacent input fields --}}
                     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">&nbsp;</legend>
                     <button type="button"
                             class="{{ trim($btnClass) }} gap-2 w-full"
                             wire:click="{{ $field['onClick'] }}"
-                            @if($field['loading'] && $field['target'])
-                                wire:loading.attr="disabled" wire:target="{{ $field['target'] }}"
-                            @elseif($field['loading'])
-                                wire:loading.attr="disabled" wire:target="{{ $field['onClick'] }}"
+                            @if($field['loading'])
+                                wire:loading.attr="disabled" wire:target="{{ $btnTarget }}"
                             @endif
                             @if($disabled) disabled @endif>
-                        @if($field['loading'])
-                            <span class="loading loading-spinner loading-xs"
-                                  @if($field['target'])
-                                      wire:loading wire:target="{{ $field['target'] }}"
-                                  @else
-                                      wire:loading wire:target="{{ $field['onClick'] }}"
-                                  @endif></span>
-                        @endif
                         @if($field['icon'])
                             {!! mrcatz_form_icon($field['icon'], 'text-lg') !!}
                         @endif

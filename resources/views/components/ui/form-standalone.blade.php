@@ -22,7 +22,16 @@
     $cancelLabel  = $cancelLabel ?? mrcatz_lang('btn_cancel');
 @endphp
 
-<div>
+<div class="relative">
+    {{-- Fullscreen loading overlay --}}
+    <div wire:loading wire:target="{{ $submitMethod }}"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-3">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+            <span class="text-white text-sm font-medium">Loading...</span>
+        </div>
+    </div>
+
     @include('mrcatz::components.ui.form-builder')
 
     <div class="flex items-center gap-3 mt-6 pt-4 border-t border-base-content/10">
