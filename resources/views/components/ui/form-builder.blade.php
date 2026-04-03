@@ -456,18 +456,24 @@
                     </dialog>
                 @endif
 
-                {{-- Lightbox: scroll zoom, click to reset/close --}}
+                {{-- Lightbox: scroll zoom, click to reset/close, animated dismiss --}}
                 @if($field['preview'])
-                    <dialog id="{{ $lightboxId }}" class="modal bg-black/80 backdrop-blur-sm"
-                            x-data="{ scale: 1 }"
-                            @close="scale = 1"
-                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))">
-                        <div class="flex items-center justify-center w-full h-full p-8 cursor-zoom-out"
-                             @click="if(scale > 1) { scale = 1 } else { $el.closest('dialog').close() }">
+                    <dialog id="{{ $lightboxId }}" class="modal"
+                            x-data="{ scale: 1, closing: false, opened: false }"
+                            x-init="$el.addEventListener('close', () => { scale = 1; closing = false; opened = false })"
+                            @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))"
+                            x-effect="if($el.open && !opened) { $nextTick(() => opened = true) }">
+                        <div class="fixed inset-0 transition-all duration-300"
+                             :class="opened && !closing ? 'bg-black/80 backdrop-blur-sm' : 'bg-transparent'"
+                             @click="if(scale > 1) { scale = 1 } else { closing = true; setTimeout(() => $el.closest('dialog').close(), 300) }">
+                        </div>
+                        <div class="fixed inset-0 flex items-center justify-center p-8 pointer-events-none transition-all duration-300"
+                             :class="opened && !closing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none pointer-events-none"
+                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none pointer-events-auto cursor-zoom-out"
                                  draggable="false"
-                                 :style="'transform: scale(' + scale + ')'" />
+                                 :style="'transform: scale(' + scale + ')'"
+                                 @click.stop="if(scale > 1) { scale = 1 } else { closing = true; setTimeout(() => $el.closest('dialog').close(), 300) }" />
                         </div>
                     </dialog>
                 @endif
