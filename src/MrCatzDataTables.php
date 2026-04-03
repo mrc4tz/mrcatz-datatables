@@ -495,6 +495,24 @@ class MrCatzDataTables
      * @param bool   $visible      Column visibility
      * @param string $showOn       'both', 'desktop', 'mobile'
      */
+    /**
+     * Add an image column with preview and clickable lightbox.
+     *
+     * @param string      $head         Column header
+     * @param string      $key          DB column containing image path/URL
+     * @param int         $width        Preview width px
+     * @param int         $height       Preview height px
+     * @param string      $previewClass Tailwind classes for shape/decoration
+     * @param string|null $fallback     DB column for initial letter fallback
+     * @param string|null $urlPrefix    URL prefix mode:
+     *                                  - 'storage' (default): asset('storage/' . $value)
+     *                                  - 'public': asset($value)
+     *                                  - 'https://...' or 'http://...': prefix . $value
+     *                                  - null: use DB value as-is (already full URL)
+     * @param bool        $sort
+     * @param bool        $visible
+     * @param string      $showOn
+     */
     public function withColumnImage(
         string $head,
         string $key,
@@ -502,6 +520,7 @@ class MrCatzDataTables
         int $height = 40,
         string $previewClass = 'rounded-full',
         ?string $fallback = null,
+        ?string $urlPrefix = 'storage',
         bool $sort = false,
         bool $visible = true,
         string $showOn = 'both',
@@ -514,16 +533,31 @@ class MrCatzDataTables
             'visible' => $visible, 'showOn' => $showOn,
             'type' => 'image', 'imageMeta' => $imgMeta,
         ];
-        $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback) {
-            $url = $data->{$key} ?? null;
-            if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
-                $url = asset('storage/' . $url);
-            }
+        $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback, $urlPrefix) {
+            $url = self::resolveImageUrl($data->{$key} ?? null, $urlPrefix);
             $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
             return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key);
         };
         $this->index++;
         return $this;
+    }
+
+    /**
+     * Resolve image URL based on prefix mode.
+     */
+    public static function resolveImageUrl(?string $value, ?string $prefix = 'storage'): ?string
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, '/')) {
+            return $value; // already absolute
+        }
+
+        return match ($prefix) {
+            'storage' => asset('storage/' . $value),
+            'public'  => asset($value),
+            null      => $value,
+            default   => str_starts_with($prefix, 'http') ? rtrim($prefix, '/') . '/' . $value : asset($prefix . '/' . $value),
+        };
     }
 
     public function getColumnType(int $i): ?string
@@ -584,10 +618,8 @@ class MrCatzDataTables
 
                 if ($type === 'image') {
                     $key = $value['key'] ?? '';
-                    $url = $data->{$key} ?? null;
-                    if ($url && !str_starts_with($url, 'http') && !str_starts_with($url, '/')) {
-                        $url = asset('storage/' . $url);
-                    }
+                    $imgPrefix = array_key_exists('urlPrefix', $value) ? $value['urlPrefix'] : 'storage';
+                    $url = self::resolveImageUrl($data->{$key} ?? null, $imgPrefix);
                     $fallbackKey = $value['fallback'] ?? null;
                     $mapped[] = [
                         'label' => $label,
