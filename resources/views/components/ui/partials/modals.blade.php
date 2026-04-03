@@ -209,18 +209,18 @@
 {{-- Loading overlay --}}
 @if($withLoading)
     @if($load_start)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-base-content/20 backdrop-blur-sm">
-            <div class="bg-base-100 rounded-2xl p-6 shadow-xl flex items-center gap-3">
-                <span class="loading loading-spinner loading-md text-primary"></span>
-                <span class="text-sm text-base-content/70">{{ mrcatz_lang('loading') }}</span>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-3">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <span class="text-white text-sm font-medium">{{ mrcatz_lang('loading') }}</span>
             </div>
         </div>
     @endif
     <div wire:loading wire:target="showLoading, searchData, goToP, nextPage, previousPage, change, paginate, saveData, dropData, resetData, orderData, editData, deleteData, exportData, bulkDelete"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-base-content/20 backdrop-blur-sm">
-        <div class="bg-base-100 rounded-2xl p-6 shadow-xl flex items-center gap-3">
-            <span class="loading loading-spinner loading-md text-primary"></span>
-            <span class="text-sm text-base-content/70">{{ mrcatz_lang('processing') }}</span>
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-3">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+            <span class="text-white text-sm font-medium">{{ mrcatz_lang('processing') }}</span>
         </div>
     </div>
 @endif
