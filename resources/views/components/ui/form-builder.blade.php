@@ -468,10 +468,10 @@
                             x-data="{ scale: 1, justReset: false }"
                             @close="scale = 1; justReset = false"
                             @wheel.prevent="scale = Math.min(5, Math.max(0.25, scale + ($event.deltaY < 0 ? 0.15 : -0.15)))">
-                        <div class="flex items-center justify-center w-full h-full cursor-zoom-out"
+                        <div class="flex items-center justify-center w-full h-full cursor-default"
                              @click.self="if(scale !== 1) { scale = 1; justReset = true; } else { $el.closest('dialog').close() }">
                             <img src="{{ $field['preview'] }}" alt="{{ $field['label'] }}"
-                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none cursor-zoom-out"
+                                 class="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl transition-transform duration-200 origin-center select-none cursor-default"
                                  draggable="false"
                                  :style="'transform: scale(' + scale + ')'"
                                  @click.stop="if(justReset) { justReset = false; return; } if(scale !== 1) { scale = 1; justReset = true; } else { $el.closest('dialog').close() }" />
