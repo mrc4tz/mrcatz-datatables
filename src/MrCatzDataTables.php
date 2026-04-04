@@ -504,11 +504,12 @@ class MrCatzDataTables
      * @param int         $height       Preview height px
      * @param string      $previewClass Tailwind classes for shape/decoration
      * @param string|null $fallback     DB column for initial letter fallback
-     * @param string|null $urlPrefix    URL prefix mode (default from config('mrcatz.url_prefix')):
+     * @param string|null $urlPrefix    URL prefix mode (null = use config('mrcatz.url_prefix')):
+     *                                  - null: use config default
      *                                  - 'storage': asset('storage/' . $value)
      *                                  - 'public': asset($value)
      *                                  - 'https://...' or 'http://...': prefix . $value
-     *                                  - null: use DB value as-is (already full URL)
+     *                                  - '' (empty string): use DB value as-is (already full URL)
      * @param bool        $sort
      * @param bool        $visible
      * @param string      $showOn
@@ -520,12 +521,12 @@ class MrCatzDataTables
         int $height = 40,
         string $previewClass = 'rounded-full',
         ?string $fallback = null,
-        string|null $urlPrefix = '__USE_CONFIG__',
+        ?string $urlPrefix = null,
         bool $sort = false,
         bool $visible = true,
         string $showOn = 'both',
     ): self {
-        $urlPrefix = $urlPrefix === '__USE_CONFIG__' ? config('mrcatz.url_prefix', 'storage') : $urlPrefix;
+        $urlPrefix = $urlPrefix ?? config('mrcatz.url_prefix', 'storage');
         $imgMeta = compact('width', 'height', 'previewClass', 'fallback');
         $this->dataTableSet[$this->index] = [
             'head' => $head, 'order' => null, 'key' => $key, 'index' => null,
@@ -546,19 +547,19 @@ class MrCatzDataTables
     /**
      * Resolve image URL based on prefix mode.
      */
-    public static function resolveImageUrl(?string $value, ?string $prefix = '__USE_CONFIG__'): ?string
+    public static function resolveImageUrl(?string $value, ?string $prefix = null): ?string
     {
         if (!$value) return null;
         if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, '/')) {
             return $value; // already absolute
         }
 
-        $prefix = $prefix === '__USE_CONFIG__' ? config('mrcatz.url_prefix', 'storage') : $prefix;
+        $prefix = $prefix ?? config('mrcatz.url_prefix', 'storage');
 
         return match ($prefix) {
             'storage' => asset('storage/' . $value),
             'public'  => asset($value),
-            null      => $value,
+            ''        => $value,
             default   => str_starts_with($prefix, 'http') ? rtrim($prefix, '/') . '/' . $value : asset($prefix . '/' . $value),
         };
     }
@@ -621,7 +622,7 @@ class MrCatzDataTables
 
                 if ($type === 'image') {
                     $key = $value['key'] ?? '';
-                    $imgPrefix = array_key_exists('urlPrefix', $value) ? $value['urlPrefix'] : config('mrcatz.url_prefix', 'storage');
+                    $imgPrefix = $value['urlPrefix'] ?? null;
                     $url = self::resolveImageUrl($data->{$key} ?? null, $imgPrefix);
                     $fallbackKey = $value['fallback'] ?? null;
                     $mapped[] = [

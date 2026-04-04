@@ -22,12 +22,12 @@ return [
     | image fields (getExpandableView). This value is used when urlPrefix
     | is not explicitly passed.
     |
-    | Supported: 'storage', 'public', 'https://...', or null
+    | Supported: 'storage', 'public', 'https://...', or '' (empty string)
     |
     | - 'storage': asset('storage/' . $value)
     | - 'public':  asset($value)
     | - 'https://cdn.example.com': prefix + '/' + $value
-    | - null: use DB value as-is (already full URL)
+    | - '' (empty string): use DB value as-is (already full URL)
     |
     */
     'url_prefix' => 'storage',

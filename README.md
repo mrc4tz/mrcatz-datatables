@@ -415,7 +415,7 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 ->withColumnImage('Photo', 'photo', 40, 40, 'rounded-full', urlPrefix: 'https://cdn.example.com')
 
 // DB value is already full URL — use as-is
-->withColumnImage('Photo', 'photo_url', 40, 40, 'rounded-full', urlPrefix: null)
+->withColumnImage('Photo', 'photo_url', 40, 40, 'rounded-full', urlPrefix: '')
 ```
 
 | Parameter | Default | Description |
@@ -433,10 +433,11 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 
 | Value | DB Value | Resolved URL |
 |---|---|---|
+| `null` (default) | — | Uses `config('mrcatz.url_prefix')` value |
 | `'storage'` | `users/avatar.jpg` | `asset('storage/users/avatar.jpg')` |
 | `'public'` | `uploads/img.jpg` | `asset('uploads/img.jpg')` |
 | `'https://cdn.ex.com'` | `photos/1.jpg` | `https://cdn.ex.com/photos/1.jpg` |
-| `null` | `https://full-url.com/img.jpg` | `https://full-url.com/img.jpg` |
+| `''` (empty string) | `https://full-url.com/img.jpg` | `https://full-url.com/img.jpg` (as-is) |
 
 If the DB value already starts with `http://`, `https://`, or `/`, it's used as-is regardless of prefix.
 
@@ -770,7 +771,7 @@ public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 | link | `'Label' => ['type' => 'link', 'label' => '...', ...]` | Action button (navigate) |
 | html | `'Label' => ['type' => 'html', 'content' => '...']` | Custom HTML content |
 
-**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter), `urlPrefix` (default: `config('mrcatz.url_prefix')`)
+**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter), `urlPrefix` (default: `null` — uses `config('mrcatz.url_prefix')`, `''` for as-is)
 
 **Button/Link options:** `label`, `url` (string or Closure), `icon`, `style` (DaisyUI), `download` (bool), `newTab` (bool), `target`
 
@@ -870,7 +871,7 @@ This eliminates the need to pass `urlPrefix` on every image column. You can stil
 // Override for this specific column
 ->withColumnImage('Photo', 'photo', 40, 40, urlPrefix: 'public')
 ->withColumnImage('CDN Image', 'cdn_photo', 40, 40, urlPrefix: 'https://cdn.example.com')
-->withColumnImage('Full URL', 'photo_url', 40, 40, urlPrefix: null)
+->withColumnImage('Full URL', 'photo_url', 40, 40, urlPrefix: '')  // use DB value as-is
 ```
 
 The same applies to expand view image fields — omit `urlPrefix` to use the global config:
@@ -878,6 +879,7 @@ The same applies to expand view image fields — omit `urlPrefix` to use the glo
 ```php
 'Photo' => ['type' => 'image', 'key' => 'avatar']  // uses config value
 'Photo' => ['type' => 'image', 'key' => 'avatar', 'urlPrefix' => 'public']  // override
+'Photo' => ['type' => 'image', 'key' => 'avatar', 'urlPrefix' => '']  // use DB value as-is
 ```
 
 ### Icon Set
