@@ -504,8 +504,8 @@ class MrCatzDataTables
      * @param int         $height       Preview height px
      * @param string      $previewClass Tailwind classes for shape/decoration
      * @param string|null $fallback     DB column for initial letter fallback
-     * @param string|null $urlPrefix    URL prefix mode:
-     *                                  - 'storage' (default): asset('storage/' . $value)
+     * @param string|null $urlPrefix    URL prefix mode (default from config('mrcatz.url_prefix')):
+     *                                  - 'storage': asset('storage/' . $value)
      *                                  - 'public': asset($value)
      *                                  - 'https://...' or 'http://...': prefix . $value
      *                                  - null: use DB value as-is (already full URL)
@@ -520,11 +520,12 @@ class MrCatzDataTables
         int $height = 40,
         string $previewClass = 'rounded-full',
         ?string $fallback = null,
-        ?string $urlPrefix = 'storage',
+        string|null $urlPrefix = '__USE_CONFIG__',
         bool $sort = false,
         bool $visible = true,
         string $showOn = 'both',
     ): self {
+        $urlPrefix = $urlPrefix === '__USE_CONFIG__' ? config('mrcatz.url_prefix', 'storage') : $urlPrefix;
         $imgMeta = compact('width', 'height', 'previewClass', 'fallback');
         $this->dataTableSet[$this->index] = [
             'head' => $head, 'order' => null, 'key' => $key, 'index' => null,
@@ -545,12 +546,14 @@ class MrCatzDataTables
     /**
      * Resolve image URL based on prefix mode.
      */
-    public static function resolveImageUrl(?string $value, ?string $prefix = 'storage'): ?string
+    public static function resolveImageUrl(?string $value, ?string $prefix = '__USE_CONFIG__'): ?string
     {
         if (!$value) return null;
         if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, '/')) {
             return $value; // already absolute
         }
+
+        $prefix = $prefix === '__USE_CONFIG__' ? config('mrcatz.url_prefix', 'storage') : $prefix;
 
         return match ($prefix) {
             'storage' => asset('storage/' . $value),
@@ -618,7 +621,7 @@ class MrCatzDataTables
 
                 if ($type === 'image') {
                     $key = $value['key'] ?? '';
-                    $imgPrefix = array_key_exists('urlPrefix', $value) ? $value['urlPrefix'] : 'storage';
+                    $imgPrefix = array_key_exists('urlPrefix', $value) ? $value['urlPrefix'] : config('mrcatz.url_prefix', 'storage');
                     $url = self::resolveImageUrl($data->{$key} ?? null, $imgPrefix);
                     $fallbackKey = $value['fallback'] ?? null;
                     $mapped[] = [

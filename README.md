@@ -424,7 +424,7 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 | `$height` | `40` | Preview height in pixels |
 | `$previewClass` | `'rounded-full'` | Tailwind classes for shape/border/shadow |
 | `$fallback` | `null` | DB column name — shows first letter when no image |
-| `$urlPrefix` | `'storage'` | URL resolution mode (see below) |
+| `$urlPrefix` | `config('mrcatz.url_prefix')` | URL resolution mode (see below) |
 | `$sort` | `false` | Sortable column |
 | `$visible` | `true` | Column visibility |
 | `$showOn` | `'both'` | Responsive visibility |
@@ -433,7 +433,7 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 
 | Value | DB Value | Resolved URL |
 |---|---|---|
-| `'storage'` (default) | `users/avatar.jpg` | `asset('storage/users/avatar.jpg')` |
+| `'storage'` | `users/avatar.jpg` | `asset('storage/users/avatar.jpg')` |
 | `'public'` | `uploads/img.jpg` | `asset('uploads/img.jpg')` |
 | `'https://cdn.ex.com'` | `photos/1.jpg` | `https://cdn.ex.com/photos/1.jpg` |
 | `null` | `https://full-url.com/img.jpg` | `https://full-url.com/img.jpg` |
@@ -770,7 +770,7 @@ public $expandableRows = true; // or 'both', 'mobile', 'desktop'
 | link | `'Label' => ['type' => 'link', 'label' => '...', ...]` | Action button (navigate) |
 | html | `'Label' => ['type' => 'html', 'content' => '...']` | Custom HTML content |
 
-**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter), `urlPrefix` (default: `'storage'`)
+**Image options:** `key`, `width` (default: 64), `height` (default: 64), `previewClass` (default: `'rounded-lg'`), `fallback` (DB column for initial letter), `urlPrefix` (default: `config('mrcatz.url_prefix')`)
 
 **Button/Link options:** `label`, `url` (string or Closure), `icon`, `style` (DaisyUI), `download` (bool), `newTab` (bool), `target`
 
@@ -852,6 +852,33 @@ Set locale in `config/mrcatz.php`:
 ```
 
 Add new languages by creating `lang/vendor/mrcatz/{locale}/mrcatz.php`.
+
+### URL Prefix
+
+Set the default URL prefix for image columns (`withColumnImage`) and expand view image fields globally in `config/mrcatz.php`:
+
+```php
+'url_prefix' => 'storage',  // 'storage' (default), 'public', 'https://cdn.example.com', or null
+```
+
+This eliminates the need to pass `urlPrefix` on every image column. You can still override per-column:
+
+```php
+// Uses global config value (no urlPrefix needed)
+->withColumnImage('Avatar', 'avatar', 40, 40)
+
+// Override for this specific column
+->withColumnImage('Photo', 'photo', 40, 40, urlPrefix: 'public')
+->withColumnImage('CDN Image', 'cdn_photo', 40, 40, urlPrefix: 'https://cdn.example.com')
+->withColumnImage('Full URL', 'photo_url', 40, 40, urlPrefix: null)
+```
+
+The same applies to expand view image fields — omit `urlPrefix` to use the global config:
+
+```php
+'Photo' => ['type' => 'image', 'key' => 'avatar']  // uses config value
+'Photo' => ['type' => 'image', 'key' => 'avatar', 'urlPrefix' => 'public']  // override
+```
 
 ### Icon Set
 

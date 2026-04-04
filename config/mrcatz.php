@@ -15,6 +15,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | URL Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Default URL prefix for image columns (withColumnImage) and expand view
+    | image fields (getExpandableView). This value is used when urlPrefix
+    | is not explicitly passed.
+    |
+    | Supported: 'storage', 'public', 'https://...', or null
+    |
+    | - 'storage': asset('storage/' . $value)
+    | - 'public':  asset($value)
+    | - 'https://cdn.example.com': prefix + '/' + $value
+    | - null: use DB value as-is (already full URL)
+    |
+    */
+    'url_prefix' => 'storage',
+
+    /*
+    |--------------------------------------------------------------------------
     | Icon Set
     |--------------------------------------------------------------------------
     |
