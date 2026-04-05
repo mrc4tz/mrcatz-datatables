@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.5] - 2026-04-05
+
+### Added
+- `withCustomColumn()` gains a new `$type` option. Pass `type: 'action'` to route a custom callback column into the mobile card's top-right actions slot, same placement as `withActionColumn()`. This is the escape hatch for callers who need a custom pre-render step (for example, fetching related data and mutating `$data` before calling `getActionView()`) but still want the column to behave as an action column on mobile.
+- `withActionColumn()` is now a thin wrapper over `withCustomColumn(..., type: 'action')`, removing the duplicated `dataTableSet` mutation.
+
 ## [1.23.4] - 2026-04-05
 
 ### Fixed

@@ -301,9 +301,12 @@ class MrCatzDataTables
         return $this;
     }
 
-    public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true, bool $visible = true, string $showOn = 'both'): self
+    public function withCustomColumn(string $head, ?callable $callback = null, ?string $key = null, bool $sort = true, bool $visible = true, string $showOn = 'both', ?string $type = null): self
     {
         $this->dataTableSet[$this->index] = ['head' => $head, 'order' => null, 'key' => $key, 'index' => null, 'i' => $this->index, 'uppercase' => false, 'th' => false, 'sort' => $sort, 'gravity' => 'left', 'editable' => false, 'visible' => $visible, 'showOn' => $showOn];
+        if ($type !== null) {
+            $this->dataTableSet[$this->index]['type'] = $type;
+        }
         $this->callbacks[$this->index] = $callback;
         $this->index++;
         return $this;
@@ -334,18 +337,13 @@ class MrCatzDataTables
         if ($editable)  $this->hasEditAction = true;
         if ($deletable) $this->hasDeleteAction = true;
 
-        $this->withCustomColumn(
+        return $this->withCustomColumn(
             $head,
             fn ($data, $i) => self::getActionView($data, $i, $editable, $deletable),
-            null,
-            false,
+            key: null,
+            sort: false,
+            type: 'action',
         );
-
-        // Tag the column so the mobile card layout knows to render it in the
-        // top-right actions slot instead of as a body pill.
-        $this->dataTableSet[$this->index - 1]['type'] = 'action';
-
-        return $this;
     }
 
     public function getDataTableSet(): array { return $this->dataTableSet; }

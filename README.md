@@ -390,7 +390,7 @@ public function setTable()
 
 **`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`, `$rules`, `$showOn`
 
-**`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`, `$showOn`
+**`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`, `$showOn`, `$type` (set to `'action'` to route the column into the mobile card's top-right actions slot — useful when you need a custom callback but want the column to behave like `withActionColumn()`)
 
 #### Action Column (`withActionColumn`)
 
@@ -413,7 +413,7 @@ One-liner for the built-in edit/delete action column. Renders the same buttons a
 // Enter / Delete / Backspace shortcuts stay unbound. Arrow keys still navigate.
 ```
 
-**Why prefer this over `withCustomColumn + getActionView`:** the legacy pattern still renders the buttons but leaves the engine unaware of them, so the keyboard shortcuts stay disabled. If you have a pre-render mutation step you can't move into `baseQuery`, keep the custom callback but set `$table->hasEditAction = true` / `$table->hasDeleteAction = true` manually after building the table:
+**Why prefer this over `withCustomColumn + getActionView`:** the legacy pattern still renders the buttons but leaves the engine unaware of them, so the keyboard shortcuts stay disabled and the column falls into the mobile card body instead of the top-right actions slot. If you have a pre-render mutation step you can't move into `baseQuery`, pass `type: 'action'` to `withCustomColumn()` and flip the `hasEditAction` / `hasDeleteAction` flags manually:
 
 ```php
 $table = $this->CreateMrCatzTable()
@@ -421,9 +421,9 @@ $table = $this->CreateMrCatzTable()
     ->withCustomColumn('Aksi', function ($data, $i) {
         // ...custom pre-render logic that mutates $data...
         return MrCatzDataTables::getActionView($data, $i, true, false);
-    });
+    }, type: 'action');
 
-$table->hasEditAction = true;  // flip the shortcut manually
+$table->hasEditAction = true;  // enable Enter-to-edit shortcut
 return $table;
 ```
 
