@@ -126,8 +126,11 @@ trait HasExport
         $headers = [];
         $exportableColumns = [];
         foreach ($dataTableSet as $i => $col) {
-            // Skip action columns (custom column with no key and not editable)
-            if ($col['key'] === null && ($col['index'] ?? null) === null && !$col['editable']) {
+            // Skip explicit action columns (withActionColumn() or
+            // withCustomColumn(..., type: 'action')). Display-only custom
+            // columns like computed per-row values or dynamic year columns
+            // must still be exported — they're data, not UI.
+            if (($col['type'] ?? null) === 'action') {
                 continue;
             }
             // Skip image columns

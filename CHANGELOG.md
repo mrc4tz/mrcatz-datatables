@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.10] - 2026-04-05
+
+### Fixed
+- `HasExport::buildExportData()` no longer drops display-only custom columns from exports. The previous skip heuristic (`key === null && index === null && !editable`) was too broad: it treated every `withCustomColumn()` without a `$key` as an action column and excluded it from PDF/Excel output, which silently discarded important data like dynamic year columns, computed per-row values, and formatted display cells. Classification now relies on the explicit `type` tag introduced in v1.23.5 — only columns marked as `type: 'action'` (via `withActionColumn()` or `withCustomColumn(..., type: 'action')`) are skipped, alongside image columns. If you still have legacy `withCustomColumn('Actions', fn ($d, $i) => MrCatzDataTables::getActionView(...))` call sites without a `type` tag, migrate to `withActionColumn()` or add `type: 'action'` to keep the action buttons out of exports.
+
 ## [1.23.9] - 2026-04-05
 
 ### Added
