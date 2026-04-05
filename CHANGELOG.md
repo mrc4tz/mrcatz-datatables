@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.2] - 2026-04-05
+
+### Changed
+- `MrCatzDataTableFilter::create()` and `createWithCallback()` now accept `string|iterable` for `$data` (was `string|array`). Any Traversable is accepted, including Laravel `Collection`.
+- Filter data items are now auto-normalized to associative arrays inside `get()`. Callers can pass raw `DB::table(...)->get()` (Collection of `stdClass`), `Model::all()` (Collection of Models), arrays of `stdClass`, or arrays of arrays — all work without manual casting. Previously, passing a Collection of `stdClass` caused `Cannot use object of type stdClass as array` in the filter view.
+
 ## [1.23.1] - 2026-04-05
 
 ### Fixed
