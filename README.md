@@ -459,6 +459,7 @@ Display images in table cells with clickable lightbox (scroll zoom, click to res
 | `$sort` | `false` | Sortable column |
 | `$visible` | `true` | Column visibility |
 | `$showOn` | `'both'` | Responsive visibility |
+| `$gravity` | `'center'` | Horizontal alignment: `'left'` / `'center'` / `'right'`. Maps to `justify-start` / `justify-center` / `justify-end` on the cell wrapper. Useful when the thumbnail should sit flush against the left edge of a mixed-content cell instead of being centered. |
 
 **`urlPrefix` modes:**
 
@@ -547,6 +548,16 @@ This is independent of `$visible` (column visibility toggle) — `showOn` contro
 
 ### Filters
 
+The `$data` argument on `MrCatzDataTableFilter::create()` and `createWithCallback()` accepts **any iterable** (`string|iterable`), and items are auto-normalized into associative arrays inside `get()`. You can pass:
+
+- Array of associative arrays — `[['value' => 'admin', 'label' => 'Admin'], ...]`
+- Array of `stdClass` / any object — cast via `(array)`
+- Eloquent `Model` or `Collection` — uses `toArray()`
+- Raw `DB::table(...)->get()` (Collection of `stdClass`) — works directly, no manual casting
+- JSON string — decoded automatically
+
+This means callers don't need `->get()->map(fn($r) => (array) $r)->all()` or `json_decode(json_encode(...), true)` gymnastics before passing query results into a filter — just hand the collection over and let the filter sort it out.
+
 ```php
 public function setFilter()
 {
@@ -555,6 +566,20 @@ public function setFilter()
         'filter_role', 'Role',
         [['value' => 'admin', 'label' => 'Admin'], ['value' => 'user', 'label' => 'User']],
         'value', 'label', 'role'
+    )->get();
+
+    // Eloquent Collection — passed directly
+    $categoryFilter = MrCatzDataTableFilter::create(
+        'filter_category', 'Category',
+        Category::where('active', true)->get(),  // Collection of Models — fine
+        'id', 'name', 'category_id'
+    )->get();
+
+    // Raw DB::table — Collection of stdClass, also fine
+    $bidangFilter = MrCatzDataTableFilter::create(
+        'filter_bidang', 'Bidang',
+        DB::table('bidangs')->get(),              // Collection of stdClass — fine
+        'kode', 'nama', 'bidang_kode'
     )->get();
 
     // Custom callback filter
@@ -597,8 +622,8 @@ public function onFilterChanged($id, $value)
     if ($id === 'filter_category') {
         $this->resetFilter('filter_sub');
         if (!empty($value)) {
-            $subs = DB::table('subcategories')->where('category_id', $value)->get()->toArray();
-            $this->setFilterData('filter_sub', json_decode(json_encode($subs), true));
+            $subs = DB::table('subcategories')->where('category_id', $value)->get();
+            $this->setFilterData('filter_sub', $subs);
             $this->setFilterShow('filter_sub', true);
         } else {
             $this->setFilterShow('filter_sub', false);
@@ -1105,14 +1130,14 @@ public function setForm(): array
 | `withActionColumn($head, $editable, $deletable)` | Built-in edit/delete action column; also flips `hasEditAction`/`hasDeleteAction` so keyboard shortcuts bind correctly |
 | `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons (low-level; prefer `withActionColumn()`) |
 | `getExpandView($data, $fields)` | Render expand grid |
-| `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$sort`, `$visible`, `$showOn`) |
+| `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$urlPrefix`, `$sort`, `$visible`, `$showOn`, `$gravity`) |
 
 ### Filter Factory
 
 | Method | Description |
 |---|---|
-| `MrCatzDataTableFilter::create($id, $label, $data, $value, $option, $key, $show, $condition)` | Standard filter |
-| `MrCatzDataTableFilter::createWithCallback($id, $label, $data, $value, $option, $callback, $show)` | Callback filter |
+| `MrCatzDataTableFilter::create($id, $label, $data, $value, $option, $key, $show, $condition)` | Standard filter. `$data` accepts `string\|iterable` — raw Eloquent/DB `Collection`, array of `stdClass`, array of arrays, or JSON string. Items are normalized to associative arrays inside `->get()`. |
+| `MrCatzDataTableFilter::createWithCallback($id, $label, $data, $value, $option, $callback, $show)` | Callback filter — same iterable handling as `create()`. |
 | `->get()` | Finalize (required) |
 
 ---
