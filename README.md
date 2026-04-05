@@ -481,6 +481,49 @@ The same `urlPrefix` option is available in expand view image type:
 
 Clicking the image opens a lightbox with scroll zoom, click to reset/close.
 
+#### Image Renderer (`getImageView`)
+
+Low-level static helper that `withColumnImage()` uses internally. Call it directly from a `withCustomColumn()` callback when you need to render an image inline but the column isn't a pure image column — typically because the cell content is conditional on a sibling field, or because you need to compute the URL dynamically.
+
+```php
+->withCustomColumn('Value', function ($data, $i) {
+    switch ($data->setting_input) {
+        case 'file':
+            $util = new Util();
+            return MrCatzDataTables::getImageView(
+                $util->minio_url($data->setting_value, 'setting'),
+                $i,
+                48, 48,               // width, height
+                'rounded',            // previewClass
+                fallback: null,
+                columnKey: 'setting_value',
+                gravity: 'left',      // 'left' / 'center' / 'right'
+            );
+        case 'switch':
+            return view('components.ui.setting-switch', ['value' => $data->setting_value]);
+        // ... other cases
+    }
+})
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `$url` | — | Fully-resolved image URL (no prefix handling applied — `getImageView` does not call `resolveImageUrl()`). Pass `null` to render the fallback. |
+| `$index` | — | Row index, used as part of the lightbox element id. |
+| `$width` | `40` | Preview width in pixels |
+| `$height` | `40` | Preview height in pixels |
+| `$previewClass` | `'rounded-full'` | Tailwind classes for shape/border/shadow |
+| `$fallback` | `null` | Fallback text (e.g. row's name) — shows first letter when `$url` is null |
+| `$columnKey` | `'image'` | Used to disambiguate lightbox ids when multiple image columns share a row |
+| `$gravity` | `'center'` | Horizontal alignment: `'left'` / `'center'` / `'right'` |
+
+Returns the rendered HTML string, ready to be returned from the `withCustomColumn` callback. Unlike `withColumnImage()`, this helper does **not** tag the column as `type: 'image'`, so the mobile card layout won't treat it as an avatar column — it just renders an image cell wherever you place it.
+
+**When to use `getImageView` vs `withColumnImage`:**
+
+- `withColumnImage()` — the column is always an image, URL comes from a single DB column, and you want it promoted to the mobile card header (avatar slot).
+- `getImageView()` — the column is mixed content (image is one of several possible renderings), or the URL is computed from multiple fields / external services, or you don't want the mobile avatar promotion.
+
 #### Standalone Lightbox
 
 The global lightbox is available on any page that includes the notification component. Use it on any `<img>` element:
@@ -1131,6 +1174,7 @@ public function setForm(): array
 | `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons (low-level; prefer `withActionColumn()`) |
 | `getExpandView($data, $fields)` | Render expand grid |
 | `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$urlPrefix`, `$sort`, `$visible`, `$showOn`, `$gravity`) |
+| `getImageView($url, $index, $width, $height, $previewClass, $fallback, $columnKey, $gravity)` | Low-level image renderer for use inside `withCustomColumn()` callbacks. Takes a pre-resolved URL and returns HTML string. Does not tag the column as `type: 'image'`. |
 
 ### Filter Factory
 
