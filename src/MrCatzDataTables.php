@@ -37,6 +37,8 @@ class MrCatzDataTables
     private array $pluckCache = [];
     private ?int $maxRows = null;
     private bool $hasMoreRows = false;
+    public bool $hasEditAction = false;
+    public bool $hasDeleteAction = false;
 
     public static function with(
         EloquentBuilder|QueryBuilder|array $data,
@@ -313,6 +315,31 @@ class MrCatzDataTables
         $this->callbacks[$this->index] = null;
         $this->index++;
         return $this;
+    }
+
+    /**
+     * Register a built-in action column (edit / delete buttons).
+     *
+     * Side-effects:
+     *  - Sets $hasEditAction / $hasDeleteAction on the engine so keyboard
+     *    shortcuts (Enter to edit, Delete/Backspace to delete) only bind
+     *    when the corresponding action is actually exposed to the user.
+     *
+     * Prefer this over manually calling `withCustomColumn('Aksi', fn($d, $i) =>
+     * MrCatzDataTables::getActionView($d, $i, $editable, $deletable))`, which
+     * renders the same buttons but leaves the engine unaware of them.
+     */
+    public function withActionColumn(string $head = 'Aksi', bool $editable = true, bool $deletable = true): self
+    {
+        if ($editable)  $this->hasEditAction = true;
+        if ($deletable) $this->hasDeleteAction = true;
+
+        return $this->withCustomColumn(
+            $head,
+            fn ($data, $i) => self::getActionView($data, $i, $editable, $deletable),
+            null,
+            false,
+        );
     }
 
     public function getDataTableSet(): array { return $this->dataTableSet; }

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.3] - 2026-04-05
+
+### Added
+- `MrCatzDataTables::withActionColumn(string $head = 'Aksi', bool $editable = true, bool $deletable = true)` — registers the built-in edit/delete action column AND records `hasEditAction` / `hasDeleteAction` on the engine so the rest of the UI can react to which actions are actually exposed.
+
+### Fixed
+- Keyboard shortcuts (Enter = edit, Delete/Backspace = delete) are now only bound when the table has a corresponding action available. Previously, `enableKeyboardNav` always wired Enter/Delete/Backspace regardless of whether edit/delete actions were exposed, which caused read-only tables (no `Aksi` column, or `editable: false` / `deletable: false`) to still open the form modal when a focused row received Enter.
+- Keyboard hint row in the toolbar now hides the `Enter` / `Del/⌫` hints when the corresponding action is unavailable.
+
+### Migration
+- Tables currently using `->withCustomColumn('Aksi', fn ($d, $i) => MrCatzDataTables::getActionView($d, $i, $editable, $deletable))` should switch to `->withActionColumn(editable: $editable, deletable: $deletable)` so keyboard shortcuts light up automatically. The old form still works for backward compat but leaves the engine unaware of the action buttons, which disables the shortcuts.
+
 ## [1.23.2] - 2026-04-05
 
 ### Changed

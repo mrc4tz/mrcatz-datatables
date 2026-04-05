@@ -2,8 +2,12 @@
 @if($showKeyboardNavNote && $enableKeyboardNav && $posts->hasData())
     <div class="mt-2 flex items-center justify-center gap-3 flex-wrap" style="font-size:10px;color:oklch(var(--bc)/.15);">
         <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">&#8593;&#8595;</kbd> {{ mrcatz_lang('key_navigate') }}</span>
-        <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Enter</kbd> {{ mrcatz_lang('key_edit') }}</span>
-        <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Del/&#9003;</kbd> {{ mrcatz_lang('key_delete') }}</span>
+        @if($posts->hasEditAction)
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Enter</kbd> {{ mrcatz_lang('key_edit') }}</span>
+        @endif
+        @if($posts->hasDeleteAction)
+            <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Del/&#9003;</kbd> {{ mrcatz_lang('key_delete') }}</span>
+        @endif
         <span style="display:inline-flex;align-items:center;gap:3px;"><kbd class="kbd kbd-xs" style="color:oklch(var(--bc)/.18);font-weight:600;">Esc</kbd> {{ mrcatz_lang('key_cancel') }}</span>
     </div>
 @endif

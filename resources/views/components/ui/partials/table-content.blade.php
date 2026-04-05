@@ -188,9 +188,13 @@
                @keydown.arrow-up.prevent="navUp(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
                @keydown.arrow-down.prevent="navDown(); $el.querySelectorAll('tbody tr')[focusedRow]?.scrollIntoView({block:'nearest'})"
                @keydown.escape="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); focusedRow = -1"
+               @if($posts->hasEditAction)
                @keydown.enter="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); editFocused($el, $event)"
+               @endif
+               @if($posts->hasDeleteAction)
                @keydown.delete="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); deleteFocused($el)"
                @keydown.backspace="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); deleteFocused($el)"
+               @endif
                @endif>
             <thead>
             <tr class="bg-base-200/50 border-b border-base-content/10 @if($stickyHeader) sticky top-0 z-10 bg-base-200 @endif">
