@@ -316,9 +316,7 @@ class UserTable extends MrCatzDataTablesComponent
             ->withColumnIndex('No')
             ->withColumn('Name', 'name')
             ->withColumn('Email', 'email')
-            ->withCustomColumn('Actions', function ($data, $i) {
-                return MrCatzDataTables::getActionView($data, $i);
-            });
+            ->withActionColumn();
     }
 
     public function getRowPerPageOption()
@@ -386,15 +384,48 @@ public function setTable()
         ->withCustomColumn('Status', function ($data, $i) {
             return '<span class="badge badge-sm">' . $data->status . '</span>';
         }, 'status', false)
-        ->withCustomColumn('Actions', function ($data, $i) {
-            return MrCatzDataTables::getActionView($data, $i);
-        }, showOn: 'desktop');                                 // desktop table only
+        ->withActionColumn();                                  // edit + delete buttons
 }
 ```
 
 **`withColumn` options:** `$uppercase`, `$th`, `$sort`, `$gravity` (`'left'`/`'center'`/`'right'`), `$editable`, `$visible`, `$rules`, `$showOn`
 
 **`withCustomColumn` options:** `$key` (for search), `$sort`, `$visible`, `$showOn`
+
+#### Action Column (`withActionColumn`)
+
+One-liner for the built-in edit/delete action column. Renders the same buttons as `MrCatzDataTables::getActionView()`, but also records `hasEditAction` / `hasDeleteAction` on the engine so keyboard shortcuts (Enter to edit, Delete/Backspace to delete) only bind when the matching action is actually exposed.
+
+```php
+// Both edit and delete (default)
+->withActionColumn()
+
+// Custom head
+->withActionColumn('Aksi')
+
+// Edit only — hides the delete button and disables the Delete/Backspace shortcut
+->withActionColumn(editable: true, deletable: false)
+
+// Delete only — hides the edit button and disables the Enter shortcut
+->withActionColumn(editable: false, deletable: true)
+
+// Read-only table — don't register an action column at all, and the
+// Enter / Delete / Backspace shortcuts stay unbound. Arrow keys still navigate.
+```
+
+**Why prefer this over `withCustomColumn + getActionView`:** the legacy pattern still renders the buttons but leaves the engine unaware of them, so the keyboard shortcuts stay disabled. If you have a pre-render mutation step you can't move into `baseQuery`, keep the custom callback but set `$table->hasEditAction = true` / `$table->hasDeleteAction = true` manually after building the table:
+
+```php
+$table = $this->CreateMrCatzTable()
+    ->withColumn('Name', 'name')
+    ->withCustomColumn('Aksi', function ($data, $i) {
+        // ...custom pre-render logic that mutates $data...
+        return MrCatzDataTables::getActionView($data, $i, true, false);
+    });
+
+$table->hasEditAction = true;  // flip the shortcut manually
+return $table;
+```
 
 #### Image Column (`withColumnImage`)
 
@@ -1071,7 +1102,8 @@ public function setForm(): array
 | `enableExpand($callback)` | Expandable row content |
 | `setDefaultOrder($key, $dir)` | Default sort |
 | `addOrderBy($key, $dir)` | Additional sort |
-| `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons |
+| `withActionColumn($head, $editable, $deletable)` | Built-in edit/delete action column; also flips `hasEditAction`/`hasDeleteAction` so keyboard shortcuts bind correctly |
+| `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons (low-level; prefer `withActionColumn()`) |
 | `getExpandView($data, $fields)` | Render expand grid |
 | `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$sort`, `$visible`, `$showOn`) |
 
