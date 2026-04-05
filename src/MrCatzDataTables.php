@@ -557,20 +557,21 @@ class MrCatzDataTables
         bool $sort = false,
         bool $visible = true,
         string $showOn = 'both',
+        string $gravity = 'center',
     ): self {
         $urlPrefix = $urlPrefix ?? config('mrcatz.url_prefix', 'storage');
         $imgMeta = compact('width', 'height', 'previewClass', 'fallback');
         $this->dataTableSet[$this->index] = [
             'head' => $head, 'order' => null, 'key' => $key, 'index' => null,
             'i' => $this->index, 'uppercase' => false, 'th' => false,
-            'sort' => $sort, 'gravity' => 'center', 'editable' => false,
+            'sort' => $sort, 'gravity' => $gravity, 'editable' => false,
             'visible' => $visible, 'showOn' => $showOn,
             'type' => 'image', 'imageMeta' => $imgMeta,
         ];
-        $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback, $urlPrefix) {
+        $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback, $urlPrefix, $gravity) {
             $url = self::resolveImageUrl($data->{$key} ?? null, $urlPrefix);
             $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
-            return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key);
+            return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key, $gravity);
         };
         $this->index++;
         return $this;
@@ -617,6 +618,7 @@ class MrCatzDataTables
         string $previewClass = 'rounded-full',
         ?string $fallback = null,
         string $columnKey = 'image',
+        string $gravity = 'center',
     ): string {
         return view('mrcatz::components.ui.datatable-image', [
             'url' => $url,
@@ -626,6 +628,7 @@ class MrCatzDataTables
             'previewClass' => $previewClass,
             'fallback' => $fallback,
             'columnKey' => $columnKey,
+            'gravity' => $gravity,
         ])->render();
     }
 

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.8] - 2026-04-05
+
+### Added
+- `$gravity` parameter on `withColumnImage()` and `getImageView()` (default `'center'`, preserving current behavior). Accepts `'left'`, `'center'`, `'right'` and controls the horizontal alignment of the image within its table cell. `datatable-image.blade.php` maps it to `justify-start` / `justify-center` / `justify-end` on the outer flex wrapper. Useful when a table cell needs the thumbnail flush against the left edge instead of centered.
+
 ## [1.23.7] - 2026-04-05
 
 ### Removed

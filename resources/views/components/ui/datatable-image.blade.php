@@ -1,4 +1,12 @@
-<div class="flex items-center justify-center" @click.stop>
+@php
+    $gravity = $gravity ?? 'center';
+    $justify = match ($gravity) {
+        'left' => 'justify-start',
+        'right' => 'justify-end',
+        default => 'justify-center',
+    };
+@endphp
+<div class="flex items-center {{ $justify }}" @click.stop>
     <div class="shrink-0 overflow-hidden {{ $previewClass }} {{ $url ? 'cursor-zoom-in transition-opacity hover:opacity-80' : '' }}"
          style="width: {{ $width }}px; height: {{ $height }}px;"
          @if($url) x-data @click="$dispatch('mrcatz-lightbox', { url: '{{ $url }}' })" @endif>
