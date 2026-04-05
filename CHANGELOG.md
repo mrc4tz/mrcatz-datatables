@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.4] - 2026-04-05
+
+### Fixed
+- Mobile card view no longer treats every `withCustomColumn()` without a `$key` as an action column. Previously, custom columns without a data key (status badges, computed display cells, etc.) were rendered in the top-right actions slot alongside the real edit/delete buttons. Classification now checks for `getColumnType() === 'action'` — a tag set exclusively by `withActionColumn()` — so display-only custom columns flow into the card body as normal pills.
+
+### Changed
+- `withActionColumn()` now tags its column with `type = 'action'` on `dataTableSet`, mirroring how `withColumnImage()` tags image columns.
+
+### Migration
+- Tables still using the legacy `->withCustomColumn('Aksi', fn ($d, $i) => MrCatzDataTables::getActionView(...))` pattern will no longer appear in the mobile card's top-right actions slot (they'll render as body pills instead). Migrate to `->withActionColumn()` to restore the top-right placement and the keyboard shortcuts.
+
 ## [1.23.3] - 2026-04-05
 
 ### Added

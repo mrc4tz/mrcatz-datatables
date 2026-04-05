@@ -334,12 +334,18 @@ class MrCatzDataTables
         if ($editable)  $this->hasEditAction = true;
         if ($deletable) $this->hasDeleteAction = true;
 
-        return $this->withCustomColumn(
+        $this->withCustomColumn(
             $head,
             fn ($data, $i) => self::getActionView($data, $i, $editable, $deletable),
             null,
             false,
         );
+
+        // Tag the column so the mobile card layout knows to render it in the
+        // top-right actions slot instead of as a body pill.
+        $this->dataTableSet[$this->index - 1]['type'] = 'action';
+
+        return $this;
     }
 
     public function getDataTableSet(): array { return $this->dataTableSet; }

@@ -24,7 +24,7 @@
                     foreach ($visibleColOrderMobile as $ci) {
                         if ($posts->getIndex($ci) != null) continue;
                         if ($imageCol !== null && $ci === $imageCol) continue;
-                        if ($posts->getKey($ci) == null && !$posts->isEditable($ci)) {
+                        if (($posts->getColumnType($ci) ?? null) === 'action') {
                             $actionCols[] = $ci;
                         } elseif ($firstDataCol === null) {
                             $firstDataCol = $ci;
