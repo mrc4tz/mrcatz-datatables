@@ -178,8 +178,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $this->mrCatzDataTables = null;
     }
 
-    public function setSearchWord(string $words): string
+    public function setSearchWord(?string $words): string
     {
+        $words = $words ?? '';
         if ($this->mrCatzDataTables != null) {
             return $this->mrCatzDataTables->setSearchWord($words);
         }

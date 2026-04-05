@@ -372,7 +372,7 @@ class MrCatzDataTables
             if (!isset($this->pluckCache[$pluckKey])) {
                 $this->pluckCache[$pluckKey] = $this->data->pluck($pluckKey)->all();
             }
-            $key = $this->pluckCache[$pluckKey][$indexRow];
+            $key = $this->pluckCache[$pluckKey][$indexRow] ?? null;
             return $this->setSearchWord($key);
         }
         if ($this->dataTableSet[$indexColumn]['index'] != null) {
@@ -383,8 +383,9 @@ class MrCatzDataTables
         }
     }
 
-    public function setSearchWord(string $words): string
+    public function setSearchWord(?string $words): string
     {
+        $words = $words ?? '';
         $start = "\x00\x01MRCATZ_HL_START\x02\x00";
         $end = "\x00\x01MRCATZ_HL_END\x02\x00";
         $escapedWords = e($words);

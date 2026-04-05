@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.1] - 2026-04-05
+
+### Fixed
+- `setSearchWord()` now accepts `?string` and coerces `null` to empty string in both `MrCatzDataTables` and `MrCatzDataTablesComponent`. Prevents `TypeError` when a row column used by `withColumn()` contains `NULL` in the database — the internal pluck path in `getData()` previously passed raw null values into the strict-typed `setSearchWord()`.
+
 ## [1.3.0] - 2026-04-02
 
 ### Added
