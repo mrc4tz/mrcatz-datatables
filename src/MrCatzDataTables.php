@@ -476,41 +476,6 @@ class MrCatzDataTables
 
     public function hasExpand(): bool { return $this->expandCallback !== null; }
 
-    /**
-     * Auto-register an expand view built from every plain data column that
-     * was added via withColumn() (i.e. columns with a real `$key` and no
-     * special `type`). Action, image, index and custom columns are skipped.
-     *
-     * Used as the default fallback when a component sets `$expandableRows`
-     * but never calls `enableExpand()` explicitly, so the mobile card can
-     * show a "more details" drawer without forcing the caller to list
-     * fields manually for every table.
-     */
-    public function enableAutoExpand(): self
-    {
-        $fields = [];
-        foreach ($this->dataTableSet as $col) {
-            if (($col['index'] ?? null) !== null) continue;
-            if (($col['type'] ?? null) !== null) continue; // action, image, etc.
-            if (empty($col['key'])) continue; // custom column without key
-
-            // Use the raw column name (strip table prefix: `users.name` → `name`)
-            $rawKey = str_contains($col['key'], '.')
-                ? substr($col['key'], strrpos($col['key'], '.') + 1)
-                : $col['key'];
-
-            $fields[$col['head']] = $rawKey;
-        }
-
-        if (empty($fields)) {
-            return $this;
-        }
-
-        return $this->enableExpand(
-            fn ($data, $i) => self::getExpandView($data, $fields)
-        );
-    }
-
     public function isExpandEnabled(int $indexRow): bool
     {
         $this->validateRowIndex($indexRow);

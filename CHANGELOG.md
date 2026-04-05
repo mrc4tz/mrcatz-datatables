@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.7] - 2026-04-05
+
+### Removed
+- Reverts the `enableAutoExpand()` helper and the automatic `setData()` fallback added in `v1.23.6`. The auto-fallback silently wired up expand content whenever `$expandableRows` was set, which felt too magical for callers who prefer to drive expand content explicitly via `enableExpand()`. The feature will return as an explicit opt-in if the need comes up again.
+
 ## [1.23.6] - 2026-04-05
 
 ### Added
-- `MrCatzDataTables::enableAutoExpand()` — builds an expand view automatically from every plain `withColumn()` (columns with a real `$key` and no `type`). Skips index, image, action and custom callback columns. Useful when you want the mobile "more details" drawer without manually listing fields.
-- Automatic fallback in `MrCatzDataTablesComponent::setData()`: if a component sets `$expandableRows` to `'mobile'`/`'desktop'`/`'both'` but never calls `enableExpand()` in `setTable()`, `enableAutoExpand()` is invoked for you. Tables get a free expand drawer by flipping a single property.
+- `MrCatzDataTables::enableAutoExpand()` — builds an expand view automatically from every plain `withColumn()` (columns with a real `$key` and no `type`). Skips index, image, action and custom callback columns. Useful when you want the mobile "more details" drawer without manually listing fields. **Reverted in v1.23.7.**
+- Automatic fallback in `MrCatzDataTablesComponent::setData()`: if a component sets `$expandableRows` to `'mobile'`/`'desktop'`/`'both'` but never calls `enableExpand()` in `setTable()`, `enableAutoExpand()` is invoked for you. Tables get a free expand drawer by flipping a single property. **Reverted in v1.23.7.**
 
 ## [1.23.5] - 2026-04-05
 
