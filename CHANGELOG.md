@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.9] - 2026-04-05
+
+### Added
+- `$urlPrefix` parameter on `getImageView()` (default `null`, backward compatible). When supplied, the helper runs `$url` through `resolveImageUrl($url, $urlPrefix)` so callers can pass a bare DB value (e.g. `"avatar.jpg"`) and let the helper build the final URL — the same contract `withColumnImage()` already exposes. Leaving `$urlPrefix` null preserves the legacy behavior where `$url` is rendered as-is.
+
 ## [1.23.8] - 2026-04-05
 
 ### Added

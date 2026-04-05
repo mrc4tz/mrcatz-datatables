@@ -619,7 +619,17 @@ class MrCatzDataTables
         ?string $fallback = null,
         string $columnKey = 'image',
         string $gravity = 'center',
+        ?string $urlPrefix = null,
     ): string {
+        // When a urlPrefix is supplied, run the raw value through resolveImageUrl
+        // so callers can pass a bare DB field (e.g. "abc.jpg") and get back a
+        // fully-qualified URL the same way withColumnImage() does. Leaving
+        // urlPrefix null keeps the legacy pure-renderer behavior: $url is used
+        // as-is, whatever the caller pre-resolved themselves.
+        if ($urlPrefix !== null) {
+            $url = self::resolveImageUrl($url, $urlPrefix);
+        }
+
         return view('mrcatz::components.ui.datatable-image', [
             'url' => $url,
             'index' => $index,

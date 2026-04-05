@@ -489,15 +489,18 @@ Low-level static helper that `withColumnImage()` uses internally. Call it direct
 ->withCustomColumn('Value', function ($data, $i) {
     switch ($data->setting_input) {
         case 'file':
-            $util = new Util();
+            // Pass the bare DB value + urlPrefix and let getImageView
+            // run it through resolveImageUrl internally. Same contract as
+            // withColumnImage()'s urlPrefix parameter.
             return MrCatzDataTables::getImageView(
-                $util->minio_url($data->setting_value, 'setting'),
+                $data->setting_value,
                 $i,
                 48, 48,               // width, height
                 'rounded',            // previewClass
                 fallback: null,
                 columnKey: 'setting_value',
                 gravity: 'left',      // 'left' / 'center' / 'right'
+                urlPrefix: config('app.minio_url') . 'setting',
             );
         case 'switch':
             return view('components.ui.setting-switch', ['value' => $data->setting_value]);
@@ -508,7 +511,7 @@ Low-level static helper that `withColumnImage()` uses internally. Call it direct
 
 | Parameter | Default | Description |
 |---|---|---|
-| `$url` | — | Fully-resolved image URL (no prefix handling applied — `getImageView` does not call `resolveImageUrl()`). Pass `null` to render the fallback. |
+| `$url` | — | Image URL. If `$urlPrefix` is also supplied, this is treated as the raw DB value and resolved via `resolveImageUrl()`; otherwise it's rendered as-is. Pass `null` to render the fallback. |
 | `$index` | — | Row index, used as part of the lightbox element id. |
 | `$width` | `40` | Preview width in pixels |
 | `$height` | `40` | Preview height in pixels |
@@ -516,6 +519,7 @@ Low-level static helper that `withColumnImage()` uses internally. Call it direct
 | `$fallback` | `null` | Fallback text (e.g. row's name) — shows first letter when `$url` is null |
 | `$columnKey` | `'image'` | Used to disambiguate lightbox ids when multiple image columns share a row |
 | `$gravity` | `'center'` | Horizontal alignment: `'left'` / `'center'` / `'right'` |
+| `$urlPrefix` | `null` | Optional URL resolution mode, same values as `withColumnImage()`'s `$urlPrefix`. When set, `$url` is passed through `resolveImageUrl($url, $urlPrefix)` so you can hand over the raw DB field and let the helper build the final URL. Leave `null` to preserve the legacy pure-renderer behavior (`$url` used as-is). |
 
 Returns the rendered HTML string, ready to be returned from the `withCustomColumn` callback. Unlike `withColumnImage()`, this helper does **not** tag the column as `type: 'image'`, so the mobile card layout won't treat it as an avatar column — it just renders an image cell wherever you place it.
 
@@ -1174,7 +1178,7 @@ public function setForm(): array
 | `getActionView($data, $i, $editable, $deletable)` | Render edit/delete buttons (low-level; prefer `withActionColumn()`) |
 | `getExpandView($data, $fields)` | Render expand grid |
 | `withColumnImage($head, $key, ...)` | Image column with lightbox (`$width`, `$height`, `$previewClass`, `$fallback`, `$urlPrefix`, `$sort`, `$visible`, `$showOn`, `$gravity`) |
-| `getImageView($url, $index, $width, $height, $previewClass, $fallback, $columnKey, $gravity)` | Low-level image renderer for use inside `withCustomColumn()` callbacks. Takes a pre-resolved URL and returns HTML string. Does not tag the column as `type: 'image'`. |
+| `getImageView($url, $index, $width, $height, $previewClass, $fallback, $columnKey, $gravity, $urlPrefix)` | Low-level image renderer for use inside `withCustomColumn()` callbacks. Returns HTML string. Pass `$urlPrefix` to run `$url` through `resolveImageUrl()` (same as `withColumnImage()`), or leave it `null` to render `$url` as-is. Does not tag the column as `type: 'image'`. |
 
 ### Filter Factory
 
