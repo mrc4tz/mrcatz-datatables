@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.6] - 2026-04-05
+
+### Added
+- `MrCatzDataTables::enableAutoExpand()` — builds an expand view automatically from every plain `withColumn()` (columns with a real `$key` and no `type`). Skips index, image, action and custom callback columns. Useful when you want the mobile "more details" drawer without manually listing fields.
+- Automatic fallback in `MrCatzDataTablesComponent::setData()`: if a component sets `$expandableRows` to `'mobile'`/`'desktop'`/`'both'` but never calls `enableExpand()` in `setTable()`, `enableAutoExpand()` is invoked for you. Tables get a free expand drawer by flipping a single property.
+
 ## [1.23.5] - 2026-04-05
 
 ### Added

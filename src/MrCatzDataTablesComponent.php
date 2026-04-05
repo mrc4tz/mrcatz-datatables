@@ -200,6 +200,15 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     private function setData(?callable $onFinish = null): MrCatzDataTables
     {
         $dt = $this->setTable();
+
+        // Auto-fallback: if the component opted into expandable rows but the
+        // table was built without an explicit enableExpand() callback, wire
+        // up an auto-generated expand view from the registered plain data
+        // columns so mobile cards get a "more details" drawer for free.
+        if ($this->expandableRows !== false && !$dt->hasExpand()) {
+            $dt->enableAutoExpand();
+        }
+
         $this->applyStateToEngine($dt);
         $result = $dt->build();
         if ($onFinish) $onFinish();
