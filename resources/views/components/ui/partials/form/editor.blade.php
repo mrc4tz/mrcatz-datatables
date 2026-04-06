@@ -7,14 +7,33 @@
 
 <style>
     .mrcatz-editor { position: relative; display: flex; flex-direction: column; }
-    .mrcatz-editor .ql-toolbar { border-radius: 0.5rem 0.5rem 0 0; border-color: oklch(var(--bc) / 0.15); flex-shrink: 0; }
-    .mrcatz-editor .ql-container { border-radius: 0 0 0.5rem 0.5rem; border-color: oklch(var(--bc) / 0.15); height: 250px; min-height: 150px; max-height: 80vh; font-size: 0.925rem; resize: vertical; overflow: hidden; }
+    .mrcatz-editor .ql-toolbar.ql-snow { border-radius: 0.5rem 0.5rem 0 0; border-color: #d1d5db; flex-shrink: 0; }
+    .mrcatz-editor .ql-container.ql-snow { border-radius: 0 0 0.5rem 0.5rem; border-color: #d1d5db; height: 250px; min-height: 150px; max-height: 80vh; font-size: 0.925rem; resize: vertical; overflow: hidden; }
     .mrcatz-editor .ql-editor { height: 100%; overflow-y: auto; }
-    .mrcatz-editor.editor-error .ql-container,
-    .mrcatz-editor.editor-error .ql-toolbar { border-color: oklch(var(--er)); }
+
+    .mrcatz-editor .ql-editor { height: 100%; overflow-y: auto; }
+
+    /* Dark theme only */
+    [data-theme*="dark"] .mrcatz-editor .ql-toolbar.ql-snow { border-color: #4b5563; background-color: oklch(var(--b2, var(--b1))); }
+    [data-theme*="dark"] .mrcatz-editor .ql-container.ql-snow { border-color: #4b5563; background-color: oklch(var(--b1)); }
+    [data-theme*="dark"] .mrcatz-editor .ql-editor { color: oklch(var(--bc)); }
+    [data-theme*="dark"] .mrcatz-editor .ql-editor.ql-blank::before { color: oklch(var(--bc) / 0.4); }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-stroke { stroke: #9ca3af; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-fill { fill: #9ca3af; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker { color: #9ca3af; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-label { color: #9ca3af; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-options { background-color: #1f2937 !important; border-color: #4b5563 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-item { color: #9ca3af; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-item:hover { color: #e5e7eb; background-color: #374151; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow button:hover .ql-stroke { stroke: #e5e7eb; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow button:hover .ql-fill { fill: #e5e7eb; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-label:hover { color: #e5e7eb; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow button.ql-active .ql-stroke { stroke: #60a5fa; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow button.ql-active .ql-fill { fill: #60a5fa; }
+    [data-theme*="dark"] .mrcatz-editor .ql-snow .ql-picker-label.ql-active { color: #60a5fa; }
 </style>
 
-<fieldset class="fieldset"
+<fieldset class="fieldset" id="fieldset-{{ $editorId }}"
     x-data
     x-init="
         $nextTick(() => {
@@ -51,11 +70,31 @@
                     quill.root.innerHTML = value || '';
                 }
             });
+
+            // Toggle red border on error
+            const fieldset = document.getElementById('fieldset-{{ $editorId }}');
+            const toolbar = fieldset.querySelector('.ql-toolbar');
+            const container = fieldset.querySelector('.ql-container');
+
+            function setErrorBorder(show) {
+                let color = '';
+                if (show) {
+                    const errEl = fieldset.querySelector('.text-error');
+                    color = errEl ? getComputedStyle(errEl).color : '#ef4444';
+                }
+                if (toolbar) toolbar.style.setProperty('border-color', color || '', show ? 'important' : '');
+                if (container) container.style.setProperty('border-color', color || '', show ? 'important' : '');
+            }
+
+            const observer = new MutationObserver(() => {
+                setErrorBorder(fieldset.querySelector('.text-error') !== null);
+            });
+            observer.observe(fieldset, { childList: true, subtree: true });
         })
     "
 >
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-    <div class="mrcatz-editor @error($id) editor-error @enderror" wire:ignore>
+    <div class="mrcatz-editor" wire:ignore>
         <div id="{{ $editorId }}"></div>
     </div>
     @include('mrcatz::components.ui.partials.form._error')
