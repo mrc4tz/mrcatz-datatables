@@ -1,7 +1,8 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
+<div class="relative">
 @if($posts->hasData())
     {{-- Mobile card view --}}
-    <div class="md:hidden space-y-3 pt-3" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    <div class="md:hidden space-y-3 pt-3" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         @for($i = 0; $i < $posts->countRow(); $i++)
             <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
                  :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
@@ -181,7 +182,7 @@
     @endif
 
     {{-- Desktop table view --}}
-    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                @if($enableKeyboardNav)
                tabindex="0"
@@ -340,7 +341,7 @@
         </table>
     </div>
 @else
-    <div wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    <div wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
     @if($emptyStateView)
         @include($emptyStateView, ['search' => $search, 'activeFilterCount' => $activeFilterCount])
     @else
@@ -367,8 +368,9 @@
     </div>
 @endif
 
-{{-- Loading skeleton --}}
-<div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+{{-- Loading skeleton (absolute overlay to prevent layout shift) --}}
+<div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData"
+     class="absolute inset-0 z-10 bg-base-100/80">
     {{-- Mobile skeleton --}}
     <div class="md:hidden space-y-3 pt-3">
         @for($sk = 0; $sk < min($p ?? 5, 3); $sk++)
@@ -412,6 +414,7 @@
         </table>
     </div>
 </div>
+</div>{{-- end relative wrapper --}}
 
 @if(!$usePagination && $hasMoreRows)
     <div class="flex flex-col items-center gap-2 py-4">
@@ -425,7 +428,7 @@
 @endif
 
 @if($usePagination && $posts->hasData())
-    <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         {{ $posts->links('mrcatz::components.ui.pagination') }}
     </div>
 @endif
