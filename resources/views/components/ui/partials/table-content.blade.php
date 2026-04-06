@@ -1,7 +1,7 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
 @if($posts->hasData())
     {{-- Mobile card view --}}
-    <div class="md:hidden space-y-3 pt-3">
+    <div class="md:hidden space-y-3 pt-3" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         @for($i = 0; $i < $posts->countRow(); $i++)
             <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
                  :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
@@ -181,7 +181,7 @@
     @endif
 
     {{-- Desktop table view --}}
-    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif">
+    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                @if($enableKeyboardNav)
                tabindex="0"
@@ -340,6 +340,7 @@
         </table>
     </div>
 @else
+    <div wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
     @if($emptyStateView)
         @include($emptyStateView, ['search' => $search, 'activeFilterCount' => $activeFilterCount])
     @else
@@ -363,6 +364,7 @@
             @endif
         </div>
     @endif
+    </div>
 @endif
 
 {{-- Loading skeleton --}}
@@ -389,6 +391,15 @@
     {{-- Desktop skeleton --}}
     <div class="hidden md:block overflow-x-auto">
         <table class="table">
+            <thead>
+                <tr class="bg-base-200/50 border-b border-base-content/10">
+                    @foreach($visibleColOrderDesktop as $ci)
+                        <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50">
+                            <div class="skeleton h-3 w-16 rounded"></div>
+                        </th>
+                    @endforeach
+                </tr>
+            </thead>
             <tbody>
                 @for($sk = 0; $sk < min($p ?? 5, 5); $sk++)
                     <tr class="border-b border-base-content/5">
@@ -414,7 +425,7 @@
 @endif
 
 @if($usePagination && $posts->hasData())
-    <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif">
+    <div class="px-4 py-3 border-t border-base-content/5 md:border-t rounded-xl md:rounded-none bg-base-100 md:bg-transparent shadow-sm md:shadow-none mt-3 md:mt-0 @if($borderContainer) p-4 @endif" wire:loading.remove wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         {{ $posts->links('mrcatz::components.ui.pagination') }}
     </div>
 @endif
