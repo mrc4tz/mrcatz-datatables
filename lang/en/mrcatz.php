@@ -103,4 +103,6 @@ return [
     'form_delete_photo' => 'Delete this photo?',
     'form_delete_photo_desc' => 'Deleted photos cannot be recovered.',
     'form_btn_delete' => 'Delete',
+    'form_taginput_hint' => 'Press Enter or comma to add a tag',
+    'form_editor_placeholder' => 'Write your content here...',
 ];

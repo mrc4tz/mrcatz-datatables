@@ -455,6 +455,64 @@ class MrCatzFormField
         return $field;
     }
 
+    // ─── Rich Text Editor ─────────────────────────────────────────
+
+    /**
+     * Create a rich text editor field using Quill.js.
+     *
+     * @param string $id         Livewire property name
+     * @param string $label      Field label
+     * @param string|null $rules      Validation rules
+     * @param array|null $messages   Custom validation messages
+     * @param string|null $placeholder  Editor placeholder
+     * @param mixed $disabled    Disabled state
+     */
+    public static function editor(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $placeholder = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('editor', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    // ─── Tag Input ────────────────────────────────────────────────
+
+    /**
+     * Create a tag input field where users can type and add tags as an array of strings.
+     *
+     * The bound Livewire property should be an array. Tags are added by pressing Enter or comma.
+     *
+     * @param string $id         Livewire property name (must be array)
+     * @param string $label      Field label
+     * @param string|null $rules      Validation rules
+     * @param array|null $messages   Custom validation messages
+     * @param string|null $placeholder  Input placeholder
+     * @param mixed $disabled    Disabled state
+     */
+    public static function taginput(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $placeholder = 'Ketik lalu tekan Enter',
+        mixed $disabled = false,
+    ): static {
+        $field = new static('taginput', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
     // ─── Button ───────────────────────────────────────────────────
 
     /**

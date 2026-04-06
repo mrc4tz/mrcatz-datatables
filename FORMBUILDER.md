@@ -76,6 +76,13 @@ When `setForm()` returns fields, the form modal auto-renders them. If `setForm()
 | Method | Description |
 |---|---|
 | `textarea(id, label, ...)` | Multi-line text |
+| `editor(id, label, ...)` | Rich text editor (Quill.js) |
+
+### Tag Input
+
+| Method | Description |
+|---|---|
+| `taginput(id, label, ...)` | Tag input — add tags as array of strings |
 
 ### File & Image
 
@@ -412,6 +419,142 @@ return [
 │ Profile Information         │
 │ Name, Email, Password...    │
 └─────────────────────────────┘
+```
+
+---
+
+## Rich Text Editor
+
+The `editor()` field type provides a rich text editor powered by [Quill.js](https://quilljs.com/). Content is stored as HTML and synced with Livewire in real-time.
+
+### Prerequisites
+
+Load Quill CSS & JS in your layout (before Alpine/Livewire):
+
+```html
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+</head>
+```
+
+### Basic Usage
+
+```php
+public $content;
+
+public function setForm(): array
+{
+    return [
+        MrCatzFormField::editor('content', label: 'Content',
+            rules: 'required',
+            messages: ['required' => 'Content is required'],
+        ),
+    ];
+}
+```
+
+### Toolbar
+
+The editor includes the following toolbar buttons by default:
+
+| Group | Buttons |
+|---|---|
+| Heading | H2, H3, H4, Normal |
+| Formatting | Bold, Italic, Underline, Strikethrough |
+| Color | Text color, Background color |
+| Lists | Ordered list, Bullet list |
+| Insert | Blockquote, Link, Image |
+| Utility | Clean formatting |
+
+### Features
+
+- **Resizable** — users can drag the bottom-right corner to resize the editor height (min: 150px, max: 80vh)
+- **Auto-sync** — content syncs to Livewire property on every text change
+- **Edit mode** — automatically loads existing content when editing
+- **Form reset** — editor clears when Livewire property is reset (e.g. switching between add/edit)
+- **Placeholder** — uses `mrcatz_lang('form_editor_placeholder')` by default, or pass custom placeholder
+
+### Custom Placeholder
+
+```php
+MrCatzFormField::editor('content', label: 'Content',
+    placeholder: 'Write your article here...',
+),
+```
+
+> **Note:** Images inserted via the toolbar are embedded as base64 inline data. For production use with large images, consider handling image uploads separately (e.g. via S3) and inserting URLs manually.
+
+---
+
+## Tag Input
+
+The `taginput()` field type lets users add tags as an array of strings. Tags are added by pressing **Enter** or **comma**, and removed by clicking the × button.
+
+### Basic Usage
+
+```php
+public $tags = [];
+
+public function setForm(): array
+{
+    return [
+        MrCatzFormField::taginput('tags', label: 'Tags'),
+    ];
+}
+```
+
+The bound property must be an **array**. Tags are stored as `['tag1', 'tag2', 'tag3']`.
+
+### With Validation
+
+```php
+MrCatzFormField::taginput('tags', label: 'Tags',
+    rules: 'nullable|array|max:10',
+    messages: ['max' => 'Maximum 10 tags allowed'],
+),
+```
+
+### Custom Placeholder
+
+```php
+MrCatzFormField::taginput('tags', label: 'Tags',
+    placeholder: 'Add a tag...',
+),
+```
+
+Default placeholder uses `mrcatz_lang('form_taginput_hint')`.
+
+### Database Storage
+
+Tags are stored as a JSON column. In your migration:
+
+```php
+$table->json('tags')->nullable();
+```
+
+In your model, cast to array:
+
+```php
+protected function casts(): array
+{
+    return [
+        'tags' => 'array',
+    ];
+}
+```
+
+### Display Tags (in DataTable Expand View)
+
+```php
+->enableExpand(function ($data, $i) {
+    $tags = json_decode($data->tags ?? '[]', true) ?: [];
+    return MrCatzDataTables::getExpandView($data, [
+        'Tags' => ['type' => 'html', 'content' => fn($d) => collect($tags)
+            ->map(fn($t) => '<span class="badge badge-sm badge-outline">' . e($t) . '</span>')
+            ->implode(' ') ?: '-'],
+    ]);
+})
 ```
 
 ---

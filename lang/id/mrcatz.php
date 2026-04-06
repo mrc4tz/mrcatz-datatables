@@ -103,4 +103,6 @@ return [
     'form_delete_photo' => 'Hapus foto ini?',
     'form_delete_photo_desc' => 'Foto yang dihapus tidak dapat dikembalikan.',
     'form_btn_delete' => 'Hapus',
+    'form_taginput_hint' => 'Tekan Enter atau koma untuk menambahkan tag',
+    'form_editor_placeholder' => 'Tulis konten di sini...',
 ];
