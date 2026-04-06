@@ -70,13 +70,16 @@
                 {!! mrcatz_icon($bulkActive ? 'check_box' : 'check_box_outline_blank', 'text-xl') !!}
             </button>
         @endif
-        @if($showAddButton)
+    </div>
+
+    @if($showAddButton)
+        <div class="flex justify-end">
             <button class="btn btn-primary gap-2 shadow-sm min-h-[44px]" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-xl') !!}
                 <span>{{ mrcatz_lang('btn_add') }}</span>
             </button>
-        @endif
-    </div>
+        </div>
+    @endif
 
     {{-- Row 3: Active filter count (only if filters active) --}}
     @if(count($filters) > 0 && $activeFilterCount > 0)
