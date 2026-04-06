@@ -71,8 +71,9 @@
             </button>
         @endif
         @if($showAddButton)
-            <button class="btn btn-primary btn-square shadow-sm tooltip tooltip-bottom min-w-[44px] min-h-[44px]" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
+            <button class="btn btn-primary gap-2 shadow-sm min-h-[44px]" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-xl') !!}
+                <span>{{ mrcatz_lang('btn_add') }}</span>
             </button>
         @endif
     </div>
