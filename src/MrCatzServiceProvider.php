@@ -29,7 +29,8 @@ class MrCatzServiceProvider extends ServiceProvider
         ], 'mrcatz-lang');
 
         $this->publishes([
-            __DIR__ . '/../resources/views/exports' => resource_path('views/exports'),
+            __DIR__ . '/../resources/views/exports/datatable-excel.blade.php' => resource_path('views/exports/datatable-excel.blade.php'),
+            __DIR__ . '/../resources/views/exports/datatable-pdf.blade.php' => resource_path('views/exports/datatable-pdf.blade.php'),
             __DIR__ . '/../stubs/DatatableExport.php' => app_path('Exports/DatatableExport.php'),
         ], 'mrcatz-export');
 
