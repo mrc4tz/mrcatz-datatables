@@ -77,18 +77,22 @@
                     formData.append('path', @js($editorUploadPath));
                     @endif
 
+                    const notify = (type, text) => window.dispatchEvent(new CustomEvent('notice', { detail: { type, text } }));
+
                     try {
                         const res = await fetch(@js($editorUploadUrl), {
                             method: 'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
+                                'Accept': 'application/json',
                             },
                             body: formData
                         });
 
                         if (!res.ok) {
-                            const err = await res.json().catch(() => ({}));
-                            alert(err.message || 'Upload failed');
+                            const err = await res.json().catch(() => null);
+                            const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || 'Upload gagal');
+                            notify('error', msg);
                             return;
                         }
 
@@ -97,7 +101,7 @@
                         quill.insertEmbed(range.index, 'image', data.url);
                         quill.setSelection(range.index + 1);
                     } catch (e) {
-                        alert('Upload failed: ' + e.message);
+                        notify('error', 'Upload gagal: ' + e.message);
                     }
                 };
             });
