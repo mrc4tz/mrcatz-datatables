@@ -1,0 +1,101 @@
+<?php
+
+namespace App\Exports;
+
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use MrCatz\DataTable\MrCatzExport;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+
+class DatatableExport implements FromView, ShouldAutoSize, WithStyles
+{
+    public function __construct(
+        private string $title,
+        private array $headers,
+        private array $rows
+    ) {}
+
+    public function view(): View
+    {
+        return view('exports.datatable-excel', [
+            'title' => $this->title,
+            'headers' => $this->headers,
+            'rows' => $this->rows,
+        ]);
+    }
+
+    /**
+     * Customize Excel styles here.
+     * Use MrCatzExport::columnLetter($n) to convert column number to letter.
+     */
+    public function styles(Worksheet $sheet): array
+    {
+        $lastCol = MrCatzExport::columnLetter(count($this->headers));
+        $headerRow = 4;
+        $dataStart = 5;
+        $lastRow = $headerRow + count($this->rows);
+
+        // Merge title, subtitle, spacer
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->mergeCells("A2:{$lastCol}2");
+        $sheet->mergeCells("A3:{$lastCol}3");
+        $sheet->getRowDimension(3)->setRowHeight(8);
+        $sheet->getRowDimension($headerRow)->setRowHeight(28);
+
+        // Freeze pane below header
+        $sheet->freezePane("A{$dataStart}");
+
+        // Zebra striping
+        for ($r = $dataStart; $r <= $lastRow; $r++) {
+            if (($r - $dataStart) % 2 === 1) {
+                $sheet->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F0F4F8'],
+                    ],
+                ]);
+            }
+        }
+
+        // First column center
+        $sheet->getStyle("A{$dataStart}:A{$lastRow}")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        return [
+            // Title
+            1 => [
+                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '1B3A5C']],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ],
+            // Subtitle
+            2 => [
+                'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => '6B7280']],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ],
+            // Column headers
+            $headerRow => [
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1B3A5C']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            ],
+            // Data borders
+            "A{$headerRow}:{$lastCol}{$lastRow}" => [
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D1D5DB']]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            ],
+            // Header border darker
+            "A{$headerRow}:{$lastCol}{$headerRow}" => [
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0F2942']]],
+            ],
+            // Bottom border
+            "A{$lastRow}:{$lastCol}{$lastRow}" => [
+                'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '1B3A5C']]],
+            ],
+        ];
+    }
+}

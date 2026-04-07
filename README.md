@@ -766,6 +766,35 @@ public function afterExport($format, $scope)
 }
 ```
 
+### Custom Export
+
+The default Excel export includes styled headers (navy background, white text), zebra-striped rows, freeze pane, and auto-sized columns.
+
+To customize, publish the export files:
+
+```bash
+php artisan vendor:publish --tag=mrcatz-export
+```
+
+This publishes two files:
+
+| File | Purpose |
+|------|---------|
+| `resources/views/exports/datatable-excel.blade.php` | HTML layout (rows, columns, title) |
+| `app/Exports/DatatableExport.php` | Excel styling (colors, borders, fonts) |
+
+The blade view receives three variables:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `$title` | `string` | Export title from `$exportTitle` |
+| `$headers` | `array` | Column header names |
+| `$rows` | `array` | Array of row arrays |
+
+> **Note:** The blade template controls the HTML structure. The PHP class controls Excel styling (colors, borders, zebra striping). Both can be customized independently.
+
+> **Tip:** Use `MrCatzExport::columnLetter($n)` to convert column number to letter (supports 26+ columns: A, B, ..., Z, AA, AB, ...).
+
 ### Row Click Hook
 
 Enable in Table component, handle in Page component:

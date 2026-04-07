@@ -28,6 +28,11 @@ class MrCatzServiceProvider extends ServiceProvider
             __DIR__ . '/../lang' => $this->app->langPath('vendor/mrcatz'),
         ], 'mrcatz-lang');
 
+        $this->publishes([
+            __DIR__ . '/../resources/views/exports' => resource_path('views/exports'),
+            __DIR__ . '/../stubs/DatatableExport.php' => app_path('Exports/DatatableExport.php'),
+        ], 'mrcatz-export');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 MrcatzMakeCommand::class,
