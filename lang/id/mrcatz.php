@@ -105,6 +105,7 @@ return [
     'form_btn_delete' => 'Hapus',
     'form_taginput_hint' => 'Tekan Enter atau koma untuk menambahkan tag',
     'form_editor_placeholder' => 'Tulis konten di sini...',
+    'chooser_search_placeholder' => 'Cari...',
 
     // Editor image upload
     'editor_upload_required' => 'Upload gambar diperlukan.',

@@ -105,6 +105,7 @@ return [
     'form_btn_delete' => 'Delete',
     'form_taginput_hint' => 'Press Enter or comma to add a tag',
     'form_editor_placeholder' => 'Write your content here...',
+    'chooser_search_placeholder' => 'Search...',
 
     // Editor image upload
     'editor_upload_required' => 'Image upload is required.',
