@@ -105,4 +105,10 @@ return [
     'form_btn_delete' => 'Delete',
     'form_taginput_hint' => 'Press Enter or comma to add a tag',
     'form_editor_placeholder' => 'Write your content here...',
+
+    // Editor image upload
+    'editor_upload_required' => 'Image upload is required.',
+    'editor_upload_not_image' => 'File must be an image.',
+    'editor_upload_max' => 'Image size must not exceed :maxMB.',
+    'editor_upload_failed' => 'Upload failed',
 ];

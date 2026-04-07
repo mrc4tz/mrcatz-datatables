@@ -91,7 +91,7 @@
 
                         if (!res.ok) {
                             const err = await res.json().catch(() => null);
-                            const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || 'Upload gagal');
+                            const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || @js(mrcatz_lang('editor_upload_failed')));
                             notify('error', msg);
                             return;
                         }
@@ -101,7 +101,7 @@
                         quill.insertEmbed(range.index, 'image', data.url);
                         quill.setSelection(range.index + 1);
                     } catch (e) {
-                        notify('error', 'Upload gagal: ' + e.message);
+                        notify('error', @js(mrcatz_lang('editor_upload_failed')));
                     }
                 };
             });
