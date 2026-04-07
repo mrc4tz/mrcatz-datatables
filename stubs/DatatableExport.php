@@ -31,10 +31,13 @@ class DatatableExport implements FromView, ShouldAutoSize, WithStyles
 
     /**
      * Customize Excel styles here.
+     * Colors are loaded from config/mrcatz.php 'export_colors'.
      * Use MrCatzExport::columnLetter($n) to convert column number to letter.
+     * Use MrCatzExport::colors() to get color config with defaults.
      */
     public function styles(Worksheet $sheet): array
     {
+        $c = MrCatzExport::colors();
         $lastCol = MrCatzExport::columnLetter(count($this->headers));
         $headerRow = 4;
         $dataStart = 5;
@@ -56,7 +59,7 @@ class DatatableExport implements FromView, ShouldAutoSize, WithStyles
                 $sheet->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'F0F4F8'],
+                        'startColor' => ['rgb' => $c['stripe']],
                     ],
                 ]);
             }
@@ -69,32 +72,32 @@ class DatatableExport implements FromView, ShouldAutoSize, WithStyles
         return [
             // Title
             1 => [
-                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '1B3A5C']],
+                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => $c['title_text']]],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Subtitle
             2 => [
-                'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => '6B7280']],
+                'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => $c['subtitle_text']]],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Column headers
             $headerRow => [
-                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1B3A5C']],
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => $c['header_text']]],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $c['header_bg']]],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Data borders
             "A{$headerRow}:{$lastCol}{$lastRow}" => [
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D1D5DB']]],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => $c['border']]]],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
             ],
             // Header border darker
             "A{$headerRow}:{$lastCol}{$headerRow}" => [
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0F2942']]],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => $c['header_border']]]],
             ],
             // Bottom border
             "A{$lastRow}:{$lastCol}{$lastRow}" => [
-                'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '1B3A5C']]],
+                'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => $c['bottom_border']]]],
             ],
         ];
     }

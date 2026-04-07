@@ -96,6 +96,26 @@ return [
         // 'link'   => '<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Export Colors
+    |--------------------------------------------------------------------------
+    |
+    | Customize colors for Excel and PDF export.
+    | All values are hex color codes without '#'.
+    |
+    */
+    'export_colors' => [
+        'header_bg'       => '1B3A5C', // Header background
+        'header_text'     => 'FFFFFF', // Header text
+        'header_border'   => '0F2942', // Header border
+        'title_text'      => '1B3A5C', // Title text
+        'subtitle_text'   => '6B7280', // Subtitle / meta text
+        'border'          => 'D1D5DB', // Data cell border
+        'stripe'          => 'F0F4F8', // Zebra stripe (even rows)
+        'bottom_border'   => '1B3A5C', // Bottom border accent
+    ],
+
     'custom_icons' => [
         // -- Toolbar --
         // 'add'                      => '<i class="fas fa-plus"></i>',
