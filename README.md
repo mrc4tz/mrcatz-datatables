@@ -162,7 +162,18 @@ composer require barryvdh/laravel-dompdf # PDF export
 php artisan vendor:publish --tag=mrcatz-views   # Customize blade views
 php artisan vendor:publish --tag=mrcatz-lang    # Customize translations
 php artisan vendor:publish --tag=mrcatz-config  # Customize config
+php artisan vendor:publish --tag=mrcatz-export  # Customize Excel & PDF export templates
 ```
+
+The `mrcatz-export` tag publishes:
+
+| File | Description |
+|------|-------------|
+| `resources/views/exports/datatable-excel.blade.php` | Excel HTML layout (title, headers, rows) |
+| `resources/views/exports/datatable-pdf.blade.php` | PDF HTML layout with inline CSS styling |
+| `app/Exports/DatatableExport.php` | Excel styling class (colors, borders, fonts, zebra striping) |
+
+> Without publishing, exports use the built-in aesthetic defaults (navy header, zebra rows, auto-sized columns, freeze pane).
 
 ---
 
@@ -776,14 +787,15 @@ To customize, publish the export files:
 php artisan vendor:publish --tag=mrcatz-export
 ```
 
-This publishes two files:
+This publishes three files:
 
 | File | Purpose |
 |------|---------|
-| `resources/views/exports/datatable-excel.blade.php` | HTML layout (rows, columns, title) |
-| `app/Exports/DatatableExport.php` | Excel styling (colors, borders, fonts) |
+| `resources/views/exports/datatable-excel.blade.php` | Excel HTML layout (title, info, headers, rows) |
+| `resources/views/exports/datatable-pdf.blade.php` | PDF HTML layout with inline CSS styling |
+| `app/Exports/DatatableExport.php` | Excel styling class (colors, borders, fonts) |
 
-The blade view receives three variables:
+Both blade views receive the same three variables:
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -791,7 +803,11 @@ The blade view receives three variables:
 | `$headers` | `array` | Column header names |
 | `$rows` | `array` | Array of row arrays |
 
-> **Note:** The blade template controls the HTML structure. The PHP class controls Excel styling (colors, borders, zebra striping). Both can be customized independently.
+**Built-in default styling:**
+- **Excel** — Navy header with white text, zebra-striped rows, thin borders, freeze pane, auto column width, title + export info rows
+- **PDF** — Navy header, zebra-striped rows, bordered cells, title with export date, footer with total count
+
+> **Note:** For Excel, the blade template controls the HTML structure while `DatatableExport.php` controls the PhpSpreadsheet styling. For PDF, all styling is done via inline CSS in the blade template. Both can be customized independently.
 
 > **Tip:** Use `MrCatzExport::columnLetter($n)` to convert column number to letter (supports 26+ columns: A, B, ..., Z, AA, AB, ...).
 
