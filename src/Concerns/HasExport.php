@@ -75,11 +75,11 @@ trait HasExport
 
     public function exportData(string $format, string $scope = 'filtered'): mixed
     {
-        if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class, false)) {
+        if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $this->notice('error', 'PDF export memerlukan barryvdh/laravel-dompdf. Jalankan: composer require barryvdh/laravel-dompdf');
             return null;
         }
-        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class, false)) {
+        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
             $this->notice('error', 'Excel export memerlukan maatwebsite/excel. Jalankan: composer require maatwebsite/excel');
             return null;
         }
@@ -114,7 +114,7 @@ trait HasExport
         }
 
         try {
-            $exportClass = class_exists(\App\Exports\DatatableExport::class, false)
+            $exportClass = class_exists(\App\Exports\DatatableExport::class)
                 ? new \App\Exports\DatatableExport($title, $headers, $rows)
                 : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
 
