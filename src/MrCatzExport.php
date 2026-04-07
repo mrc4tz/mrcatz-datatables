@@ -3,15 +3,12 @@
 namespace MrCatz\DataTable;
 
 use Illuminate\Contracts\View\View;
-use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class MrCatzExport implements FromView, ShouldAutoSize, WithStyles
+class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite\Excel\Concerns\ShouldAutoSize, \Maatwebsite\Excel\Concerns\WithStyles
 {
     public function __construct(
         private string $title,
@@ -40,17 +37,13 @@ class MrCatzExport implements FromView, ShouldAutoSize, WithStyles
         $dataStart = 5;
         $lastRow = $headerRow + count($this->rows);
 
-        // Merge title, subtitle, spacer
         $sheet->mergeCells("A1:{$lastCol}1");
         $sheet->mergeCells("A2:{$lastCol}2");
         $sheet->mergeCells("A3:{$lastCol}3");
         $sheet->getRowDimension(3)->setRowHeight(8);
         $sheet->getRowDimension($headerRow)->setRowHeight(28);
-
-        // Freeze pane below header
         $sheet->freezePane("A{$dataStart}");
 
-        // Zebra striping
         for ($r = $dataStart; $r <= $lastRow; $r++) {
             if (($r - $dataStart) % 2 === 1) {
                 $sheet->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
@@ -62,7 +55,6 @@ class MrCatzExport implements FromView, ShouldAutoSize, WithStyles
             }
         }
 
-        // First column center
         $sheet->getStyle("A{$dataStart}:A{$lastRow}")->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 

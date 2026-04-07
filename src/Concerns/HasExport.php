@@ -75,16 +75,22 @@ trait HasExport
 
     public function exportData(string $format, string $scope = 'filtered'): mixed
     {
-        if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            $this->notice('error', 'PDF export requires barryvdh/laravel-dompdf. Run: composer require barryvdh/laravel-dompdf');
+        if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class, false)) {
+            $this->notice('error', 'PDF export memerlukan barryvdh/laravel-dompdf. Jalankan: composer require barryvdh/laravel-dompdf');
             return null;
         }
-        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
-            $this->notice('error', 'Excel export requires maatwebsite/excel. Run: composer require maatwebsite/excel');
+        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class, false)) {
+            $this->notice('error', 'Excel export memerlukan maatwebsite/excel. Jalankan: composer require maatwebsite/excel');
             return null;
         }
 
-        $exportData = $this->buildExportData($scope);
+        try {
+            $exportData = $this->buildExportData($scope);
+        } catch (\Throwable $e) {
+            $this->notice('error', 'Gagal memproses data export: ' . $e->getMessage());
+            return null;
+        }
+
         $processed = $this->beforeExport($exportData['headers'], $exportData['rows'], $format, $scope);
         $headers = $processed['headers'];
         $rows = $processed['rows'];
@@ -107,13 +113,18 @@ trait HasExport
             }, $filename . '.pdf');
         }
 
-        $exportClass = class_exists(\App\Exports\DatatableExport::class)
-            ? new \App\Exports\DatatableExport($title, $headers, $rows)
-            : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
+        try {
+            $exportClass = class_exists(\App\Exports\DatatableExport::class, false)
+                ? new \App\Exports\DatatableExport($title, $headers, $rows)
+                : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
 
-        $this->afterExport($format, $scope);
+            $this->afterExport($format, $scope);
 
-        return Excel::download($exportClass, $filename . '.xlsx');
+            return Excel::download($exportClass, $filename . '.xlsx');
+        } catch (\Throwable $e) {
+            $this->notice('error', 'Gagal export Excel: ' . $e->getMessage());
+            return null;
+        }
     }
 
     protected int $exportChunkSize = 500;
