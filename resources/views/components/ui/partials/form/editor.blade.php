@@ -77,8 +77,6 @@
                     formData.append('path', @js($editorUploadPath));
                     @endif
 
-                    const notify = (type, text) => window.dispatchEvent(new CustomEvent('notice', { detail: { type, text } }));
-
                     try {
                         const res = await fetch(@js($editorUploadUrl), {
                             method: 'POST',
@@ -92,7 +90,7 @@
                         if (!res.ok) {
                             const err = await res.json().catch(() => null);
                             const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || @js(mrcatz_lang('editor_upload_failed')));
-                            notify('error', msg);
+                            alert(msg);
                             return;
                         }
 
@@ -101,7 +99,7 @@
                         quill.insertEmbed(range.index, 'image', data.url);
                         quill.setSelection(range.index + 1);
                     } catch (e) {
-                        notify('error', @js(mrcatz_lang('editor_upload_failed')));
+                        alert(@js(mrcatz_lang('editor_upload_failed')));
                     }
                 };
             });
