@@ -15,9 +15,15 @@ class EditorImageUploadController extends Controller
         $config = config('mrcatz.editor_image', []);
         $maxSize = $config['max_size'] ?? 2048;
 
+        $maxMB = round($maxSize / 1024, 1);
+
         $request->validate([
             'image' => "required|image|max:{$maxSize}",
             'path'  => 'nullable|string|max:255',
+        ], [
+            'image.required' => "Upload gambar diperlukan.",
+            'image.image'    => "File harus berupa gambar.",
+            'image.max'      => "Ukuran gambar maksimal {$maxMB}MB.",
         ]);
 
         $disk = $config['disk'] ?? 'public';
