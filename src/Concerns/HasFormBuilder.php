@@ -2,7 +2,9 @@
 
 namespace MrCatz\DataTable\Concerns;
 
+use Carbon\Carbon;
 use Closure;
+use Illuminate\Support\Facades\Storage;
 
 trait HasFormBuilder
 {
@@ -205,6 +207,103 @@ trait HasFormBuilder
                     $this->{$method}($value);
                 }
                 break;
+            }
+        }
+    }
+
+    /**
+     * Process editor HTML content: move uploaded images from tmp/ to permanent path.
+     * Call this in your save method before persisting the HTML to database.
+     *
+     * Returns the updated HTML with permanent image URLs.
+     *
+     * Usage:
+     *   $this->content = $this->processEditorImages($this->content);
+     *   $model->update(['content' => $this->content]);
+     *
+     * Optionally pass old HTML to auto-delete removed images:
+     *   $this->content = $this->processEditorImages($this->content, $model->content);
+     *
+     * Custom path (must match ->uploadPath() used on the field):
+     *   $this->content = $this->processEditorImages($this->content, path: 'posts/images');
+     */
+    public function processEditorImages(string $html, ?string $oldHtml = null, ?string $path = null): string
+    {
+        $config = config('mrcatz.editor_image', []);
+
+        if (($config['mode'] ?? 'base64') !== 'upload') {
+            return $html;
+        }
+
+        $disk = $config['disk'] ?? 'public';
+        $path = $path ?? $config['path'] ?? 'editor-images';
+        $storage = Storage::disk($disk);
+        $tmpPath = $path . '/tmp';
+
+        // Move tmp images to permanent path
+        preg_match_all('/src=["\']([^"\']*\/tmp\/[^"\']+)["\']/', $html, $matches);
+
+        foreach ($matches[1] as $tmpUrl) {
+            $baseUrl = $storage->url('');
+            $relativePath = str_replace($baseUrl, '', $tmpUrl);
+            $relativePath = ltrim($relativePath, '/');
+
+            if (!$storage->exists($relativePath)) {
+                continue;
+            }
+
+            $filename = basename($relativePath);
+            $permanentPath = $path . '/' . $filename;
+
+            $storage->move($relativePath, $permanentPath);
+
+            $permanentUrl = $storage->url($permanentPath);
+            $html = str_replace($tmpUrl, $permanentUrl, $html);
+        }
+
+        // Delete removed images (compare old vs new HTML)
+        if ($oldHtml) {
+            preg_match_all('/src=["\']([^"\']+)["\']/', $oldHtml, $oldMatches);
+            $oldImages = $oldMatches[1] ?? [];
+
+            foreach ($oldImages as $oldUrl) {
+                if (str_contains($html, $oldUrl)) {
+                    continue;
+                }
+
+                $baseUrl = $storage->url('');
+                $relativePath = str_replace($baseUrl, '', $oldUrl);
+                $relativePath = ltrim($relativePath, '/');
+
+                // Only delete images within our editor path
+                if (str_starts_with($relativePath, $path . '/') && $storage->exists($relativePath)) {
+                    $storage->delete($relativePath);
+                }
+            }
+        }
+
+        // Auto-cleanup expired temp files
+        $this->cleanupExpiredEditorImages($storage, $tmpPath, $config['tmp_lifetime'] ?? 24);
+
+        return $html;
+    }
+
+    /**
+     * Delete expired temporary editor images.
+     */
+    private function cleanupExpiredEditorImages($storage, string $tmpPath, int $lifetimeHours): void
+    {
+        if (!$storage->exists($tmpPath)) {
+            return;
+        }
+
+        $cutoff = Carbon::now()->subHours($lifetimeHours);
+
+        foreach ($storage->files($tmpPath) as $file) {
+            $lastModified = Carbon::createFromTimestamp($storage->lastModified($file));
+
+            if ($lastModified->lt($cutoff)) {
+                $storage->delete($file);
             }
         }
     }

@@ -483,7 +483,167 @@ MrCatzFormField::editor('content', label: 'Content',
 ),
 ```
 
-> **Note:** Images inserted via the toolbar are embedded as base64 inline data. For production use with large images, consider handling image uploads separately (e.g. via S3) and inserting URLs manually.
+### Editor Image Upload
+
+By default, images inserted via the toolbar are embedded as **base64** inline data. For production use, you can switch to **upload** mode — images are uploaded to the server (local storage or S3) and inserted as URLs.
+
+Configure in `config/mrcatz.php`:
+
+```php
+'editor_image' => [
+    'mode'         => 'base64', // 'base64' or 'upload'
+    'disk'         => 'public',
+    'path'         => 'editor-images',
+    'max_size'     => 2048,     // KB
+    'tmp_lifetime' => 24,       // hours — temp images older than this are deleted by cleanup command
+],
+```
+
+| Option | Description |
+|---|---|
+| `mode` | `'base64'` — embed inline (default, no setup needed). `'upload'` — upload to server. |
+| `disk` | Storage disk: `'public'`, `'s3'`, or any disk defined in `config/filesystems.php`. |
+| `path` | Directory path within the disk. |
+| `max_size` | Maximum file size in KB (default: 2048 = 2MB). |
+| `tmp_lifetime` | Hours before temp images are eligible for cleanup (default: 24). |
+
+**Upload to local storage:**
+
+```php
+'editor_image' => [
+    'mode' => 'upload',
+    'disk' => 'public',          // storage/app/public/
+    'path' => 'editor-images',
+],
+```
+
+> Make sure to run `php artisan storage:link` so the public disk is accessible via URL.
+
+**Upload to S3:**
+
+```php
+'editor_image' => [
+    'mode' => 'upload',
+    'disk' => 's3',
+    'path' => 'editor-images',
+],
+```
+
+> Make sure your S3 disk is configured in `config/filesystems.php`.
+
+#### How It Works (Upload Mode)
+
+When mode is `upload`, the image upload flow is:
+
+```
+User inserts image → uploaded to {path}/tmp/ (temporary)
+                                  ↓
+User saves form → call processEditorImages() → moved to {path}/ (permanent)
+                                  ↓
+                    URL in HTML updated automatically
+```
+
+Images are first uploaded to a `tmp/` subdirectory. This ensures that if the user cancels the form or navigates away, the images are not permanently stored — they remain in `tmp/` and can be cleaned up later.
+
+#### Processing Images on Save
+
+Call `processEditorImages()` in your save method to move temp images to permanent storage and update the URLs in the HTML content. This method is available via the `HasFormBuilder` trait.
+
+**Create (new record):**
+
+```php
+public function saveData()
+{
+    $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
+
+    // Move tmp images to permanent path, update URLs in HTML
+    $this->content = $this->processEditorImages($this->content);
+
+    Post::create([
+        'title'   => $this->title,
+        'content' => $this->content,
+    ]);
+}
+```
+
+**Update (edit record) — auto-delete removed images:**
+
+```php
+public function saveData()
+{
+    $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
+
+    $post = Post::find($this->editId);
+
+    // Pass old HTML as 2nd argument → images removed by user are deleted from storage
+    $this->content = $this->processEditorImages($this->content, $post->content);
+
+    $post->update([
+        'title'   => $this->title,
+        'content' => $this->content,
+    ]);
+}
+```
+
+The second parameter (`$post->content`) is the old HTML. `processEditorImages()` compares old vs new HTML and automatically deletes images that the user removed from the editor.
+
+#### Custom Upload Path (Per-field)
+
+By default, all editor images use the `path` from config (`editor-images`). You can override it per field with `->uploadPath()`:
+
+```php
+// Field definition
+MrCatzFormField::editor('content', label: 'Content')
+    ->uploadPath('posts/images'),
+
+MrCatzFormField::editor('description', label: 'Description')
+    ->uploadPath('pages/images'),
+```
+
+When using custom path, pass the same path to `processEditorImages()`:
+
+```php
+// Create
+$this->content = $this->processEditorImages($this->content, path: 'posts/images');
+
+// Update
+$this->content = $this->processEditorImages($this->content, $post->content, path: 'posts/images');
+```
+
+> If `->uploadPath()` is not set, the global `config('mrcatz.editor_image.path')` is used.
+
+#### Cleaning Up Temporary Images
+
+Images uploaded but never saved (user cancelled, navigated away, etc.) remain in the `tmp/` directory.
+
+**Auto-cleanup:** Every time `processEditorImages()` is called, expired temp files (older than `tmp_lifetime` hours) are automatically deleted — cleanup happens naturally as users save forms.
+
+**Recommended:** Schedule the cleanup command for consistent cleanup, especially on low-traffic apps where forms are rarely saved:
+
+```php
+// routes/console.php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('mrcatz:cleanup-editor-images')->daily();
+```
+
+**Manual cleanup** via artisan command:
+
+```bash
+php artisan mrcatz:cleanup-editor-images
+```
+
+#### Prerequisites (Upload Mode)
+
+1. Your layout must include the CSRF meta tag:
+   ```html
+   <meta name="csrf-token" content="{{ csrf_token() }}">
+   ```
+2. The upload route uses `auth` middleware — user must be authenticated.
+3. Re-publish config if you already published it before:
+   ```bash
+   php artisan vendor:publish --tag=mrcatz-config --force
+   ```
 
 ---
 

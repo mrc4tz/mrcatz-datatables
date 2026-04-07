@@ -2,9 +2,12 @@
 
 namespace MrCatz\DataTable;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use MrCatz\DataTable\Console\MrcatzCleanupEditorImagesCommand;
 use MrCatz\DataTable\Console\MrcatzMakeCommand;
 use MrCatz\DataTable\Console\MrcatzRemoveCommand;
+use MrCatz\DataTable\Http\EditorImageUploadController;
 
 class MrCatzServiceProvider extends ServiceProvider
 {
@@ -34,11 +37,25 @@ class MrCatzServiceProvider extends ServiceProvider
             __DIR__ . '/../stubs/DatatableExport.php' => app_path('Exports/DatatableExport.php'),
         ], 'mrcatz-export');
 
+        $this->registerEditorUploadRoute();
+
         if ($this->app->runningInConsole()) {
             $this->commands([
+                MrcatzCleanupEditorImagesCommand::class,
                 MrcatzMakeCommand::class,
                 MrcatzRemoveCommand::class,
             ]);
         }
+    }
+
+    protected function registerEditorUploadRoute(): void
+    {
+        if (config('mrcatz.editor_image.mode') !== 'upload') {
+            return;
+        }
+
+        Route::middleware(['web', 'auth'])
+            ->post('/mrcatz/editor/upload-image', EditorImageUploadController::class)
+            ->name('mrcatz.editor.upload-image');
     }
 }

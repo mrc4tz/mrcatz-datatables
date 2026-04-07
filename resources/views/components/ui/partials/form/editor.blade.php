@@ -3,6 +3,9 @@
 @php
     $placeholder = $field['placeholder'] ?? mrcatz_lang('form_editor_placeholder');
     $editorId = 'mrcatz-editor-' . $id;
+    $editorImageMode = config('mrcatz.editor_image.mode', 'base64');
+    $editorUploadUrl = $editorImageMode === 'upload' ? route('mrcatz.editor.upload-image') : '';
+    $editorUploadPath = $field['uploadPath'] ?? null;
 @endphp
 
 <style>
@@ -56,6 +59,49 @@
                     ]
                 }
             });
+
+            @if($editorImageMode === 'upload')
+            quill.getModule('toolbar').addHandler('image', function() {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.click();
+
+                input.onchange = async () => {
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    @if($editorUploadPath)
+                    formData.append('path', @js($editorUploadPath));
+                    @endif
+
+                    try {
+                        const res = await fetch(@js($editorUploadUrl), {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || ''
+                            },
+                            body: formData
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            alert(err.message || 'Upload failed');
+                            return;
+                        }
+
+                        const data = await res.json();
+                        const range = quill.getSelection(true);
+                        quill.insertEmbed(range.index, 'image', data.url);
+                        quill.setSelection(range.index + 1);
+                    } catch (e) {
+                        alert('Upload failed: ' + e.message);
+                    }
+                };
+            });
+            @endif
 
             const initial = $wire.get('{{ $id }}');
             if (initial) quill.root.innerHTML = initial;

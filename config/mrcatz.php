@@ -98,6 +98,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Editor Image Upload
+    |--------------------------------------------------------------------------
+    |
+    | Configure how images are handled in the rich text editor (Quill.js).
+    |
+    | Supported modes:
+    | - 'base64': Images are embedded inline as base64 data URI (default).
+    |   Simple, no server config needed, but increases HTML size.
+    |
+    | - 'upload': Images are uploaded to the server and inserted as URL.
+    |   Better for production — smaller HTML, cacheable images.
+    |
+    | When mode is 'upload':
+    | - disk:     Storage disk to use (e.g. 'public', 's3')
+    | - path:     Directory path within the disk
+    | - max_size: Maximum file size in KB
+    |
+    */
+    'editor_image' => [
+        'mode'         => 'base64', // 'base64' or 'upload'
+        'disk'         => 'public',
+        'path'         => 'editor-images',
+        'max_size'     => 2048,
+        'tmp_lifetime' => 24, // hours — temp images older than this are deleted by cleanup command
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Export Colors
     |--------------------------------------------------------------------------
     |

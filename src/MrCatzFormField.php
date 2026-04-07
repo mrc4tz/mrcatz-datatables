@@ -71,6 +71,9 @@ class MrCatzFormField
     private ?string $deleteConfirmText = null;
     private ?string $previewClass = null;
 
+    // Editor
+    private ?string $uploadPath = null;
+
     // Grid row span & mobile order
     private ?int $rowSpan = null;
     private ?int $mobileOrder = null;
@@ -744,6 +747,16 @@ class MrCatzFormField
         return $this;
     }
 
+    /**
+     * Set custom upload path for editor images (overrides config path).
+     * Example: ->uploadPath('posts/images')
+     */
+    public function uploadPath(string $path): static
+    {
+        $this->uploadPath = $path;
+        return $this;
+    }
+
     public function withConfirmation(?string $label = null): static
     {
         $this->confirmationLabel = $label ?? mrcatz_lang('confirm_password', []) ?: 'Konfirmasi Password';
@@ -840,6 +853,7 @@ class MrCatzFormField
             'size' => $this->size,
             'loading' => $this->loading,
             'target' => $this->target,
+            'uploadPath' => $this->uploadPath,
         ];
     }
 
