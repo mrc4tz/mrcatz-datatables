@@ -332,7 +332,7 @@ class MrCatzDataTables
      * MrCatzDataTables::getActionView($d, $i, $editable, $deletable))`, which
      * renders the same buttons but leaves the engine unaware of them.
      */
-    public function withActionColumn(string $head = null, bool $editable = true, bool $deletable = true): self
+    public function withActionColumn(string $head = null, \Closure|bool $editable = true, \Closure|bool $deletable = true): self
     {
 
         if(!$head){
@@ -344,7 +344,16 @@ class MrCatzDataTables
 
         return $this->withCustomColumn(
             $head,
-            fn ($data, $i) => self::getActionView($data, $i, $editable, $deletable),
+            function ($data, $i) use ($editable, $deletable) {
+                $canEdit = $editable instanceof \Closure ? $editable($data, $i) : $editable;
+                $canDelete = $deletable instanceof \Closure ? $deletable($data, $i) : $deletable;
+
+                if (!$canEdit && !$canDelete) {
+                    return '<span class="text-xs text-base-content/30">—</span>';
+                }
+
+                return self::getActionView($data, $i, $canEdit, $canDelete);
+            },
             key: null,
             sort: false,
             type: 'action',
