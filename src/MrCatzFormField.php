@@ -78,6 +78,9 @@ class MrCatzFormField
     private ?int $rowSpan = null;
     private ?int $mobileOrder = null;
 
+    // Card break — section rendered as separate card
+    private bool $cardBreak = false;
+
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
         $this->type = $type;
@@ -663,6 +666,12 @@ class MrCatzFormField
         return $this;
     }
 
+    public function asCard(): static
+    {
+        $this->cardBreak = true;
+        return $this;
+    }
+
     public function hint(?string $text, ?string $color = null): static
     {
         $this->hint = $text;
@@ -854,6 +863,7 @@ class MrCatzFormField
             'loading' => $this->loading,
             'target' => $this->target,
             'uploadPath' => $this->uploadPath,
+            'cardBreak' => $this->cardBreak,
         ];
     }
 
