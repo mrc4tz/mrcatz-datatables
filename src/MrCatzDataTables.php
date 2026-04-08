@@ -332,8 +332,13 @@ class MrCatzDataTables
      * MrCatzDataTables::getActionView($d, $i, $editable, $deletable))`, which
      * renders the same buttons but leaves the engine unaware of them.
      */
-    public function withActionColumn(string $head = 'Aksi', bool $editable = true, bool $deletable = true): self
+    public function withActionColumn(string $head = null, bool $editable = true, bool $deletable = true): self
     {
+
+        if(!$head){
+            $head = mrcatz_lang('btn_action');
+        }
+
         if ($editable)  $this->hasEditAction = true;
         if ($deletable) $this->hasDeleteAction = true;
 
