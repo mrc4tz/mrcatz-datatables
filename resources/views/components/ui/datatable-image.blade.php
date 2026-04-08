@@ -18,7 +18,7 @@
                 <span class="text-xs font-bold text-primary">{{ strtoupper(substr($fallback, 0, 1)) }}</span>
             </div>
         @else
-            <div class="w-full h-full flex items-center justify-center bg-base-300">
+            <div class="w-full h-full flex items-center justify-center bg-base-300 leading-none">
                 {!! mrcatz_icon('person', 'text-base-content/30 w-4 h-4') !!}
             </div>
         @endif

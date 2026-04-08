@@ -27,7 +27,7 @@
                 <span class="badge badge-primary gap-1 text-sm">
                     {{ $tag }}
                     @if(!$disabled)
-                        <button type="button" x-on:click="removeTag({{ $index }})" class="btn btn-ghost btn-xs btn-circle !h-4 !w-4 !min-h-0">
+                        <button type="button" x-on:click="removeTag({{ $index }})" class="btn btn-ghost btn-xs btn-circle !h-5 !w-5 !min-h-0 flex items-center justify-center">
                             {!! mrcatz_icon('close', 'w-3 h-3') !!}
                         </button>
                     @endif

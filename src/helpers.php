@@ -168,7 +168,19 @@ if (!function_exists('mrcatz_icon')) {
         // Material Icons
         if ($iconSet === 'material') {
             $tag = in_array($name, ['home', 'unfold_more']) ? 'material-symbols-outlined' : 'material-icons';
-            return '<span class="' . $tag . ($class ? ' ' . $class : '') . '">' . $name . '</span>';
+
+            // Convert Tailwind w-*/h-* size classes to font-size for font-based icons
+            $sizeStyle = '';
+            $filteredClass = $class;
+            if (preg_match('/\bw-(\d+)\b/', $class, $m)) {
+                $sizeMap = ['3' => '12px', '4' => '16px', '5' => '20px', '6' => '24px', '7' => '28px', '8' => '32px'];
+                $sizeStyle = 'font-size:' . ($sizeMap[$m[1]] ?? ($m[1] * 4) . 'px') . ';line-height:1;';
+                $filteredClass = preg_replace('/\b[wh]-\d+\b/', '', $filteredClass);
+                $filteredClass = trim(preg_replace('/\s+/', ' ', $filteredClass));
+            }
+
+            $styleAttr = $sizeStyle ? ' style="' . $sizeStyle . '"' : '';
+            return '<span class="' . $tag . ($filteredClass ? ' ' . $filteredClass : '') . '"' . $styleAttr . '>' . $name . '</span>';
         }
 
         // Font Awesome 6
