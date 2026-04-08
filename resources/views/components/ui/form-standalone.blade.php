@@ -25,7 +25,10 @@
 <div>
     @include('mrcatz::components.ui.form-builder')
 
-    <div class="flex items-center gap-3 mt-6 pt-4 border-t border-base-content/10">
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 mt-6 pt-4 border-t border-base-content/10">
+        @if($cancelUrl)
+            <a href="{{ $cancelUrl }}" class="btn btn-ghost">{{ $cancelLabel }}</a>
+        @endif
         <button class="btn btn-{{ $submitStyle }} gap-2 px-6 shadow-sm"
                 wire:click="{{ $submitMethod }}"
                 wire:loading.attr="disabled"
@@ -34,8 +37,5 @@
             {!! mrcatz_icon($submitIcon, 'text-lg') !!}
             {{ $submitLabel }}
         </button>
-        @if($cancelUrl)
-            <a href="{{ $cancelUrl }}" class="btn btn-ghost">{{ $cancelLabel }}</a>
-        @endif
     </div>
 </div>
