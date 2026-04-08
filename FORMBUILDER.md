@@ -107,7 +107,7 @@ MrCatzFormField::button('Check Username', onClick: 'checkUsername', icon: 'searc
 
 | Method | Description |
 |---|---|
-| `section(title)` | Section heading with border |
+| `section(title)` | Section heading with border (chain `->asCard()` to render as separate card) |
 | `note(text)` | Small muted text |
 | `alert(text, type)` | Alert box: `'info'`, `'warning'`, `'success'`, `'error'` |
 | `html(content)` | Raw HTML block |
@@ -719,6 +719,63 @@ protected function casts(): array
 
 ---
 
+## Card Sections
+
+By default, all sections render inside the same container. Use `->asCard()` on `section()` to split the form into separate card containers — each section becomes its own card with a title and divider.
+
+```php
+public function setForm(): array
+{
+    return [
+        MrCatzFormField::section('General Information')->asCard(),
+        MrCatzFormField::text('name', label: 'Name', icon: 'person')->span(6),
+        MrCatzFormField::text('code', label: 'Code', icon: 'tag')->span(6),
+
+        MrCatzFormField::section('Contact Details')->asCard(),
+        MrCatzFormField::email('email', label: 'Email', icon: 'mail')->span(6),
+        MrCatzFormField::text('phone', label: 'Phone', icon: 'phone')->span(6),
+
+        MrCatzFormField::section('Social Media')->asCard(),
+        MrCatzFormField::text('facebook', label: 'Facebook', icon: 'link')->span(6),
+        MrCatzFormField::text('instagram', label: 'Instagram', icon: 'link')->span(6),
+    ];
+}
+```
+
+**Result:**
+
+```
+┌─ General Information ─────────────────┐
+│ [Name] ____________  [Code] _________ │
+└───────────────────────────────────────┘
+
+┌─ Contact Details ─────────────────────┐
+│ [Email] ___________  [Phone] ________ │
+└───────────────────────────────────────┘
+
+┌─ Social Media ────────────────────────┐
+│ [Facebook] ________  [Instagram] _____ │
+└───────────────────────────────────────┘
+```
+
+When using `->asCard()` with the standalone form view, the card wrapping is handled by the form builder — **do not** wrap in an extra card in your Blade view:
+
+```blade
+{{-- Correct: no outer card needed --}}
+<div class="p-6">
+    @include('mrcatz::components.ui.form-standalone', [
+        'submitMethod' => 'save',
+        'submitLabel'  => 'Save',
+    ])
+</div>
+```
+
+> **Backward compatible** — sections without `->asCard()` render exactly as before (heading within the same grid). You can mix: only sections with `->asCard()` break into cards.
+
+> **Note:** Fields before the first `->asCard()` section are grouped into a card without a title.
+
+---
+
 ## Grid Layout
 
 Form uses a 12-column CSS grid.
@@ -905,6 +962,54 @@ Or include just the fields for full layout control:
 ```blade
 @include('mrcatz::components.ui.form-builder')
 <button class="btn btn-primary mt-4" wire:click="save">Save</button>
+```
+
+### Button Alignment
+
+Control button position with `buttonAlign`:
+
+```blade
+@include('mrcatz::components.ui.form-standalone', [
+    'submitMethod' => 'save',
+    'buttonAlign'  => 'right',  // 'left', 'center', 'right' (default), 'full'
+])
+```
+
+| Value | Description |
+|---|---|
+| `'left'` | Buttons aligned to the left |
+| `'center'` | Buttons centered |
+| `'right'` | Buttons aligned to the right (default) |
+| `'full'` | Buttons stretch full width |
+
+On mobile (< 640px), buttons always stack vertically with the submit button on top.
+
+### Button Card
+
+Wrap action buttons inside a card container with `buttonCard`:
+
+```blade
+@include('mrcatz::components.ui.form-standalone', [
+    'submitMethod' => 'save',
+    'buttonCard'   => true,  // default: false
+])
+```
+
+When `buttonCard` is `false` (default), buttons are separated by a top border line. When `true`, buttons are wrapped inside a `card` component — useful when sections use `->asCard()` for a consistent card-based layout.
+
+### All Options
+
+```blade
+@include('mrcatz::components.ui.form-standalone', [
+    'submitMethod' => 'save',          // Livewire method (default: 'save')
+    'submitLabel'  => 'Save Changes',  // Button label
+    'submitIcon'   => 'check_circle',  // Button icon
+    'submitStyle'  => 'primary',       // DaisyUI btn style: primary, secondary, accent, etc.
+    'cancelUrl'    => route('back'),   // Cancel link URL (optional)
+    'cancelLabel'  => 'Cancel',        // Cancel button label
+    'buttonAlign'  => 'right',         // 'left', 'center', 'right', 'full'
+    'buttonCard'   => false,           // Wrap buttons in a card
+])
 ```
 
 ### Notifications
