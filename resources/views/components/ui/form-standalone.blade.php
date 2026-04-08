@@ -10,6 +10,8 @@
         'submitStyle'  => 'primary',       // DaisyUI btn style (default: 'primary')
         'cancelUrl'    => route('dashboard'), // Optional cancel URL (shows cancel button if set)
         'cancelLabel'  => 'Cancel',        // Cancel button label (default: 'Cancel')
+        'buttonAlign'  => 'right',         // Button alignment: 'left', 'center', 'right', 'full' (default: 'right')
+        'buttonCard'   => false,           // Wrap buttons inside a card (default: false)
     ])
 --}}
 
@@ -20,16 +22,32 @@
     $submitStyle  = $submitStyle ?? 'primary';
     $cancelUrl    = $cancelUrl ?? null;
     $cancelLabel  = $cancelLabel ?? mrcatz_lang('btn_cancel');
+    $buttonAlign  = $buttonAlign ?? 'right';
+    $buttonCard   = $buttonCard ?? false;
+
+    $alignClass = match($buttonAlign) {
+        'left'   => 'sm:justify-start',
+        'center' => 'sm:justify-center',
+        'full'   => '',
+        default  => 'sm:justify-end',
+    };
+
+    $btnClass = $buttonAlign === 'full' ? 'btn-block' : '';
 @endphp
 
 <div>
     @include('mrcatz::components.ui.form-builder')
 
-    <div class="flex flex-col-reverse sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 mt-6 pt-4 border-t border-base-content/10">
+    @if($buttonCard)
+    <div class="card bg-base-100 shadow-sm mt-6">
+        <div class="card-body">
+    @endif
+
+    <div class="flex flex-col-reverse sm:flex-row {{ $alignClass }} items-stretch sm:items-center gap-3 {{ $buttonCard ? '' : 'mt-6 pt-4 border-t border-base-content/10' }}">
         @if($cancelUrl)
-            <a href="{{ $cancelUrl }}" class="btn btn-ghost">{{ $cancelLabel }}</a>
+            <a href="{{ $cancelUrl }}" class="btn btn-ghost {{ $btnClass }}">{{ $cancelLabel }}</a>
         @endif
-        <button class="btn btn-{{ $submitStyle }} gap-2 px-6 shadow-sm"
+        <button class="btn btn-{{ $submitStyle }} gap-2 px-6 shadow-sm {{ $btnClass }}"
                 wire:click="{{ $submitMethod }}"
                 wire:loading.attr="disabled"
                 wire:target="{{ $submitMethod }}">
@@ -38,4 +56,9 @@
             {{ $submitLabel }}
         </button>
     </div>
+
+    @if($buttonCard)
+        </div>
+    </div>
+    @endif
 </div>
