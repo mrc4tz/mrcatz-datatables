@@ -1,6 +1,6 @@
 @if(count($dataFilters) > 0)
     @php $activeFilterValues = collect($activeFilters ?? [])->pluck('value', 'id')->toArray(); @endphp
-    <div x-show="open" x-transition:enter="transition ease-out duration-200"
+    <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150"

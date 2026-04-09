@@ -130,7 +130,7 @@
                         @click="presetOpen = !presetOpen">
                     {!! mrcatz_icon('bookmarks', 'text-lg') !!}
                 </button>
-                <div x-show="presetOpen" @click.outside="presetOpen = false"
+                <div x-cloak x-show="presetOpen" @click.outside="presetOpen = false"
                      x-transition:enter="transition ease-out duration-150"
                      x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                      x-transition:leave="transition ease-in duration-100"
@@ -169,7 +169,7 @@
                         @click="colVisOpen = !colVisOpen">
                     {!! mrcatz_icon('view_column', 'text-lg') !!}
                 </button>
-                <div x-show="colVisOpen" @click.outside="colVisOpen = false"
+                <div x-cloak x-show="colVisOpen" @click.outside="colVisOpen = false"
                      x-transition:enter="transition ease-out duration-150"
                      x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                      x-transition:leave="transition ease-in duration-100"

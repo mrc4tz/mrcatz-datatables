@@ -75,6 +75,7 @@
     },
 
 }" x-init="initPresets(); colWidths = Object.assign({}, $wire.columnWidths || {})">
+    <style>[x-cloak] { display: none !important; }</style>
     @php
         $activeFilterCount = collect($activeFilters ?? [])->filter(fn($f) => !empty($f['value']))->count();
         $bulkEnabled = $bulkPrimaryKey !== null;
