@@ -6,7 +6,21 @@
         focus-within:shadow-sm
         @error($id) input-error @enderror
         @if($disabled) opacity-60 bg-base-200 @endif"
-        @if($type === 'password') x-data="{ show: false }" @endif>
+        @if($type === 'password')
+        x-data="{
+            show: false,
+            generate() {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*';
+                let pass = '';
+                for (let i = 0; i < 16; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+                $wire.set('{{ $id }}', pass);
+                @if(!empty($field['confirmation']))
+                try { $wire.set('{{ $id }}_confirmation', pass); } catch (e) {}
+                @endif
+                this.show = true;
+            }
+        }"
+        @endif>
         @if($field['icon'])
             <span class="text-base-content/40 text-lg shrink-0">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
         @endif
@@ -23,6 +37,14 @@
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>
         @endif
         @if($type === 'password' && !$disabled)
+            <button type="button"
+                    @click="generate()"
+                    tabindex="-1"
+                    class="shrink-0 text-base-content/40 hover:text-base-content/70 transition-colors cursor-pointer"
+                    aria-label="Generate password"
+                    title="Generate password">
+                {!! mrcatz_form_icon('autorenew', 'text-base-content/40 text-lg') !!}
+            </button>
             <button type="button"
                     @click="show = !show"
                     tabindex="-1"
