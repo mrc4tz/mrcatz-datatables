@@ -31,6 +31,10 @@ class MrCatzFormField
     private ?string $previewUrl = null;
     private ?string $confirmationLabel = null;
 
+    // Password field — toggle visibility of show/hide and generate buttons
+    private bool $showPasswordToggle = true;
+    private bool $showPasswordGenerate = true;
+
     // Spacing
     private ?string $margin = null;
     private ?string $padding = null;
@@ -773,6 +777,24 @@ class MrCatzFormField
     }
 
     /**
+     * Hide the show/hide (eye) toggle button on a password field.
+     */
+    public function withoutShowHide(): static
+    {
+        $this->showPasswordToggle = false;
+        return $this;
+    }
+
+    /**
+     * Hide the generate password button on a password field.
+     */
+    public function withoutGenerate(): static
+    {
+        $this->showPasswordGenerate = false;
+        return $this;
+    }
+
+    /**
      * Set DaisyUI style variant for the field.
      * Values: primary, secondary, accent, info, success, warning, error, ghost, neutral
      */
@@ -847,6 +869,8 @@ class MrCatzFormField
             'deleteConfirm' => $this->deleteConfirmText,
             'previewClass' => $this->previewClass,
             'confirmation' => $this->confirmationLabel,
+            'showPasswordToggle' => $this->showPasswordToggle,
+            'showPasswordGenerate' => $this->showPasswordGenerate,
             'visibleWhenField' => $this->visibleWhenField,
             'visibleWhenValue' => $this->visibleWhenValue,
             'visibleWhenAll' => $this->visibleWhenAllConditions,

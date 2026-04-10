@@ -103,6 +103,10 @@ trait HasFormBuilder
                     'wireDirective' => str_replace($field['id'], $field['id'] . '_confirmation', $field['wireDirective']),
                     'content' => null,
                     'alertType' => null,
+                    // Confirmation field inherits show/hide toggle, but never shows
+                    // its own generate button (the parent password field auto-fills it).
+                    'showPasswordToggle' => $field['showPasswordToggle'] ?? true,
+                    'showPasswordGenerate' => false,
                 ];
             }
         }
