@@ -136,6 +136,7 @@
                                         <div>
                                             <label class="block text-xs font-medium text-base-content/60 mb-1" x-text="labels.from"></label>
                                             <input type="{{ $htmlType }}"
+                                                   x-ref="fromInput"
                                                    x-model="draftFrom"
                                                    @change="activePreset = null"
                                                    @if($minAttr) min="{{ $minAttr }}" @endif
@@ -145,6 +146,7 @@
                                         <div>
                                             <label class="block text-xs font-medium text-base-content/60 mb-1" x-text="labels.to"></label>
                                             <input type="{{ $htmlType }}"
+                                                   x-ref="toInput"
                                                    x-model="draftTo"
                                                    @change="activePreset = null"
                                                    :min="draftFrom || @js($minAttr)"
@@ -313,6 +315,22 @@
                         this.draftFrom = '';
                         this.draftTo = '';
                         this.activePreset = null;
+
+                        // Defensive: explicitly clear native input values + dispatch
+                        // input event. <input type="date|datetime-local|month"> in some
+                        // browsers (and after Livewire morph) doesn't always reflect a
+                        // programmatic '' assignment via x-model — so we force it.
+                        this.$nextTick(() => {
+                            ['fromInput', 'toInput'].forEach((ref) => {
+                                const el = this.$refs[ref];
+                                if (el) {
+                                    el.value = '';
+                                    el.dispatchEvent(new Event('input',  { bubbles: true }));
+                                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            });
+                        });
+
                         this.$wire.changeDateRange(this.filterId, 'from', '');
                         this.$wire.changeDateRange(this.filterId, 'to',   '');
                     },
