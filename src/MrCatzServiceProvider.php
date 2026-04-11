@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use MrCatz\DataTable\Console\MrcatzCleanupEditorImagesCommand;
 use MrCatz\DataTable\Console\MrcatzMakeCommand;
+use MrCatz\DataTable\Console\MrcatzMakeSearchProxyCommand;
+use MrCatz\DataTable\Console\MrcatzMeilisearchConfigureCommand;
 use MrCatz\DataTable\Console\MrcatzRemoveCommand;
 use MrCatz\DataTable\Http\EditorImageUploadController;
 
@@ -43,6 +45,8 @@ class MrCatzServiceProvider extends ServiceProvider
             $this->commands([
                 MrcatzCleanupEditorImagesCommand::class,
                 MrcatzMakeCommand::class,
+                MrcatzMakeSearchProxyCommand::class,
+                MrcatzMeilisearchConfigureCommand::class,
                 MrcatzRemoveCommand::class,
             ]);
         }

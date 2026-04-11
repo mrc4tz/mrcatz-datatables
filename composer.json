@@ -41,7 +41,9 @@
     },
     "suggest": {
         "maatwebsite/excel": "Required for Excel export (^3.1)",
-        "barryvdh/laravel-dompdf": "Required for PDF export (^2.0|^3.0)"
+        "barryvdh/laravel-dompdf": "Required for PDF export (^2.0|^3.0)",
+        "laravel/scout": "Required for Meilisearch search driver (^10.0)",
+        "meilisearch/meilisearch-php": "Required when using SCOUT_DRIVER=meilisearch"
     },
     "scripts": {
         "test": "phpunit"

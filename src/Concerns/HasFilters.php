@@ -30,10 +30,12 @@ trait HasFilters
                 $config = $this->findFilterConfigById($id);
                 if ($config) {
                     $this->activeFilters[] = [
-                        'id' => $id,
-                        'key' => $config['key'],
-                        'value' => $value,
+                        'id'        => $id,
+                        'key'       => $config['key'],
+                        'value'     => $value,
                         'condition' => $config['condition'],
+                        'type'      => $config['type']   ?? 'select',
+                        'format'    => $config['format'] ?? '',
                     ];
                 }
             }
@@ -110,6 +112,11 @@ trait HasFilters
         $filter = $this->findFilterById($id);
         $filterValue = $value === '' ? null : $value;
 
+        // For single date filters, clamp to min/max if configured
+        if (($filter['type'] ?? 'select') === 'date') {
+            $filterValue = $this->clampDateValue($filter, $filterValue);
+        }
+
         $found = false;
         foreach ($this->activeFilters as $i => $af) {
             if ($af['id'] === $id) {
@@ -121,10 +128,12 @@ trait HasFilters
 
         if (!$found) {
             $this->activeFilters[] = [
-                'id' => $id,
-                'key' => $filter['key'],
-                'value' => $filterValue,
+                'id'        => $id,
+                'key'       => $filter['key'],
+                'value'     => $filterValue,
                 'condition' => $filter['condition'],
+                'type'      => $filter['type']   ?? 'select',
+                'format'    => $filter['format'] ?? '',
             ];
         }
 
@@ -133,6 +142,80 @@ trait HasFilters
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $filterValue);
+    }
+
+    /**
+     * Update one half (`from` or `to`) of a date_range filter. Auto-swaps if
+     * the resulting `to` is earlier than `from`, and clamps each value to
+     * min_date / max_date if configured.
+     */
+    public function changeDateRange(string $id, string $part, mixed $value): void
+    {
+        if (!in_array($part, ['from', 'to'], true)) {
+            throw MrCatzException::invalidDateRangePart($part);
+        }
+
+        $filter = $this->findFilterById($id);
+        $newValue = $value === '' ? null : $value;
+        $newValue = $this->clampDateValue($filter, $newValue);
+
+        // Find existing active entry (if any) so we can update one half
+        $activeIndex = null;
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $activeIndex = $i;
+                break;
+            }
+        }
+
+        $current = ['from' => null, 'to' => null];
+        if ($activeIndex !== null && is_array($this->activeFilters[$activeIndex]['value'] ?? null)) {
+            $current = array_merge($current, $this->activeFilters[$activeIndex]['value']);
+        }
+
+        $current[$part] = $newValue;
+
+        // Auto-swap when both sides are set and out of order
+        if (!empty($current['from']) && !empty($current['to']) && $current['from'] > $current['to']) {
+            [$current['from'], $current['to']] = [$current['to'], $current['from']];
+        }
+
+        if ($activeIndex !== null) {
+            $this->activeFilters[$activeIndex]['value'] = $current;
+        } else {
+            $this->activeFilters[] = [
+                'id'        => $id,
+                'key'       => $filter['key'],
+                'value'     => $current,
+                'condition' => $filter['condition'],
+                'type'      => $filter['type']   ?? 'date_range',
+                'format'    => $filter['format'] ?? 'date',
+            ];
+        }
+
+        $this->syncFilterUrl();
+        $this->setPage(1);
+        $this->clearSelection();
+        $this->findData();
+        $this->safeFilterChanged($id, $current);
+    }
+
+    /**
+     * Clamp a date value to the filter's min_date / max_date constraints,
+     * if any. Lexicographic string comparison works for ISO 8601 formats
+     * (YYYY-MM-DD, YYYY-MM-DDTHH:MM, HH:MM, YYYY-MM, YYYY).
+     */
+    private function clampDateValue(array $filter, mixed $value): mixed
+    {
+        if ($value === null || $value === '') return $value;
+
+        $min = $filter['min_date'] ?? null;
+        $max = $filter['max_date'] ?? null;
+
+        if ($min !== null && $value < $min) return $min;
+        if ($max !== null && $value > $max) return $max;
+
+        return $value;
     }
 
     private function safeFilterChanged(string $id, mixed $value): void

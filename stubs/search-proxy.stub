@@ -1,0 +1,51 @@
+<?php
+
+namespace {{namespace}};
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Laravel\Scout\Searchable;
+
+/**
+ * MrCatz Scout proxy for the `{{table}}` table.
+ *
+ * This class only exists as a bridge between MrCatz and Meilisearch.
+ * Do NOT query it directly to fetch data — use baseQuery() in your
+ * MrCatzDataTablesComponent as usual.
+ *
+ * Workflow:
+ *   1. Scout indexes records into Meilisearch via toSearchableArray()
+ *   2. MrCatz calls {{class}}::search($keyword)->keys() to get matching IDs
+ *   3. Those IDs are joined back into your real baseQuery() via whereIn()
+ */
+class {{class}} extends Model
+{
+    use Searchable;
+
+    protected $table = '{{table}}';
+    protected $primaryKey = '{{primaryKey}}';
+    public $timestamps = false;
+
+    /**
+     * Data shape that will be indexed in Meilisearch.
+     * Adjust the columns and joins below to match what you want to search.
+     */
+    public function toSearchableArray(): array
+    {
+        $row = DB::table('{{table}}')
+{{joins}}            ->where('{{table}}.{{primaryKey}}', $this->{{primaryKey}})
+            ->select([
+{{selects}}            ])
+            ->first();
+
+        return $row ? (array) $row : [];
+    }
+
+    /**
+     * Name of the index in Meilisearch (defaults to the table name).
+     */
+    public function searchableAs(): string
+    {
+        return '{{indexName}}';
+    }
+}

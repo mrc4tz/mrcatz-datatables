@@ -146,4 +146,132 @@ class MrCatzDataTableFilterTest extends TestCase
         $this->expectExceptionMessage('not initialized');
         $filter->getDataFilter();
     }
+
+    // --- Date filter factories ---
+
+    public function test_create_date_filter(): void
+    {
+        $filter = MrCatzDataTableFilter::createDate(
+            id: 'order_date',
+            label: 'Order Date',
+            key: 'orders.order_date',
+            format: 'date',
+            condition: '>=',
+            minDate: '2020-01-01',
+            maxDate: '2030-12-31'
+        )->get();
+
+        $df = $filter->getDataFilter();
+
+        $this->assertEquals('order_date', $df['id']);
+        $this->assertEquals('Order Date', $df['label']);
+        $this->assertEquals('orders.order_date', $df['key']);
+        $this->assertEquals('>=', $df['condition']);
+        $this->assertEquals('date', $df['type']);
+        $this->assertEquals('date', $df['format']);
+        $this->assertEquals('2020-01-01', $df['min_date']);
+        $this->assertEquals('2030-12-31', $df['max_date']);
+        $this->assertTrue($df['show']);
+        $this->assertNull($filter->getCallback());
+    }
+
+    public function test_create_date_filter_with_callback(): void
+    {
+        $cb = fn($q, $v) => $q->whereDate('orders.created_at', $v);
+
+        $filter = MrCatzDataTableFilter::createDateWithCallback(
+            id: 'order_date',
+            label: 'Order Date',
+            callback: $cb,
+            format: 'datetime'
+        )->get();
+
+        $df = $filter->getDataFilter();
+
+        $this->assertEquals('date', $df['type']);
+        $this->assertEquals('datetime', $df['format']);
+        $this->assertEquals('-', $df['key']);
+        $this->assertNotNull($filter->getCallback());
+    }
+
+    public function test_create_date_range_filter(): void
+    {
+        $filter = MrCatzDataTableFilter::createDateRange(
+            id: 'period',
+            label: 'Period',
+            key: 'orders.order_date',
+            format: 'month_year'
+        )->get();
+
+        $df = $filter->getDataFilter();
+
+        $this->assertEquals('date_range', $df['type']);
+        $this->assertEquals('month_year', $df['format']);
+        $this->assertEquals('orders.order_date', $df['key']);
+        $this->assertNull($filter->getCallback());
+    }
+
+    public function test_create_date_range_filter_with_callback(): void
+    {
+        $cb = fn($q, $v) => $q->whereBetween('orders.created_at', [$v['from'], $v['to']]);
+
+        $filter = MrCatzDataTableFilter::createDateRangeWithCallback(
+            id: 'period',
+            label: 'Period',
+            callback: $cb,
+            format: 'date'
+        )->get();
+
+        $df = $filter->getDataFilter();
+
+        $this->assertEquals('date_range', $df['type']);
+        $this->assertEquals('date', $df['format']);
+        $this->assertEquals('-', $df['key']);
+        $this->assertNotNull($filter->getCallback());
+    }
+
+    public function test_create_date_filter_invalid_format_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage("Invalid date filter format [unix]");
+
+        MrCatzDataTableFilter::createDate(
+            id: 'd',
+            label: 'D',
+            key: 'd',
+            format: 'unix'
+        );
+    }
+
+    public function test_create_date_filter_invalid_condition_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage("Invalid date filter condition [LIKE]");
+
+        MrCatzDataTableFilter::createDate(
+            id: 'd',
+            label: 'D',
+            key: 'd',
+            condition: 'LIKE'
+        );
+    }
+
+    public function test_select_filter_defaults_to_select_type(): void
+    {
+        // Backward compat: existing factories should produce type='select'
+        $filter = MrCatzDataTableFilter::create(
+            id: 'cat',
+            label: 'Cat',
+            data: [],
+            value: 'id',
+            option: 'name',
+            key: 'cat_id'
+        )->get();
+
+        $df = $filter->getDataFilter();
+        $this->assertEquals('select', $df['type']);
+        $this->assertEquals('', $df['format']);
+        $this->assertNull($df['min_date']);
+        $this->assertNull($df['max_date']);
+    }
 }

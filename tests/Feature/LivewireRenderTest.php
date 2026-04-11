@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use MrCatz\DataTable\MrCatzEvent;
 use MrCatz\DataTable\Tests\Fixtures\ProductTableComponent;
+use MrCatz\DataTable\Tests\Fixtures\ProductTableWithDateFilterComponent;
 use MrCatz\DataTable\Tests\TestCase;
 
 class LivewireRenderTest extends TestCase
@@ -212,5 +213,87 @@ class LivewireRenderTest extends TestCase
         Livewire::test(ProductTableComponent::class)
             ->call('rowClicked', ['id' => 1])
             ->assertDispatched(MrCatzEvent::ROW_CLICK);
+    }
+
+    // --- Date filters (Fitur #4) ---
+
+    public function test_date_filter_component_renders(): void
+    {
+        Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->assertStatus(200)
+            ->assertSee('Created On')        // single date filter label
+            ->assertSee('Created Period');   // date range filter label
+    }
+
+    public function test_date_filter_change_updates_active_filters(): void
+    {
+        // Insert a known historic row so the equality test has something to match
+        DB::table('products')->insert([
+            'name' => 'Vintage Item', 'category' => 'general', 'price' => 99, 'active' => true,
+            'created_at' => '2024-06-15 10:00:00', 'updated_at' => '2024-06-15 10:00:00',
+        ]);
+
+        Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->call('change', 'created_on', '2024-06-15')
+            ->assertSee('Vintage Item')
+            ->assertDontSee('Laptop Pro');
+    }
+
+    public function test_date_range_change_updates_active_filters(): void
+    {
+        DB::table('products')->insert([
+            ['name' => 'Item 2024', 'category' => 'general', 'price' => 10, 'active' => true,
+             'created_at' => '2024-06-15', 'updated_at' => '2024-06-15'],
+            ['name' => 'Item 2025', 'category' => 'general', 'price' => 20, 'active' => true,
+             'created_at' => '2025-03-20', 'updated_at' => '2025-03-20'],
+        ]);
+
+        $component = Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->call('changeDateRange', 'created_period', 'from', '2024-01-01')
+            ->call('changeDateRange', 'created_period', 'to', '2025-06-30')
+            ->assertSee('Item 2024')
+            ->assertSee('Item 2025')
+            ->assertDontSee('Laptop Pro');
+
+        // Verify the active filter holds the structured value
+        $active = $component->get('activeFilters');
+        $found = collect($active)->firstWhere('id', 'created_period');
+        $this->assertNotNull($found);
+        $this->assertEquals('2024-01-01', $found['value']['from']);
+        $this->assertEquals('2025-06-30', $found['value']['to']);
+    }
+
+    public function test_date_range_auto_swaps_when_to_before_from(): void
+    {
+        $component = Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->call('changeDateRange', 'created_period', 'from', '2025-12-31')
+            ->call('changeDateRange', 'created_period', 'to', '2024-01-01');
+
+        $active = $component->get('activeFilters');
+        $found = collect($active)->firstWhere('id', 'created_period');
+
+        // After swap: from = earlier, to = later
+        $this->assertEquals('2024-01-01', $found['value']['from']);
+        $this->assertEquals('2025-12-31', $found['value']['to']);
+    }
+
+    public function test_date_range_invalid_part_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage("Invalid date range part [middle]");
+
+        Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->call('changeDateRange', 'created_period', 'middle', '2025-01-01');
+    }
+
+    public function test_date_filter_clamps_to_max_constraint(): void
+    {
+        // The filter has max_date = '2030-12-31'. Picking 2099 should clamp.
+        $component = Livewire::test(ProductTableWithDateFilterComponent::class)
+            ->call('changeDateRange', 'created_period', 'from', '2099-01-01');
+
+        $active = $component->get('activeFilters');
+        $found = collect($active)->firstWhere('id', 'created_period');
+        $this->assertEquals('2030-12-31', $found['value']['from']);
     }
 }

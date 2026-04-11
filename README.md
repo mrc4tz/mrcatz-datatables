@@ -156,6 +156,89 @@ composer require maatwebsite/excel       # Excel export
 composer require barryvdh/laravel-dompdf # PDF export
 ```
 
+### Docker Deployment
+
+MrCatz ships **source blade files** (not pre-compiled CSS) so that you can choose your own Tailwind / DaisyUI version and override the theme freely. The trade-off: **Tailwind must be able to scan `vendor/mrcatz/**/*.blade.php` when compiling your CSS**, otherwise classes used only inside MrCatz views (`select-bordered`, `input-bordered`, `menu`, `btn`, etc.) get tree-shaken out and the UI renders unstyled.
+
+In a multi-stage Docker build, the Node.js stage that runs `npm run build` is a **separate container** with no PHP and no `vendor/` folder. You must explicitly copy the vendor directory from your Composer stage to your Node stage.
+
+#### Recommended Dockerfile Pattern
+
+```dockerfile
+# ============================================
+# Stage 1: Composer dependencies
+# ============================================
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+COPY . .
+RUN composer dump-autoload --optimize
+
+# ============================================
+# Stage 2: Build CSS / JS assets
+# ============================================
+FROM node:22-alpine AS assets
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# 👇 Bring only the packages whose blade files Tailwind needs to scan.
+#    Add a new line here whenever you add another @source directive
+#    pointing to a vendor package in resources/css/app.css.
+COPY --from=vendor /app/vendor/mrcatz /app/vendor/mrcatz
+COPY --from=vendor /app/vendor/laravel/framework/src/Illuminate/Pagination \
+                   /app/vendor/laravel/framework/src/Illuminate/Pagination
+
+COPY . .
+RUN npm run build
+
+# ============================================
+# Stage 3: Production runtime
+# ============================================
+FROM serversideup/php:8.4-frankenphp
+COPY --chown=www-data:www-data . /var/www/html
+COPY --chown=www-data:www-data --from=vendor /app/vendor /var/www/html/vendor
+COPY --chown=www-data:www-data --from=assets /app/public/build /var/www/html/public/build
+```
+
+And in your `.dockerignore`:
+
+```
+vendor
+node_modules
+.env
+.env.*
+.git
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+```
+
+#### Three Ways to Copy Vendor (pick one)
+
+| Strategy | Dockerfile snippet | Layer size | Maintenance |
+|----------|-------------------|------------|-------------|
+| **Whole vendor** (simplest) | `COPY --from=vendor /app/vendor ./vendor` | ~100–300 MB | None |
+| **Per-package** (recommended) | `COPY --from=vendor /app/vendor/mrcatz /app/vendor/mrcatz` + same for `laravel/framework/.../Pagination` | ~10–30 MB | Add a line per new `@source` directive |
+| **Surgical** (smallest) | `COPY --from=vendor /app/vendor/mrcatz/datatable/resources/views /app/vendor/mrcatz/datatable/resources/views` | ~1–3 MB | Must update if package folder structure changes |
+
+**Most projects should use per-package** — significantly smaller layers without much maintenance overhead.
+
+#### Pitfall: Don't Remove `vendor` From `.dockerignore`
+
+It might be tempting to drop `vendor` from `.dockerignore` so `COPY . .` brings the host's vendor directly into the container. **Do not do this.** It introduces several real problems:
+
+1. **OS binary mismatch** — Composer packages with native code or compiled artifacts built on macOS/Windows will not run on Linux containers.
+2. **Autoload classmap with absolute paths** — `composer dump-autoload --optimize` on your laptop bakes paths like `/Users/yourname/...` into `vendor/composer/autoload_classmap.php`, which fails inside the container.
+3. **Stage 1 vendor gets clobbered** — `COPY . .` overwrites the freshly-installed Linux vendor with the host's vendor, and that clobbered vendor then propagates to the production stage.
+4. **Build context bloat** — vendor + node_modules + .git can push your build context past 1 GB, slowing every build noticeably.
+5. **Secret leak** — without strict ignores, `.env` and key files can end up in your published image.
+
+The `.dockerignore vendor` + `COPY --from=vendor` pattern keeps each stage hermetic and reproducible. It's slightly more verbose but it's the standard Laravel-on-Docker setup for a reason.
+
 ### Publish (Optional)
 
 ```bash

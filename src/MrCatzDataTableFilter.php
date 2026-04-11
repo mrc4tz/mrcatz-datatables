@@ -15,6 +15,19 @@ class MrCatzDataTableFilter
     private ?array $dataFilter = null;
     private bool $show;
 
+    /** Filter widget type. 'select' (default) | 'date' | 'date_range' */
+    private string $type = 'select';
+
+    /** Date format. '' (non-date) | 'date' | 'datetime' | 'time' | 'time_hm' | 'month_year' | 'year' */
+    private string $format = '';
+
+    /** Optional min/max constraints. Format must match `format`. */
+    private ?string $minDate = null;
+    private ?string $maxDate = null;
+
+    private const VALID_DATE_FORMATS = ['date', 'datetime', 'time', 'time_hm', 'month_year', 'year'];
+    private const VALID_DATE_CONDITIONS = ['=', '!=', '<>', '>', '<', '>=', '<='];
+
     public static function create(
         string $id,
         string $label,
@@ -60,6 +73,157 @@ class MrCatzDataTableFilter
         return $dataFilter;
     }
 
+    /**
+     * Single date filter with operator + key. Engine applies the filter using
+     * Laravel's portable date helpers (whereDate / whereYear / etc.) so the
+     * SQL works across MySQL, PostgreSQL, and SQLite.
+     */
+    public static function createDate(
+        string $id,
+        string $label,
+        string $key,
+        string $format = 'date',
+        string $condition = '=',
+        ?string $minDate = null,
+        ?string $maxDate = null,
+        bool $show = true
+    ): self {
+        self::validateDateFormat($format);
+        self::validateDateCondition($condition);
+
+        $f = new self();
+        $f->id        = $id;
+        $f->label     = $label;
+        $f->key       = $key;
+        $f->condition = $condition;
+        $f->type      = 'date';
+        $f->format    = $format;
+        $f->minDate   = $minDate;
+        $f->maxDate   = $maxDate;
+        $f->show      = $show;
+        $f->data      = [];
+        $f->value     = '';
+        $f->option    = '';
+        return $f;
+    }
+
+    /**
+     * Single date filter that delegates to a user-provided callback. Use this
+     * when the SQL is non-trivial (joins, custom comparisons, etc).
+     * The callback receives ($query, $value) where $value is the picked date.
+     */
+    public static function createDateWithCallback(
+        string $id,
+        string $label,
+        callable $callback,
+        string $format = 'date',
+        ?string $minDate = null,
+        ?string $maxDate = null,
+        bool $show = true
+    ): self {
+        self::validateDateFormat($format);
+
+        $f = new self();
+        $f->id        = $id;
+        $f->label     = $label;
+        $f->key       = '-';
+        $f->condition = '-';
+        $f->type      = 'date';
+        $f->format    = $format;
+        $f->minDate   = $minDate;
+        $f->maxDate   = $maxDate;
+        $f->callback  = \Closure::fromCallable($callback);
+        $f->show      = $show;
+        $f->data      = [];
+        $f->value     = '';
+        $f->option    = '';
+        return $f;
+    }
+
+    /**
+     * Date range filter with key. Renders two date inputs (from / to). Engine
+     * applies open-ended ranges:
+     *   - both set     → whereDate(>= from) AND whereDate(<= to)
+     *   - only from    → whereDate(>= from)
+     *   - only to      → whereDate(<= to)
+     *   - both empty   → no-op
+     *
+     * Auto-swaps if user picks `to` earlier than `from`.
+     */
+    public static function createDateRange(
+        string $id,
+        string $label,
+        string $key,
+        string $format = 'date',
+        ?string $minDate = null,
+        ?string $maxDate = null,
+        bool $show = true
+    ): self {
+        self::validateDateFormat($format);
+
+        $f = new self();
+        $f->id        = $id;
+        $f->label     = $label;
+        $f->key       = $key;
+        $f->condition = '-';
+        $f->type      = 'date_range';
+        $f->format    = $format;
+        $f->minDate   = $minDate;
+        $f->maxDate   = $maxDate;
+        $f->show      = $show;
+        $f->data      = [];
+        $f->value     = '';
+        $f->option    = '';
+        return $f;
+    }
+
+    /**
+     * Date range filter with callback. The callback receives
+     * ($query, ['from' => ..., 'to' => ...]) where either part may be null
+     * for open-ended ranges.
+     */
+    public static function createDateRangeWithCallback(
+        string $id,
+        string $label,
+        callable $callback,
+        string $format = 'date',
+        ?string $minDate = null,
+        ?string $maxDate = null,
+        bool $show = true
+    ): self {
+        self::validateDateFormat($format);
+
+        $f = new self();
+        $f->id        = $id;
+        $f->label     = $label;
+        $f->key       = '-';
+        $f->condition = '-';
+        $f->type      = 'date_range';
+        $f->format    = $format;
+        $f->minDate   = $minDate;
+        $f->maxDate   = $maxDate;
+        $f->callback  = \Closure::fromCallable($callback);
+        $f->show      = $show;
+        $f->data      = [];
+        $f->value     = '';
+        $f->option    = '';
+        return $f;
+    }
+
+    private static function validateDateFormat(string $format): void
+    {
+        if (!in_array($format, self::VALID_DATE_FORMATS, true)) {
+            throw \MrCatz\DataTable\Exceptions\MrCatzException::invalidDateFormat($format);
+        }
+    }
+
+    private static function validateDateCondition(string $condition): void
+    {
+        if (!in_array($condition, self::VALID_DATE_CONDITIONS, true)) {
+            throw \MrCatz\DataTable\Exceptions\MrCatzException::invalidDateCondition($condition);
+        }
+    }
+
     public function get(): self
     {
         $data = self::normalizeData($this->data);
@@ -72,6 +236,10 @@ class MrCatzDataTableFilter
             'data' => $data,
             'condition' => $this->condition,
             'show' => $this->show,
+            'type' => $this->type,
+            'format' => $this->format,
+            'min_date' => $this->minDate,
+            'max_date' => $this->maxDate,
         ];
         return $this;
     }
