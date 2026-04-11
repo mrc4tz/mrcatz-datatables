@@ -168,8 +168,12 @@ class MrCatzDataTables
                 continue;
             }
 
-            // Default: legacy select-style filter
-            if (!empty($kv['value'])) {
+            // Default: legacy select-style filter.
+            // Use strict null/'' check so legitimate falsy values like 0, '0',
+            // false (e.g. ?filter[active]=0) are still applied.
+            $hasValue = ($kv['value'] ?? null) !== null && ($kv['value'] ?? null) !== '';
+
+            if ($hasValue) {
                 if ($hasCallback) {
                     $this->dataBuilder = $cbList[$x]($this->dataBuilder, $kv['value']);
                 } else {

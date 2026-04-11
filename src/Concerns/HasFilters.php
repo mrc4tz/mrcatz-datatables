@@ -41,16 +41,17 @@ trait HasFilters
             }
 
             // Trigger onFilterChanged so dependent filters are initialized
-            // (e.g. show/hide, load dropdown data)
+            // (e.g. show/hide, load dropdown data). Use strict null/'' check
+            // so that legitimate falsy values like 0, '0', false are kept.
             foreach ($savedUrlParams as $id => $value) {
-                if (!empty($value)) {
+                if (self::filterValueIsSet($value)) {
                     $this->onFilterChanged($id, $value);
                 }
             }
 
             // Restore values that were cleared by resetFilter() inside onFilterChanged()
             foreach ($savedUrlParams as $id => $value) {
-                if (!empty($value)) {
+                if (self::filterValueIsSet($value)) {
                     foreach ($this->activeFilters as $i => $af) {
                         if ($af['id'] === $id) {
                             $this->activeFilters[$i]['value'] = $value;
@@ -244,10 +245,31 @@ trait HasFilters
     {
         $this->filterUrlParams = [];
         foreach ($this->activeFilters as $af) {
-            if (!empty($af['value'])) {
+            if (self::filterValueIsSet($af['value'] ?? null)) {
                 $this->filterUrlParams[$af['id']] = $af['value'];
             }
         }
+    }
+
+    /**
+     * Check whether a filter value should be considered "set" — i.e. it
+     * actually filters something. Distinguishes "no filter" (null / empty
+     * string / empty range) from legitimate falsy values like 0, '0', false.
+     *
+     * Use this instead of `!empty(...)` everywhere a filter value is checked.
+     */
+    private static function filterValueIsSet(mixed $value): bool
+    {
+        if ($value === null || $value === '') return false;
+
+        if (is_array($value)) {
+            // Date range — set if either bound is set
+            $from = $value['from'] ?? null;
+            $to   = $value['to']   ?? null;
+            return self::filterValueIsSet($from) || self::filterValueIsSet($to);
+        }
+
+        return true;
     }
 
     private function getDataFilter(): array

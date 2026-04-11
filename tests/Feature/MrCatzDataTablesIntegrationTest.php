@@ -918,6 +918,37 @@ class MrCatzDataTablesIntegrationTest extends TestCase
         $this->assertEquals(5, $dt->countRow()); // 5 electronics in setUp()
     }
 
+    public function test_filter_value_zero_is_applied_not_skipped(): void
+    {
+        // Regression: previously `!empty(0)` evaluated true and the filter
+        // was silently dropped. setUp() seeds 1 product with active=false (0)
+        // and 7 with active=true (1). A `?filter[active]=0` URL should return
+        // the inactive one — not all 8.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'active', 'key' => 'active', 'value' => 0, 'condition' => '=']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(1, $dt->countRow()); // only 'Standing Desk' is active=false
+    }
+
+    public function test_filter_value_string_zero_is_applied(): void
+    {
+        // URL params arrive as strings — '0' should also work.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'active', 'key' => 'active', 'value' => '0', 'condition' => '=']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(1, $dt->countRow());
+    }
+
     // --- Date filters interaction with Scout pushdown (Fitur #4 + Fitur #3) ---
     //
     // prepareFilterPushdown() runs AFTER validateScoutDriver() in the real

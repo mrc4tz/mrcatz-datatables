@@ -31,6 +31,21 @@ return [
     'filter_preset_placeholder' => 'Preset name...',
     'filter_no_available' => 'No filters available for this table',
 
+    // Date range filter
+    'filter_date_pick'       => 'Pick a date range',
+    'filter_date_from'       => 'From',
+    'filter_date_to'         => 'To',
+    'filter_date_apply'      => 'Apply',
+    'filter_date_clear'      => 'Clear',
+    'filter_date_today'      => 'Today',
+    'filter_date_yesterday'  => 'Yesterday',
+    'filter_date_last_7'     => 'Last 7 days',
+    'filter_date_last_30'    => 'Last 30 days',
+    'filter_date_this_month' => 'This month',
+    'filter_date_last_6m'    => 'Last 6 months',
+    'filter_date_this_year'  => 'This year',
+    'filter_date_last_year'  => 'Last year',
+
     // Empty states
     'no_results_for' => "No results found for ':query'",
     'no_results' => 'No results found',

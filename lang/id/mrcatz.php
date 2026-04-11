@@ -31,6 +31,21 @@ return [
     'filter_preset_placeholder' => 'Nama preset...',
     'filter_no_available' => 'Tidak ada filter tersedia untuk tabel ini',
 
+    // Date range filter
+    'filter_date_pick'       => 'Pilih rentang tanggal',
+    'filter_date_from'       => 'Dari',
+    'filter_date_to'         => 'Sampai',
+    'filter_date_apply'      => 'Terapkan',
+    'filter_date_clear'      => 'Hapus',
+    'filter_date_today'      => 'Hari ini',
+    'filter_date_yesterday'  => 'Kemarin',
+    'filter_date_last_7'     => '7 hari terakhir',
+    'filter_date_last_30'    => '30 hari terakhir',
+    'filter_date_this_month' => 'Bulan ini',
+    'filter_date_last_6m'    => '6 bulan terakhir',
+    'filter_date_this_year'  => 'Tahun ini',
+    'filter_date_last_year'  => '1 tahun terakhir',
+
     // Empty states
     'no_results_for' => "Tidak ada hasil ditemukan untuk pencarian ':query'",
     'no_results' => 'Tidak ada hasil ditemukan',

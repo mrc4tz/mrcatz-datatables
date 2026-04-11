@@ -42,32 +42,121 @@
 
                 @elseif($type === 'date_range')
                     @php
-                        $htmlType = $dateInputType($filter['format'] ?? 'date');
-                        $rangeVal = $activeFilterValues[$filter['id']] ?? [];
+                        $htmlType  = $dateInputType($filter['format'] ?? 'date');
+                        $rangeVal  = $activeFilterValues[$filter['id']] ?? [];
                         $rangeFrom = is_array($rangeVal) ? ($rangeVal['from'] ?? '') : '';
                         $rangeTo   = is_array($rangeVal) ? ($rangeVal['to']   ?? '') : '';
                         $minAttr   = $filter['min_date'] ?? '';
                         $maxAttr   = $filter['max_date'] ?? '';
+                        $popoverId = $filter['id'] . '_pop_' . $prefix;
                     @endphp
-                    <div class="w-full sm:w-auto" wire:show="filterShow[{{$f}}]">
+                    <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]">
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
-                        <div class="flex gap-2 items-center"
-                             x-data="{ from: @js($rangeFrom), to: @js($rangeTo) }">
-                            <input type="{{ $htmlType }}"
-                                   class="input input-bordered input-sm text-sm focus:input-primary"
-                                   id="{{$filter['id']."_from_".$prefix}}"
-                                   x-model="from"
-                                   @if($minAttr) min="{{ $minAttr }}" @endif
-                                   :max="to || @js($maxAttr)"
-                                   wire:change="changeDateRange('{{$filter['id']}}', 'from', $event.target.value)">
-                            <span class="text-xs text-base-content/50">{{ mrcatz_lang('filter_range_separator') ?? '—' }}</span>
-                            <input type="{{ $htmlType }}"
-                                   class="input input-bordered input-sm text-sm focus:input-primary"
-                                   id="{{$filter['id']."_to_".$prefix}}"
-                                   x-model="to"
-                                   :min="from || @js($minAttr)"
-                                   @if($maxAttr) max="{{ $maxAttr }}" @endif
-                                   wire:change="changeDateRange('{{$filter['id']}}', 'to', $event.target.value)">
+
+                        <div class="relative"
+                             x-data="mrcatzDateRange({
+                                from: @js($rangeFrom),
+                                to: @js($rangeTo),
+                                min: @js($minAttr),
+                                max: @js($maxAttr),
+                                filterId: @js($filter['id']),
+                                labels: @js([
+                                    'pick'      => mrcatz_lang('filter_date_pick'),
+                                    'from'      => mrcatz_lang('filter_date_from'),
+                                    'to'        => mrcatz_lang('filter_date_to'),
+                                    'apply'     => mrcatz_lang('filter_date_apply'),
+                                    'clear'     => mrcatz_lang('filter_date_clear'),
+                                    'today'     => mrcatz_lang('filter_date_today'),
+                                    'yesterday' => mrcatz_lang('filter_date_yesterday'),
+                                    'last_7'    => mrcatz_lang('filter_date_last_7'),
+                                    'last_30'   => mrcatz_lang('filter_date_last_30'),
+                                    'this_month'=> mrcatz_lang('filter_date_this_month'),
+                                    'last_6m'   => mrcatz_lang('filter_date_last_6m'),
+                                    'this_year' => mrcatz_lang('filter_date_this_year'),
+                                    'last_year' => mrcatz_lang('filter_date_last_year'),
+                                ]),
+                             })"
+                             @keydown.escape.window="open = false"
+                             @click.outside="open = false">
+
+                            {{-- Clickable trigger --}}
+                            <button type="button"
+                                    @click="open = !open"
+                                    class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
+                                    :class="{ 'border-primary': open }">
+                                <span class="flex items-center gap-2 truncate">
+                                    {!! mrcatz_icon('event', 'text-base-content/50 text-base shrink-0') !!}
+                                    <span class="truncate" x-text="triggerText()"></span>
+                                </span>
+                                <span class="flex items-center gap-1 shrink-0">
+                                    <button type="button"
+                                            x-show="hasValue()"
+                                            @click.stop="clear()"
+                                            class="hover:bg-base-200 rounded-full p-0.5 transition"
+                                            :title="labels.clear">
+                                        {!! mrcatz_icon('close', 'text-sm text-base-content/40') !!}
+                                    </button>
+                                    {!! mrcatz_icon('expand_more', 'text-sm text-base-content/40') !!}
+                                </span>
+                            </button>
+
+                            {{-- Popover --}}
+                            <div x-show="open"
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 -translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="absolute z-50 mt-2 w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
+                                 x-cloak>
+
+                                <div class="grid grid-cols-[7.5rem_1fr]">
+                                    {{-- Shortcuts column --}}
+                                    <div class="bg-base-200/50 border-r border-base-300 py-2 max-h-[20rem] overflow-y-auto">
+                                        <template x-for="preset in presets" :key="preset.key">
+                                            <button type="button"
+                                                    @click="applyPreset(preset.key)"
+                                                    class="block w-full text-left px-3 py-1.5 text-xs hover:bg-base-300/50 transition-colors"
+                                                    :class="activePreset === preset.key ? 'bg-primary/10 text-primary font-semibold' : 'text-base-content/70'"
+                                                    x-text="preset.label"></button>
+                                        </template>
+                                    </div>
+
+                                    {{-- Date inputs column --}}
+                                    <div class="p-3 space-y-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-base-content/60 mb-1" x-text="labels.from"></label>
+                                            <input type="{{ $htmlType }}"
+                                                   x-model="draftFrom"
+                                                   @change="activePreset = null"
+                                                   @if($minAttr) min="{{ $minAttr }}" @endif
+                                                   :max="draftTo || @js($maxAttr)"
+                                                   class="input input-bordered input-sm w-full text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-base-content/60 mb-1" x-text="labels.to"></label>
+                                            <input type="{{ $htmlType }}"
+                                                   x-model="draftTo"
+                                                   @change="activePreset = null"
+                                                   :min="draftFrom || @js($minAttr)"
+                                                   @if($maxAttr) max="{{ $maxAttr }}" @endif
+                                                   class="input input-bordered input-sm w-full text-sm">
+                                        </div>
+
+                                        <div class="flex gap-2 pt-1">
+                                            <button type="button"
+                                                    @click="clear(); open = false"
+                                                    class="btn btn-ghost btn-sm flex-1"
+                                                    x-text="labels.clear"></button>
+                                            <button type="button"
+                                                    @click="apply()"
+                                                    class="btn btn-primary btn-sm flex-1"
+                                                    x-text="labels.apply"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -78,9 +167,16 @@
                         <select class="select select-bordered select-sm w-full text-sm focus:select-primary transition-all duration-200"
                                 id="{{$filter['id']."_".$prefix}}"
                                 wire:change="change('{{$filter['id']}}',$event.target.value)">
-                            <option value="{{ $default_filter_value }}" @selected(empty($activeFilterValues[$filter['id']] ?? null))>{{ mrcatz_lang('filter_all') }}</option>
+                            @php
+                                $currentValue = $activeFilterValues[$filter['id']] ?? null;
+                                // "All" is selected only when value is truly unset (null / '') —
+                                // legitimate falsy values like 0, '0', false should keep their option selected.
+                                $isAllSelected = ($currentValue === null || $currentValue === '');
+                            @endphp
+                            <option value="{{ $default_filter_value }}" @selected($isAllSelected)>{{ mrcatz_lang('filter_all') }}</option>
                             @foreach($filterData[$f] as $data)
-                                <option value="{{ $data[$filter['value']] }}" @selected(($activeFilterValues[$filter['id']] ?? null) === $data[$filter['value']])>{{ $data[$filter['option']] }}</option>
+                                {{-- Loose == compares URL strings (e.g. '0') to data integers (e.g. 0) correctly --}}
+                                <option value="{{ $data[$filter['value']] }}" @selected(!$isAllSelected && $currentValue == $data[$filter['value']])>{{ $data[$filter['option']] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -88,4 +184,132 @@
             @endforeach
         </div>
     </div>
+
+    {{-- Alpine.js component for the date range popover --}}
+    <script>
+        if (typeof window.mrcatzDateRange === 'undefined') {
+            window.mrcatzDateRange = function (config) {
+                const fmt = (d) => {
+                    if (!(d instanceof Date) || isNaN(d)) return '';
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${dd}`;
+                };
+
+                return {
+                    open: false,
+                    from: config.from || '',
+                    to: config.to || '',
+                    draftFrom: config.from || '',
+                    draftTo: config.to || '',
+                    min: config.min || '',
+                    max: config.max || '',
+                    filterId: config.filterId,
+                    labels: config.labels,
+                    activePreset: null,
+
+                    presets: [
+                        { key: 'today',      label: config.labels.today      },
+                        { key: 'yesterday',  label: config.labels.yesterday  },
+                        { key: 'last_7',     label: config.labels.last_7     },
+                        { key: 'last_30',    label: config.labels.last_30    },
+                        { key: 'this_month', label: config.labels.this_month },
+                        { key: 'last_6m',    label: config.labels.last_6m    },
+                        { key: 'this_year',  label: config.labels.this_year  },
+                        { key: 'last_year',  label: config.labels.last_year  },
+                    ],
+
+                    init() {
+                        // Sync drafts when popover opens
+                        this.$watch('open', (v) => {
+                            if (v) {
+                                this.draftFrom = this.from;
+                                this.draftTo = this.to;
+                            }
+                        });
+                    },
+
+                    hasValue() {
+                        return !!(this.from || this.to);
+                    },
+
+                    triggerText() {
+                        if (!this.from && !this.to) return this.labels.pick;
+                        const f = this.from || '…';
+                        const t = this.to   || '…';
+                        return `${this.labels.from} ${f}  →  ${this.labels.to} ${t}`;
+                    },
+
+                    applyPreset(key) {
+                        const today = new Date(); today.setHours(0, 0, 0, 0);
+                        let from = null, to = null;
+
+                        switch (key) {
+                            case 'today':
+                                from = to = new Date(today);
+                                break;
+                            case 'yesterday':
+                                from = new Date(today); from.setDate(from.getDate() - 1);
+                                to = new Date(from);
+                                break;
+                            case 'last_7':
+                                to = new Date(today);
+                                from = new Date(today); from.setDate(from.getDate() - 6);
+                                break;
+                            case 'last_30':
+                                to = new Date(today);
+                                from = new Date(today); from.setDate(from.getDate() - 29);
+                                break;
+                            case 'this_month':
+                                from = new Date(today.getFullYear(), today.getMonth(), 1);
+                                to = new Date(today);
+                                break;
+                            case 'last_6m':
+                                to = new Date(today);
+                                from = new Date(today); from.setMonth(from.getMonth() - 6);
+                                break;
+                            case 'this_year':
+                                from = new Date(today.getFullYear(), 0, 1);
+                                to = new Date(today);
+                                break;
+                            case 'last_year':
+                                to = new Date(today);
+                                from = new Date(today); from.setFullYear(from.getFullYear() - 1);
+                                break;
+                        }
+
+                        this.draftFrom = fmt(from);
+                        this.draftTo = fmt(to);
+                        this.activePreset = key;
+                    },
+
+                    apply() {
+                        // Auto-swap if from > to
+                        if (this.draftFrom && this.draftTo && this.draftFrom > this.draftTo) {
+                            [this.draftFrom, this.draftTo] = [this.draftTo, this.draftFrom];
+                        }
+                        this.from = this.draftFrom;
+                        this.to = this.draftTo;
+                        this.open = false;
+
+                        // Push both halves to Livewire — separate calls so server-side
+                        // changeDateRange handles each part with its existing clamp + swap logic
+                        this.$wire.changeDateRange(this.filterId, 'from', this.from);
+                        this.$wire.changeDateRange(this.filterId, 'to',   this.to);
+                    },
+
+                    clear() {
+                        this.from = '';
+                        this.to = '';
+                        this.draftFrom = '';
+                        this.draftTo = '';
+                        this.activePreset = null;
+                        this.$wire.changeDateRange(this.filterId, 'from', '');
+                        this.$wire.changeDateRange(this.filterId, 'to',   '');
+                    },
+                };
+            };
+        }
+    </script>
 @endif
