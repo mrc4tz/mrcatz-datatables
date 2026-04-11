@@ -50,10 +50,19 @@
                         $maxAttr   = $filter['max_date'] ?? '';
                         $popoverId = $filter['id'] . '_pop_' . $prefix;
                     @endphp
-                    <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]">
+                    <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]" wire:key="dr-wrap-{{ $filter['id'] }}">
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
 
+                        {{-- wire:key includes a hash of the current value so that
+                             ANY value change (user X click, global reset, external
+                             setFilterShow / resetFilter, etc.) gives the element a
+                             new identity. Livewire then destroys + recreates it,
+                             which forces Alpine to re-initialise with the fresh
+                             @ js values from the server. This is the only way to
+                             keep client Alpine state in sync with server state
+                             across BOTH local interactions AND external resets. --}}
                         <div class="relative"
+                             wire:key="dr-{{ $filter['id'] }}-{{ md5($rangeFrom . '|' . $rangeTo) }}"
                              x-data="mrcatzDateRange({
                                 from: @js($rangeFrom),
                                 to: @js($rangeTo),
@@ -310,29 +319,33 @@
                     },
 
                     clear() {
+                        // Optimistic UI update — instant feedback before the
+                        // server roundtrip. The wire:key on the wrapper includes
+                        // a hash of the value, so once resetFilter completes the
+                        // morph will give this element a new key, Livewire will
+                        // recreate it, and Alpine will re-init with fresh empty
+                        // values from the server. We don't need to fight the
+                        // morph here — just paint the UI optimistically.
                         this.from = '';
                         this.to = '';
                         this.draftFrom = '';
                         this.draftTo = '';
                         this.activePreset = null;
 
-                        // Defensive: explicitly clear native input values + dispatch
-                        // input event. <input type="date|datetime-local|month"> in some
-                        // browsers (and after Livewire morph) doesn't always reflect a
-                        // programmatic '' assignment via x-model — so we force it.
-                        this.$nextTick(() => {
-                            ['fromInput', 'toInput'].forEach((ref) => {
-                                const el = this.$refs[ref];
-                                if (el) {
-                                    el.value = '';
-                                    el.dispatchEvent(new Event('input',  { bubbles: true }));
-                                    el.dispatchEvent(new Event('change', { bubbles: true }));
-                                }
-                            });
+                        // Force native input clear too. Some browsers don't
+                        // reflect a programmatic '' via x-model on date inputs.
+                        ['fromInput', 'toInput'].forEach((ref) => {
+                            const el = this.$refs[ref];
+                            if (el) {
+                                el.value = '';
+                                el.dispatchEvent(new Event('input',  { bubbles: true }));
+                                el.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
                         });
 
-                        this.$wire.changeDateRange(this.filterId, 'from', '');
-                        this.$wire.changeDateRange(this.filterId, 'to',   '');
+                        // Single atomic server call — clears the filter entirely
+                        // (no intermediate ['from'=>null,'to'=>OLD] state).
+                        this.$wire.resetFilter(this.filterId);
                     },
                 };
             };

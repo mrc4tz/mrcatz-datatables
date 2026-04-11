@@ -35,9 +35,28 @@
             </form>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
+
+    {{-- Backdrop click-to-close: only rendered when the page component opts in.
+         Default is false (modal stays open) so users don't lose in-progress
+         edits when they accidentally click outside the modal box. --}}
+    @if($this->modalDismissOnClickOutside ?? false)
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    @else
+        {{-- Empty backdrop layer so the dim overlay still renders, but clicks
+             on it do nothing. We also intercept the dialog's "cancel" event
+             (fired by ESC) so accidental ESC presses don't dump the form. --}}
+        <div class="modal-backdrop"></div>
+        <script>
+            (function () {
+                const dlg = document.getElementById('modal-data');
+                if (!dlg || dlg.dataset.mrcatzGuarded === '1') return;
+                dlg.dataset.mrcatzGuarded = '1';
+                dlg.addEventListener('cancel', (e) => e.preventDefault());
+            })();
+        </script>
+    @endif
 </dialog>
 
 <dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title">
@@ -65,7 +84,20 @@
             </form>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
+
+    @if($this->deleteModalDismissOnClickOutside ?? true)
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    @else
+        <div class="modal-backdrop"></div>
+        <script>
+            (function () {
+                const dlg = document.getElementById('modal-data-delete');
+                if (!dlg || dlg.dataset.mrcatzGuarded === '1') return;
+                dlg.dataset.mrcatzGuarded = '1';
+                dlg.addEventListener('cancel', (e) => e.preventDefault());
+            })();
+        </script>
+    @endif
 </dialog>

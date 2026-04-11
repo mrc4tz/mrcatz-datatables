@@ -18,6 +18,25 @@ class MrCatzComponent extends Component
     public $breadcrumbs = [];
     public $index = -1;
 
+    /**
+     * Whether clicking outside the add/edit modal (backdrop click) closes it.
+     *
+     * Default is `false` so users don't lose in-progress edits when they
+     * accidentally click off the modal. They can still close via the X
+     * button, the Cancel button, or pressing Escape. Override on your child
+     * component to enable backdrop dismissal:
+     *
+     *     public $modalDismissOnClickOutside = true;
+     */
+    public $modalDismissOnClickOutside = false;
+
+    /**
+     * Whether clicking outside the delete confirmation modal closes it.
+     * Default `true` because the delete dialog is small and users almost
+     * always click outside it as a "nope, abort" gesture.
+     */
+    public $deleteModalDismissOnClickOutside = true;
+
     public function setTitle(string $title): void
     {
         $this->title = $title;

@@ -1277,29 +1277,76 @@ class MrCatzDataTables
         }
     }
 
+    /**
+     * Highlight every occurrence of the current search keywords inside a
+     * piece of text. Returns HTML.
+     *
+     * Two important properties:
+     *   1. Case-insensitive matching, but the ORIGINAL CASE of the matched
+     *      text is preserved in the output. Searching "cob" in "Coba banget"
+     *      yields "<mark>Cob</mark>a banget" — not "COB" or "cob".
+     *   2. The output uses a subtle DaisyUI warning-tinted span (matches
+     *      whatever theme the consumer is using) with semi-bold weight and
+     *      rounded edges. Looks aesthetic in both light and dark themes.
+     */
     public function setSearchWord(?string $words): string
     {
         $words = $words ?? '';
-        $start = "\x00\x01MRCATZ_HL_START\x02\x00";
-        $end = "\x00\x01MRCATZ_HL_END\x02\x00";
-        $escapedWords = e($words);
-        $newWords = $escapedWords;
+        if ($words === '') return '';
 
-        foreach (explode(" ", e($this->search)) as $search) {
-            if (empty($search)) continue;
-            $outputWordsTemp = "";
-            foreach (explode(" ", $newWords) as $word) {
-                if (str_contains(strtolower($word), strtolower($search))) {
-                    $outputWordsTemp .= " " . str_ireplace($search, $start . strtoupper($search) . $end, $word);
-                } else {
-                    $outputWordsTemp .= " " . $word;
-                }
-            }
-            $newWords = $outputWordsTemp;
+        $escaped = e($words);
+
+        // Markers — non-printable bytes that won't ever appear in user content,
+        // and don't match any reasonable search keyword pattern.
+        $startMarker = "\x00\x01MRCATZ_HL_START\x02\x00";
+        $endMarker   = "\x00\x01MRCATZ_HL_END\x02\x00";
+
+        $result = $escaped;
+        $searchTerms = preg_split('/\s+/u', e($this->search ?? ''), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        foreach ($searchTerms as $search) {
+            $search = trim($search);
+            if ($search === '') continue;
+
+            // Case-insensitive Unicode-aware match. Use preg_replace_callback so
+            // we can echo back the ACTUAL matched substring (preserving its case)
+            // instead of replacing it with a transformed version of the needle.
+            $pattern = '/' . preg_quote($search, '/') . '/iu';
+            $result = preg_replace_callback($pattern, function ($m) use ($startMarker, $endMarker) {
+                return $startMarker . $m[0] . $endMarker;
+            }, $result) ?? $result;
         }
 
-        $outputWords = str_replace($start, "<span class='font-extrabold'>", $newWords);
-        $outputWords = str_replace($end, "</span>", $outputWords);
+        // Replace markers with the final HTML once (avoids double-wrapping if the
+        // same fragment matches multiple search terms).
+        //
+        // We use INLINE styles instead of Tailwind utility classes because the
+        // highlight markup is injected at runtime — Tailwind's content scanner
+        // never sees these tokens in any blade file, so utility classes like
+        // `bg-warning/30` would silently get tree-shaken out and the highlight
+        // would render with no visible background.
+        //
+        // The colors are exposed as CSS custom properties so users can theme
+        // them globally without touching the package:
+        //
+        //     :root {
+        //         --mrcatz-highlight-bg: rgba(250, 204, 21, 0.5);
+        //         --mrcatz-highlight-color: inherit;
+        //     }
+        $style = implode('', [
+            'background-color:var(--mrcatz-highlight-bg,rgba(250,204,21,0.4));',
+            'color:var(--mrcatz-highlight-color,inherit);',
+            'border-radius:0.25rem;',
+            'padding:0 0.15rem;',
+            'font-weight:600;',
+        ]);
+
+        $outputWords = str_replace(
+            [$startMarker, $endMarker],
+            ['<span class="mrcatz-search-highlight" style="' . $style . '">', '</span>'],
+            $result
+        );
+
         return trim($outputWords);
     }
 

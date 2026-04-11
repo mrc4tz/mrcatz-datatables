@@ -227,8 +227,14 @@ class MrCatzDataTablesTest extends TestCase
         $dt->setSearch('john');
 
         $result = $dt->setSearchWord('John Doe');
-        $this->assertStringContainsString("<span class='font-extrabold'>", $result);
-        $this->assertStringContainsString('JOHN', $result);
+        $this->assertStringContainsString('mrcatz-search-highlight', $result);
+        // Inline style — background must be present so it actually renders
+        // even when Tailwind's content scanner doesn't see runtime classes
+        $this->assertStringContainsString('background-color:var(--mrcatz-highlight-bg', $result);
+        $this->assertStringContainsString('font-weight:600', $result);
+        // Original case must be preserved (NOT uppercased)
+        $this->assertStringContainsString('>John<', $result);
+        $this->assertStringNotContainsString('>JOHN<', $result);
         $this->assertStringContainsString('</span>', $result);
     }
 
@@ -256,8 +262,32 @@ class MrCatzDataTablesTest extends TestCase
         $dt->setSearch('john doe');
 
         $result = $dt->setSearchWord('John Doe Smith');
-        $this->assertStringContainsString('JOHN', $result);
-        $this->assertStringContainsString('DOE', $result);
+        // Both keywords highlighted, original case preserved
+        $this->assertStringContainsString('>John<', $result);
+        $this->assertStringContainsString('>Doe<', $result);
+        // Smith should not be highlighted
+        $this->assertStringNotContainsString('>Smith<', $result);
+    }
+
+    public function test_search_word_preserves_case(): void
+    {
+        $dt = $this->createTable();
+        $dt->setSearch('coba');
+
+        // Original "Coba" should remain "Coba", not become "COBA" or "coba"
+        $result = $dt->setSearchWord('Coba banget');
+        $this->assertStringContainsString('>Coba<', $result);
+        $this->assertStringNotContainsString('>COBA<', $result);
+
+        // Searching lowercase should still match TitleCase original
+        $result2 = $dt->setSearchWord('cOBa BANGET');
+        $this->assertStringContainsString('>cOBa<', $result2);
+
+        // Partial match also preserves case
+        $dt->setSearch('co');
+        $result3 = $dt->setSearchWord('CoCo Crisp');
+        // Two highlighted Co's, both with original case
+        $this->assertEquals(2, substr_count($result3, '>Co<'));
     }
 
     public function test_fluent_chaining(): void

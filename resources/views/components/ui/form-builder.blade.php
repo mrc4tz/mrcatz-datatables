@@ -202,6 +202,8 @@
                     @include('mrcatz::components.ui.partials.form.editor')
                 @elseif($type === 'taginput')
                     @include('mrcatz::components.ui.partials.form.taginput')
+                @elseif($type === 'date_range')
+                    @include('mrcatz::components.ui.partials.form.date-range')
                 @endif
             @endif
             </div>

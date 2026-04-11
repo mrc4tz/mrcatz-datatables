@@ -78,6 +78,10 @@ class MrCatzFormField
     // Editor
     private ?string $uploadPath = null;
 
+    // Date range field — format determines HTML input type used in the popover
+    // 'date' | 'datetime' | 'month_year' | 'year'
+    private ?string $dateFormat = null;
+
     // Grid row span & mobile order
     private ?int $rowSpan = null;
     private ?int $mobileOrder = null;
@@ -362,6 +366,58 @@ class MrCatzFormField
         $field->messages = $messages;
         $field->icon = $icon;
         $field->disabled = $disabled;
+        return $field;
+    }
+
+    /**
+     * Date range picker — clickable trigger that opens a popover with quick
+     * presets (Today, Yesterday, Last 7 days, Last 30 days, This month, Last
+     * 6 months, This year, Last year) and manual from/to date inputs.
+     *
+     * Binds to a SINGLE component property as an associative array:
+     *
+     *     public array $period = ['from' => null, 'to' => null];
+     *
+     *     MrCatzFormField::dateRange('period', 'Period',
+     *         format: 'date',
+     *         minDate: '2020-01-01',
+     *         maxDate: '2030-12-31',
+     *         rules: 'array',
+     *     )
+     *
+     * Validation example:
+     *
+     *     'period.from' => 'nullable|date',
+     *     'period.to'   => 'nullable|date|after_or_equal:period.from',
+     *
+     * @param string      $format   'date' | 'datetime' | 'month_year' | 'year'
+     */
+    public static function dateRange(
+        string $id,
+        string $label,
+        string $format = 'date',
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?string $minDate = null,
+        ?string $maxDate = null,
+        mixed $disabled = false,
+    ): static {
+        $valid = ['date', 'datetime', 'month_year', 'year'];
+        if (!in_array($format, $valid, true)) {
+            throw new \InvalidArgumentException(
+                "Invalid dateRange format [{$format}]. Allowed: " . implode(', ', $valid)
+            );
+        }
+
+        $field = new static('date_range', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon ?? 'event';
+        $field->disabled = $disabled;
+        $field->dateFormat = $format;
+        $field->min = $minDate;
+        $field->max = $maxDate;
         return $field;
     }
 
@@ -888,6 +944,7 @@ class MrCatzFormField
             'target' => $this->target,
             'uploadPath' => $this->uploadPath,
             'cardBreak' => $this->cardBreak,
+            'dateFormat' => $this->dateFormat,
         ];
     }
 
