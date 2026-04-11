@@ -79,24 +79,32 @@
                              @keydown.escape.window="open = false"
                              @click.outside="open = false">
 
-                            {{-- Clickable trigger --}}
+                            {{-- Clickable trigger.
+                                 NOTE: must NOT contain a real <button> child — nested
+                                 <button> is invalid HTML and browsers will close the
+                                 outer button early, dropping subsequent children to a
+                                 new line. The clear "x" is therefore a span with
+                                 role=button for screen readers + click.stop. --}}
                             <button type="button"
                                     @click="open = !open"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': open }">
-                                <span class="flex items-center gap-2 truncate">
-                                    {!! mrcatz_icon('event', 'text-base-content/50 text-base shrink-0') !!}
-                                    <span class="truncate" x-text="triggerText()"></span>
+                                <span class="flex items-center gap-2 min-w-0 flex-1">
+                                    {!! mrcatz_icon('event', 'text-base-content/50 shrink-0 w-4 h-4') !!}
+                                    <span class="truncate text-left" x-text="triggerText()"></span>
                                 </span>
                                 <span class="flex items-center gap-1 shrink-0">
-                                    <button type="button"
-                                            x-show="hasValue()"
-                                            @click.stop="clear()"
-                                            class="hover:bg-base-200 rounded-full p-0.5 transition"
-                                            :title="labels.clear">
-                                        {!! mrcatz_icon('close', 'text-sm text-base-content/40') !!}
-                                    </button>
-                                    {!! mrcatz_icon('expand_more', 'text-sm text-base-content/40') !!}
+                                    <span x-show="hasValue()"
+                                          role="button"
+                                          tabindex="0"
+                                          @click.stop="clear()"
+                                          @keydown.enter.stop.prevent="clear()"
+                                          @keydown.space.stop.prevent="clear()"
+                                          class="hover:bg-base-200 rounded-full p-0.5 transition cursor-pointer inline-flex items-center justify-center"
+                                          :title="labels.clear">
+                                        {!! mrcatz_icon('close', 'text-base-content/40 w-3.5 h-3.5') !!}
+                                    </span>
+                                    {!! mrcatz_icon('expand_more', 'text-base-content/40 w-4 h-4') !!}
                                 </span>
                             </button>
 
