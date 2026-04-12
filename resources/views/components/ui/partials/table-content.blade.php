@@ -197,13 +197,25 @@
                @keydown.backspace="if ($event.target.tagName === 'INPUT' || $event.target.tagName === 'TEXTAREA') return; $event.preventDefault(); deleteFocused($el)"
                @endif
                @endif>
+            {{-- Sticky header background lives on each <th>, not on <tr>.
+                 Browsers don't reliably propagate the <tr> background to its
+                 <th> children when position:sticky is in play, so the underlying
+                 rows would bleed through and look "transparent" / overlapping
+                 while scrolling. Putting bg-base-200 on every <th> directly
+                 (and using a solid color, not /50 opacity) keeps the header
+                 row opaque under all browsers. --}}
+            @php
+                $thStickyBg = $stickyHeader
+                    ? 'bg-base-200 sticky top-0 z-10'
+                    : 'bg-base-200/50';
+            @endphp
             <thead>
-            <tr class="bg-base-200/50 border-b border-base-content/10 @if($stickyHeader) sticky top-0 z-10 bg-base-200 @endif">
+            <tr class="border-b border-base-content/10">
                 @if($showExpandDesktop)
-                    <th class="w-8"></th>
+                    <th class="w-8 {{ $thStickyBg }}"></th>
                 @endif
                 @if($bulkShow)
-                    <th class="w-10 text-center">
+                    <th class="w-10 text-center {{ $thStickyBg }}">
                         <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
                                aria-label="{{ mrcatz_lang('btn_select') }} all"
                                @checked($selectAll)
@@ -212,7 +224,7 @@
                 @endif
 
                 @foreach($visibleColOrderDesktop as $pos => $ci)
-                    <th class="text-xs font-semibold uppercase tracking-wider text-base-content/50 relative
+                    <th class="{{ $thStickyBg }} text-xs font-semibold uppercase tracking-wider text-base-content/50 relative
                         @if($posts->gravity($ci)=='center') text-center
                         @elseif($posts->gravity($ci)=='right') text-right
                         @else text-left @endif"
