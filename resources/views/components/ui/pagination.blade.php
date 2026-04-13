@@ -2,11 +2,15 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {{-- Rows per page --}}
         <div class="flex items-center gap-3">
+            {{-- Hidden wire:model registrations keep these component
+                 properties rehydrated across Livewire morphs. `dataTableSet`
+                 lives on the MrCatzDataTables *builder* object, not on the
+                 Livewire component, so binding it here threw a runtime
+                 "property does not exist" warning and has been removed. --}}
             <label hidden>
                 <input type="text" wire:model="p">
                 <input type="text" wire:model="key">
                 <input type="text" wire:model="value">
-                <input type="text" wire:model="dataTableSet">
             </label>
             <span class="text-xs text-base-content/50">{{ mrcatz_lang('rows_per_page') }}</span>
             <select class="select select-bordered select-xs focus:select-primary transition-all duration-200"
