@@ -126,7 +126,7 @@
                             <template x-teleport="body">
                             <div x-show="open"
                                  x-ref="popover"
-                                 :style="popoverStyle"
+                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
                                  x-transition:enter="transition ease-out duration-150"
                                  x-transition:enter-start="opacity-0 -translate-y-1"
                                  x-transition:enter-end="opacity-100 translate-y-0"
@@ -236,11 +236,13 @@
                     filterId: config.filterId,
                     labels: config.labels,
                     activePreset: null,
-                    // Start OFF-SCREEN so that if position compute ever fails
-                    // (e.g. $refs.trigger not yet registered after a Livewire
-                    // morph / lazy-load hydration), the popover is never seen
-                    // at the viewport top-left default of position:fixed.
-                    popoverStyle: 'top: -9999px; left: -9999px;',
+                    // Numeric top/left so :style can use object syntax —
+                    // STRING :style overwrites the whole style attribute and
+                    // wipes x-show's display:none, making the popover visible
+                    // at position:fixed default (0,0) before open is true.
+                    // Default off-screen as a safety net for any timing gap.
+                    popoverTop: -9999,
+                    popoverLeft: -9999,
 
                     presets: [
                         { key: 'today',      label: config.labels.today      },
@@ -321,7 +323,8 @@
                         }
                         if (left < margin) left = margin;
 
-                        this.popoverStyle = `top: ${top}px; left: ${left}px;`;
+                        this.popoverTop = top;
+                        this.popoverLeft = left;
                     },
 
                     // Legacy alias kept for the scroll/resize handler wiring

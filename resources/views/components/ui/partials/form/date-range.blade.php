@@ -79,7 +79,7 @@
         <template x-teleport="body">
         <div x-show="open"
              x-ref="popover"
-             :style="popoverStyle"
+             :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0 -translate-y-1"
              x-transition:enter-end="opacity-100 translate-y-0"
@@ -171,11 +171,12 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             fieldId: config.fieldId,
             labels: config.labels,
             activePreset: null,
-            // Start OFF-SCREEN so that if position compute ever fails
-            // (e.g. $refs.trigger not yet registered after a Livewire morph
-            // / lazy-load hydration), the popover is never seen at the
-            // viewport top-left default of position:fixed.
-            popoverStyle: 'top: -9999px; left: -9999px;',
+            // Numeric top/left so :style uses object syntax — STRING :style
+            // overwrites the whole style attribute, which wipes out x-show's
+            // display:none and makes the popover visible at fixed's default
+            // (0,0) corner even when `open` is false. Object syntax merges.
+            popoverTop: -9999,
+            popoverLeft: -9999,
 
             presets: [
                 { key: 'today',      label: config.labels.today      },
@@ -245,7 +246,8 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
                 }
                 if (left < margin) left = margin;
 
-                this.popoverStyle = `top: ${top}px; left: ${left}px;`;
+                this.popoverTop = top;
+                this.popoverLeft = left;
             },
 
             positionPopover() { this.computePosition(); },
