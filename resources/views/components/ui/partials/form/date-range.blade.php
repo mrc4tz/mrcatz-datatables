@@ -81,10 +81,11 @@
              the fieldset means it stays inside the same top-layer stacking
              context when the form is in a modal, and still works fine when
              the form is inline (e.g. filter sheets, full-page forms). --}}
-        <div x-ref="popover"
+        <div x-show="drOpen"
+             x-ref="popover"
+             style="display: none;"
              :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-             :class="{ 'hidden': !drOpen }"
-             class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
+             class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
             <div class="grid grid-cols-[7.5rem_1fr]">
                 {{-- Shortcuts column --}}

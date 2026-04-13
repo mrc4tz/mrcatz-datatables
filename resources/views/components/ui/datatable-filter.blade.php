@@ -131,10 +131,11 @@
                                  timing race during lazy-hydration / morph, so
                                  the popover can never leak visible at 0,0. --}}
                             <template x-teleport="body">
-                            <div x-ref="popover"
+                            <div x-show="drOpen"
+                                 x-ref="popover"
+                                 style="display: none;"
                                  :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-                                 :class="{ 'hidden': !drOpen }"
-                                 class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
+                                 class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
                                     {{-- Shortcuts column --}}
