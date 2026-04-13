@@ -1,7 +1,9 @@
+[![Packagist Version](https://img.shields.io/packagist/v/mrcatz/datatable)](https://packagist.org/packages/mrcatz/datatable)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/mrcatz/datatable)](https://packagist.org/packages/mrcatz/datatable)
+[![License](https://img.shields.io/packagist/l/mrcatz/datatable)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-datatable.catzoid.tech-F57927)](https://datatable.catzoid.tech)
+
 <p align="center">
-  <img src="https://img.shields.io/packagist/v/mrcatz/datatable?style=flat-square&color=1B3A5C" alt="Version">
-  <img src="https://img.shields.io/packagist/dt/mrcatz/datatable?style=flat-square&color=C5A55A" alt="Downloads">
-  <img src="https://img.shields.io/github/license/mrcatz/datatable?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Laravel-11%2B-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel">
   <img src="https://img.shields.io/badge/Livewire-3%2B-FB70A9?style=flat-square&logo=livewire&logoColor=white" alt="Livewire">
   <img src="https://img.shields.io/badge/DaisyUI-5-5A0EF8?style=flat-square&logo=daisyui&logoColor=white" alt="DaisyUI">
