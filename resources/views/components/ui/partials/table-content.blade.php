@@ -350,7 +350,16 @@
                     @endforeach
                 </tr>
                 @if($showExpandDesktop && $posts->isExpandEnabled($i))
-                    <tr x-show="expandedRows.includes({{ $i }})" class="bg-base-200/20">
+                    {{-- Use Tailwind's `hidden` class toggle via :class instead of
+                         Alpine's x-show. Alpine's x-show on <tr> relies on browser
+                         default display (table-row), and some setups / browser
+                         caches / Livewire morph cycles leave the element with
+                         display:none stuck — the expand panel then never opens
+                         even when expandedRows.includes(i) is true. Tailwind's
+                         `hidden` utility sets display:none !important, and toggling
+                         it off reliably restores table-row layout on every tr.
+                         The inner <div> keeps x-show + transition for the fade. --}}
+                    <tr :class="{ 'hidden': !expandedRows.includes({{ $i }}) }" class="bg-base-200/20">
                         <td colspan="{{ $totalColspan }}" class="p-0">
                             <div class="px-6 py-4 text-sm" x-show="expandedRows.includes({{ $i }})"
                                  x-transition:enter="transition ease-out duration-200"
