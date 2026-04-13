@@ -127,8 +127,10 @@
                                 @include('mrcatz::components.ui.partials.form.range')
                             @elseif($type === 'rating')
                                 @include('mrcatz::components.ui.partials.form.rating')
-                            @elseif($type === 'editor' || $type === 'editor_advance')
+                            @elseif($type === 'editor')
                                 @include('mrcatz::components.ui.partials.form.editor')
+                            @elseif($type === 'editor_advance')
+                                @include('mrcatz::components.ui.partials.form.editor_advance')
                             @elseif($type === 'taginput')
                                 @include('mrcatz::components.ui.partials.form.taginput')
                             @endif
