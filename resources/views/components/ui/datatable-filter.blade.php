@@ -126,6 +126,7 @@
                             <template x-teleport="body">
                             <div x-show="open"
                                  x-ref="popover"
+                                 style="display: none;"
                                  :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
                                  x-transition:enter="transition ease-out duration-150"
                                  x-transition:enter-start="opacity-0 -translate-y-1"
