@@ -10,25 +10,26 @@
             });
         });
 
-        // When $modalFullScreen is on, the Livewire listener flips
-        // $formPageVisible server-side which re-renders the component as
-        // a full-page form — no dialog to open, no modal API to call.
-        const isFullScreen = () => !!$wire.modalFullScreen;
+        // Baked at render time from the page component so we don't rely on
+        // $wire.propertyName resolving across nested component boundaries.
+        // When true, the server flips $formPageVisible on prepare events and
+        // the component re-renders as a full-page form — no dialog needed.
+        const isFullScreen = @json((bool) ($this->modalFullScreen ?? false));
 
         $wire.on('add-data', () => {
             $wire.dispatch('prepareAddData');
-            if (!isFullScreen()) document.getElementById('modal-data')?.showModal();
+            if (!isFullScreen) document.getElementById('modal-data')?.showModal();
         });
 
         $wire.on('edit-data', (d) => {
             $wire.dispatch('prepareEditData', { data: d[0] });
-            if (!isFullScreen()) document.getElementById('modal-data')?.showModal();
+            if (!isFullScreen) document.getElementById('modal-data')?.showModal();
         });
 
         $wire.on('refresh-data', (d) => {
             let data = d[0];
             if (data.status) {
-                if (isFullScreen()) {
+                if (isFullScreen) {
                     // Close the full-page form by flipping the server flag.
                     $wire.closeFormPage();
                 } else {
@@ -49,7 +50,7 @@
 
         $wire.on('show-notif', (d) => {
             let data = d[0];
-            if (isFullScreen() && $wire.formPageVisible) {
+            if (isFullScreen) {
                 $wire.closeFormPage();
             } else {
                 document.getElementById('modal-data')?.close();
