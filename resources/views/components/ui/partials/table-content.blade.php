@@ -303,7 +303,14 @@
                     @if($showExpandDesktop)
                         <td class="w-8 text-center">
                             @if($posts->isExpandEnabled($i))
-                                <span class="inline-flex items-center justify-center cursor-pointer" style="transition: transform 500ms ease-in-out" @click.stop="toggleExpand({{ $i }})"
+                                {{-- Explicit w-6 h-6 on the wrapper guarantees
+                                     a 24×24 hit area / visible footprint even
+                                     when host CSS resets svg sizing (e.g. the
+                                     common `img, svg { max-width:100%;
+                                     height:auto }` reset). Without it the
+                                     inline-flex span collapses to 0 and the
+                                     chevron disappears. --}}
+                                <span class="inline-flex items-center justify-center cursor-pointer w-6 h-8" style="transition: transform 500ms ease-in-out" @click.stop="toggleExpand({{ $i }})"
                                       :style="expandedRows.includes({{ $i }}) ? 'transform: rotate(90deg)' : 'transform: rotate(0deg)'">{!! mrcatz_icon('chevron_right', 'text-sm text-base-content/40') !!}</span>
                             @endif
                         </td>
