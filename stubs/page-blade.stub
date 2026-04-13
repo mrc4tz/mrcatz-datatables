@@ -6,7 +6,12 @@
 
     @include('mrcatz::components.ui.breadcrumbs')
 
-    <livewire:{{livewireTag}}.{{kebab}}-table/>
+    {{-- Hide the datatable while the full-page form is visible
+         ($modalFullScreen = true). For dialog-mode components this
+         @unless is a no-op since $formPageVisible stays false. --}}
+    @unless($formPageVisible ?? false)
+        <livewire:{{livewireTag}}.{{kebab}}-table/>
+    @endunless
 
     @include('livewire.{{viewPath}}.{{snake}}_form')
 

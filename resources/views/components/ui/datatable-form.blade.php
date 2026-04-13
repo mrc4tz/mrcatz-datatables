@@ -62,14 +62,16 @@
 {{-- Full-page form mode. Rendered here (page-level blade) so $this
      resolves to the PAGE component that owns $modalFullScreen and
      $formPageVisible — those properties are NOT on the datatable
-     child component's $this. When visible, the overlay sits on top
-     of the datatable via position:fixed inset-0. --}}
+     child component's $this. Renders inline (no fixed/absolute)
+     so it occupies the page component's DOM area only, not the
+     entire viewport — the app nav + page header stay visible.
+
+     Users must wrap their `<livewire:xxx-table />` in the page blade
+     with `@unless($formPageVisible ?? false)` so the datatable is
+     hidden while the form page is showing; otherwise the two would
+     stack. --}}
 @if(($this->modalFullScreen ?? false) && ($this->formPageVisible ?? false))
-    <div class="fixed inset-0 z-40 bg-base-100 overflow-y-auto">
-        <div class="container mx-auto px-4 lg:px-6">
-            @include('mrcatz::components.ui.form-page')
-        </div>
-    </div>
+    @include('mrcatz::components.ui.form-page')
 @endif
 
 <dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title">
