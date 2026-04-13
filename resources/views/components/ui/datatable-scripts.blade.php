@@ -18,14 +18,17 @@
 
         // When returning from the full-page form to the datatable, the
         // viewport is usually parked near the bottom (Save/Cancel bar).
-        // Scroll the page component's root back into view so users land
-        // at the top of the table again. Smooth scroll respects reduced-
-        // motion preferences automatically.
+        // Prefer scrolling to the top of the nested datatable child
+        // component (the livewire:...-table wrapper just above the
+        // toolbar) rather than the outer page component — otherwise
+        // users land above unrelated hero/intro content that sits
+        // inside the page wrapper but outside the datatable.
         const scrollPageToTop = () => {
             if (!isFullScreen) return;
-            const root = $wire.$el || document.querySelector('[wire\\:id]');
-            if (root && typeof root.scrollIntoView === 'function') {
-                root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const pageRoot = $wire.$el;
+            const target = pageRoot?.querySelector('[wire\\:id]') || pageRoot || document.querySelector('[wire\\:id]');
+            if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
