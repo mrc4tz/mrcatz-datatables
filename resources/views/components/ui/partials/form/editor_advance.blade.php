@@ -51,22 +51,17 @@
 @endphp
 
 <style>
-    /* Container match the rest of the form field look — same border
-       radius and border color language as the Quill editor. */
+    /* Match surrounding form field border/radius language. */
     .mrcatz-editor-adv { position: relative; }
-    .mrcatz-editor-adv .tox-tinymce { border-radius: 0.5rem; border-color: #d1d5db; }
-    /* Dark theme tweaks — use daisyUI CSS vars so TinyMCE picks up
-       the host app's palette. TinyMCE has its own `oxide-dark` skin
-       but loading both skins doubles the request; overriding the
-       light-skin colors keeps bundle size tight. */
-    [data-theme*="dark"] .mrcatz-editor-adv .tox-tinymce { border-color: #4b5563; }
-    [data-theme*="dark"] .mrcatz-editor-adv .tox-toolbar__primary,
-    [data-theme*="dark"] .mrcatz-editor-adv .tox-editor-header,
-    [data-theme*="dark"] .mrcatz-editor-adv .tox-menubar { background-color: oklch(var(--b2, var(--b1))) !important; }
-    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn,
-    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-mbtn { color: oklch(var(--bc)) !important; }
-    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn svg { fill: oklch(var(--bc)) !important; }
-    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-edit-area__iframe { background-color: oklch(var(--b1)) !important; }
+    .mrcatz-editor-adv .tox-tinymce { border-radius: 0.5rem; }
+
+    /* When the editor lives inside a <dialog>.showModal() (top-layer),
+       we append .tox-tinymce-aux into that dialog so popovers ride
+       the top layer too. That aux container can inherit unintended
+       styles from the dialog — keep its layout clean. */
+    dialog .tox-tinymce-aux {
+        position: relative;
+    }
 </style>
 
 <fieldset class="fieldset" id="fieldset-{{ $editorId }}"
@@ -90,7 +85,10 @@
         const initTiny = () => {
             const selector = '#{{ $editorId }}';
             const el = document.getElementById('{{ $editorId }}');
-            if (!el) return;
+            if (!el) {
+                console.warn('[mrcatz] editorAdvance: target element not found', selector);
+                return;
+            }
             // Clean up any stale instance (e.g. after Livewire morph
             // re-inserted the fieldset) before attaching a new one.
             window.tinymce?.remove(selector);
@@ -146,6 +144,31 @@
                     editor.on('init', () => {
                         const initial = $wire.get('{{ $id }}');
                         if (initial) editor.setContent(initial);
+
+                        // Move TinyMCE's shared aux container (where
+                        // dropdowns, color pickers, and modal dialogs
+                        // render) INTO the ancestor <dialog> if we're
+                        // inside one. <dialog>.showModal() creates a
+                        // top-layer stacking context and anything
+                        // outside that layer paints behind its backdrop
+                        // regardless of z-index — so TinyMCE's popups
+                        // at document.body were hidden. The ui_container
+                        // option we'd tried first is ignored in v7, so
+                        // we relocate manually. Tear-down moves it back
+                        // (see below).
+                        const hostDialog = fieldset?.closest('dialog');
+                        const aux = document.querySelector('.tox-tinymce-aux');
+                        if (hostDialog && aux && aux.parentElement !== hostDialog) {
+                            aux.dataset.mrcatzOriginalParent ||= 'body';
+                            hostDialog.appendChild(aux);
+                        }
+                    });
+                    editor.on('remove', () => {
+                        const aux = document.querySelector('.tox-tinymce-aux');
+                        if (aux && aux.dataset.mrcatzOriginalParent === 'body'
+                                && aux.parentElement !== document.body) {
+                            document.body.appendChild(aux);
+                        }
                     });
                     const sync = () => {
                         const html = editor.getContent();
