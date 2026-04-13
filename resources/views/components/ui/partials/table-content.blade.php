@@ -181,8 +181,16 @@
         </dialog>
     @endif
 
-    {{-- Desktop table view --}}
-    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    {{-- Desktop table view.
+         When $stickyHeader is on, we put the scroll container into its own
+         stacking context via `isolate` (isolation: isolate). That way the
+         z-10 on the sticky <th> is scoped INSIDE this container — it beats
+         hover/focus rings on action-column buttons inside <tbody>, but it
+         doesn't leak out to override the toolbar tooltips that live above
+         the container. Without isolate, toolbar tooltips (z:1) get clipped
+         under the sticky header; without z-10 inside, action buttons paint
+         on top of the sticky header. Isolate + z-10 solves both. --}}
+    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto isolate @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                @if($enableKeyboardNav)
                tabindex="0"
@@ -200,21 +208,18 @@
             {{-- Sticky header background lives on each <th>, not on <tr>.
                  Browsers don't reliably propagate the <tr> background to its
                  <th> children when position:sticky is in play, so the underlying
-                 rows would bleed through and look "transparent" / overlapping
-                 while scrolling. Putting bg-base-200 on every <th> directly
-                 (and using a solid color, not /50 opacity) keeps the header
-                 row opaque under all browsers.
+                 rows would bleed through. Putting bg-base-200 on every <th>
+                 directly (solid, not /50 opacity) keeps the header row opaque.
 
-                 NOTE: NO explicit z-index on the sticky <th>. position:sticky
-                 alone already makes the header paint above scrolling <tbody>
-                 rows, so we don't need z-10 — and adding it creates a stacking
-                 context that sits above lower-z-index UI like DaisyUI tooltips
-                 (which use z-index: 1). Without it, toolbar button tooltips
-                 render correctly over the sticky header instead of being
-                 clipped under it. --}}
+                 z-10 is needed to beat action-column button hover/focus rings
+                 and other positioned body content inside <tbody>. The outer
+                 scroll wrapper has `isolate` when sticky is enabled, so this
+                 z-10 is SCOPED to the table's stacking context — it won't
+                 leak out to override toolbar tooltips that live above the
+                 table. See the wrapper div above for the isolate note. --}}
             @php
                 $thStickyBg = $stickyHeader
-                    ? 'bg-base-200 sticky top-0'
+                    ? 'bg-base-200 sticky top-0 z-10'
                     : 'bg-base-200/50';
             @endphp
             <thead>
