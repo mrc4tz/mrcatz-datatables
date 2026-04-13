@@ -111,6 +111,20 @@
             // re-inserted the fieldset) before attaching a new one.
             window.tinymce?.remove(selector);
 
+            // Resolve the current DaisyUI palette from the parent
+            // document and bake it into the iframe's content_style.
+            // Iframes don't inherit transparency from their embed
+            // ancestors the way regular divs do — a transparent
+            // iframe body just reveals the iframe element's default
+            // white background. Copying the host body's computed
+            // background + color gives us a true "follow the theme"
+            // appearance that also flips on theme toggle (we reinit
+            // the editor on data-theme changes, so these values get
+            // recomputed each time).
+            const hostStyle = getComputedStyle(document.body);
+            const iframeBg    = hostStyle.backgroundColor || 'transparent';
+            const iframeColor = hostStyle.color || 'inherit';
+
             window.tinymce.init({
                 target: el, // pass element directly — avoids selector scope quirks after morph
                 license_key: 'gpl',
@@ -154,12 +168,9 @@
                 // (card, dialog, full-page form). Text color is
                 // inherited too — DaisyUI themes set a readable default
                 // on the surrounding app.
-                // `html, body, *` transparent background + inherited text
-                // color so paragraphs / lists / tables don't stamp their
-                // own white fill from TinyMCE's default content CSS.
                 content_style:
-                    'html, body { background: transparent !important; font-family: inherit; font-size: 14px; color: inherit; }' +
-                    'p, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, table, td, th { background: transparent !important; color: inherit; }',
+                    `html, body { background: ${iframeBg} !important; color: ${iframeColor} !important; font-family: inherit; font-size: 14px; }` +
+                    `p, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, table, td, th { background: transparent !important; color: inherit; }`,
                 // Paste handling: strip Word-specific styling cruft so
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
