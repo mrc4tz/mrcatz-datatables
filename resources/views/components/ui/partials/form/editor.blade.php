@@ -6,6 +6,10 @@
     $editorImageMode = config('mrcatz.editor_image.mode', 'base64');
     $editorUploadUrl = $editorImageMode === 'upload' ? route('mrcatz.editor.upload-image') : '';
     $editorUploadPath = $field['uploadPath'] ?? null;
+    // Advanced toolbar: WordPress-style full feature set (alignment,
+    // indent, font, size, subscript/superscript, code block, video).
+    // Default toolbar: compact — good for short product descriptions.
+    $isAdvanced = ($field['type'] ?? 'editor') === 'editor_advance';
 @endphp
 
 <style>
@@ -14,7 +18,11 @@
     .mrcatz-editor .ql-container.ql-snow { border-radius: 0 0 0.5rem 0.5rem; border-color: #d1d5db; height: 250px; min-height: 150px; max-height: 80vh; font-size: 0.925rem; resize: vertical; overflow: hidden; }
     .mrcatz-editor .ql-editor { height: 100%; overflow-y: auto; }
 
-    .mrcatz-editor .ql-editor { height: 100%; overflow-y: auto; }
+    /* Advanced mode: taller default editor so long-form content has
+       room to breathe without the user having to drag-resize on every
+       new post. Toolbar naturally grows to multiple rows from the
+       extra buttons. */
+    .mrcatz-editor-advanced .ql-container.ql-snow { height: 420px; }
 
     /* Dark theme only */
     [data-theme*="dark"] .mrcatz-editor .ql-toolbar.ql-snow { border-color: #4b5563; background-color: oklch(var(--b2, var(--b1))); }
@@ -49,14 +57,26 @@
                 placeholder: @js($placeholder),
                 readOnly: {{ $disabled ? 'true' : 'false' }},
                 modules: {
-                    toolbar: [
+                    toolbar: @if($isAdvanced) [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'script': 'sub' }, { 'script': 'super' }],
+                        [{ 'align': [] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        ['blockquote', 'code-block'],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ] @else [
                         [{ 'header': [2, 3, 4, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
                         [{ 'color': [] }, { 'background': [] }],
                         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                         ['blockquote', 'link', 'image'],
                         ['clean']
-                    ]
+                    ] @endif
                 }
             });
 
@@ -142,7 +162,7 @@
     "
 >
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-    <div class="mrcatz-editor" wire:ignore>
+    <div class="mrcatz-editor @if($isAdvanced) mrcatz-editor-advanced @endif" wire:ignore>
         <div id="{{ $editorId }}"></div>
     </div>
     @include('mrcatz::components.ui.partials.form._error')

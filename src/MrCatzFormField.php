@@ -549,6 +549,37 @@ class MrCatzFormField
         return $field;
     }
 
+    /**
+     * Create a FULL-FEATURED rich text editor using Quill.js with the
+     * complete WordPress-style toolbar: headings (h1–h6), font size,
+     * font family, text + background color, full alignment (left /
+     * center / right / justify), indent, script, lists, blockquote,
+     * code block, link, image, video, clean. Best for long-form
+     * content like articles or news where authors expect the familiar
+     * WP / Word feature set.
+     *
+     * For short-form descriptions prefer editor() — its compact
+     * toolbar is less intimidating and the extra rows of buttons
+     * would feel busy for a product summary.
+     *
+     * Same field type under the hood, just a different toolbar config.
+     */
+    public static function editorAdvance(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $placeholder = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('editor_advance', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->placeholder = $placeholder;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
     // ─── Tag Input ────────────────────────────────────────────────
 
     /**
