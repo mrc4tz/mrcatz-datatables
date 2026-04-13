@@ -66,10 +66,11 @@
      so it occupies the page component's DOM area only, not the
      entire viewport — the app nav + page header stay visible.
 
-     Users must wrap their `<livewire:xxx-table />` in the page blade
-     with `@unless($formPageVisible ?? false)` so the datatable is
-     hidden while the form page is showing; otherwise the two would
-     stack. --}}
+     The datatable auto-hides itself via a browser-event listener in
+     datatable-js.blade.php (mrcatz-form-page-opened/closed), so the
+     user's page blade doesn't need to wrap <livewire:xxx-table />
+     with any conditional. Table state is preserved because the
+     component stays mounted — only its CSS display is toggled. --}}
 @if(($this->modalFullScreen ?? false) && ($this->formPageVisible ?? false))
     @include('mrcatz::components.ui.form-page')
 @endif

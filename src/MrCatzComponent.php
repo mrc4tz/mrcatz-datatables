@@ -83,8 +83,13 @@ class MrCatzComponent extends Component
     public function closeFormPage(bool $scroll = true): void
     {
         $this->formPageVisible = false;
+        // Always dispatch the closed event so the datatable can show
+        // itself again (it hid itself on 'opened'). The scroll-to-top
+        // behaviour is the separate 'mrcatz-form-page-scroll' event so
+        // the × button can close without scrolling.
+        $this->dispatch('mrcatz-form-page-closed');
         if ($scroll) {
-            $this->dispatch('mrcatz-form-page-closed');
+            $this->dispatch('mrcatz-form-page-scroll');
         }
     }
 
@@ -105,6 +110,7 @@ class MrCatzComponent extends Component
         $this->prepareAddData();
         if ($this->modalFullScreen) {
             $this->formPageVisible = true;
+            $this->dispatch('mrcatz-form-page-opened');
         }
     }
 
@@ -119,6 +125,7 @@ class MrCatzComponent extends Component
         $this->prepareEditData($data);
         if ($this->modalFullScreen) {
             $this->formPageVisible = true;
+            $this->dispatch('mrcatz-form-page-opened');
         }
     }
 

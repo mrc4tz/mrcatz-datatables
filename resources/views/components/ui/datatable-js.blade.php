@@ -1,5 +1,15 @@
 <div wire:init="showLoading"
      data-mrcatz-datatable-root
+     {{-- Auto-hide when the page component's full-page form opens, so
+          users don't need to wrap <livewire:...-table /> with an
+          @@unless in their page blade. The mrcatz-form-page-opened /
+          mrcatz-form-page-closed browser events are dispatched by
+          MrCatzComponent::listenAddData / listenEditData /
+          closeFormPage. Using display:none preserves the datatable's
+          state (search, filter, sort, page, scroll) across form
+          open/close — @@unless destroyed + re-created the child. --}}
+     @mrcatz-form-page-opened.window="$el.classList.add('hidden')"
+     @mrcatz-form-page-closed.window="$el.classList.remove('hidden')"
      x-data="{
     open: false,
     focusedRow: -1,
