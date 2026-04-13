@@ -1,3 +1,9 @@
+{{-- Skip the dialog entirely in full-page form mode. Otherwise the
+     dialog renders a SECOND copy of the form-builder — with duplicate
+     element ids — and getElementById returns the hidden dialog copy
+     when TinyMCE / Quill / daterange try to init, leaving the visible
+     form-page with empty widgets. --}}
+@unless(($this->modalFullScreen ?? false))
 <dialog id="modal-data" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-data-title">
     <div class="modal-box w-full max-w-3xl lg:max-w-4xl bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data')?.open">
         {{-- Header --}}
@@ -58,6 +64,7 @@
         </script>
     @endif
 </dialog>
+@endunless
 
 {{-- Full-page form mode. Rendered here (page-level blade) so $this
      resolves to the PAGE component that owns $modalFullScreen and

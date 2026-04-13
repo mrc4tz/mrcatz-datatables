@@ -83,12 +83,24 @@
 
         $wire.on('add-data', () => {
             $wire.dispatch('prepareAddData');
-            if (!isFullScreen) document.getElementById('modal-data')?.showModal();
+            // .show() instead of .showModal() so the dialog does NOT
+            // enter the browser top layer — top-layer dialogs paint
+            // their backdrop above every outside element (any z-index)
+            // which hides TinyMCE's popovers (font picker, color
+            // picker, Insert Link). DaisyUI's .modal-backdrop div and
+            // Alpine x-trap cover the interaction / focus-trap pieces.
+            if (!isFullScreen) document.getElementById('modal-data')?.show();
         });
 
         $wire.on('edit-data', (d) => {
             $wire.dispatch('prepareEditData', { data: d[0] });
-            if (!isFullScreen) document.getElementById('modal-data')?.showModal();
+            // .show() instead of .showModal() so the dialog does NOT
+            // enter the browser top layer — top-layer dialogs paint
+            // their backdrop above every outside element (any z-index)
+            // which hides TinyMCE's popovers (font picker, color
+            // picker, Insert Link). DaisyUI's .modal-backdrop div and
+            // Alpine x-trap cover the interaction / focus-trap pieces.
+            if (!isFullScreen) document.getElementById('modal-data')?.show();
         });
 
         // Scroll on Cancel / save-success; the × button in the header

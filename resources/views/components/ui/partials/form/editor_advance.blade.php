@@ -13,24 +13,24 @@
     $editorUploadUrl = $editorImageMode === 'upload' ? route('mrcatz.editor.upload-image') : '';
     $editorUploadPath = $field['uploadPath'] ?? null;
 
-    // Build the image upload handler snippet as a raw JS string here
-    // in PHP so x-init has NO @if directives inside it. Livewire's
-    // Blade compiler wraps @if/@endif with <!--[if BLOCK]>...<![endif]-->
-    // HTML comments (for morph safety), and those comments become
-    // invalid JS when they land inside an x-init expression — you
-    // get "Unexpected token '.'" the moment Alpine tries to parse it.
+    // Build JS snippets in PHP so x-init has NO @if directives inside
+    // it. Livewire's Blade compiler wraps @if/@endif with
+    // <!--[if BLOCK]>...<![endif]--> HTML comments which would land
+    // inside the x-init attribute as invalid JS.
+    $uploadUrl     = json_encode($editorUploadUrl);
+    $uploadPathJs  = $editorUploadPath ? json_encode($editorUploadPath) : null;
+    $pathAppendJs  = $uploadPathJs ? "formData.append('path', {$uploadPathJs});" : '';
+    $failMsg       = json_encode(mrcatz_lang('editor_upload_failed'));
+    $modeJs        = json_encode($editorImageMode);
+
     $tinyUploadHandler = '';
     if ($editorImageMode === 'upload') {
-        $uploadUrl  = json_encode($editorUploadUrl);
-        $uploadPath = $editorUploadPath ? json_encode($editorUploadPath) : null;
-        $pathAppend = $uploadPath ? "formData.append('path', {$uploadPath});" : '';
-        $failMsg    = json_encode(mrcatz_lang('editor_upload_failed'));
         $tinyUploadHandler = "
                 images_upload_url: {$uploadUrl},
                 images_upload_handler: async (blobInfo) => {
                     const formData = new FormData();
                     formData.append('image', blobInfo.blob(), blobInfo.filename());
-                    {$pathAppend}
+                    {$pathAppendJs}
                     const res = await fetch({$uploadUrl}, {
                         method: 'POST',
                         headers: {
@@ -48,18 +48,77 @@
                     return data.url;
                 },";
     }
+
+    // Toolbar-image button override: open native file picker
+    // immediately, then either upload or embed as base64 depending on
+    // config — same pipeline as images_upload_handler, no dialog prompt.
+    $imageButtonOnAction = "
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = async () => {
+                                const file = input.files?.[0];
+                                if (!file) return;
+                                if ({$modeJs} === 'upload') {
+                                    try {
+                                        const formData = new FormData();
+                                        formData.append('image', file);
+                                        {$pathAppendJs}
+                                        const res = await fetch({$uploadUrl}, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
+                                                'Accept': 'application/json',
+                                            },
+                                            body: formData,
+                                        });
+                                        if (!res.ok) {
+                                            const err = await res.json().catch(() => null);
+                                            const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || {$failMsg});
+                                            editor.notificationManager.open({ text: msg, type: 'error' });
+                                            return;
+                                        }
+                                        const data = await res.json();
+                                        editor.insertContent('<img src=' + JSON.stringify(data.url) + ' alt=' + JSON.stringify(file.name || '') + ' />');
+                                    } catch (e) {
+                                        editor.notificationManager.open({ text: {$failMsg}, type: 'error' });
+                                    }
+                                } else {
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                        editor.insertContent('<img src=' + JSON.stringify(reader.result) + ' alt=' + JSON.stringify(file.name || '') + ' />');
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();";
 @endphp
 
 <style>
-    /* Match surrounding form field border/radius language. */
+    /* Match the Quill-backed editor() palette one-for-one so the two
+       variants read as the same component family:
+         Light: border #d1d5db
+         Dark : border #4b5563, toolbar bg oklch(--b2/--b1),
+                content bg oklch(--b1), text oklch(--bc),
+                placeholder oklch(--bc/0.4),
+                icons #9ca3af, hover #e5e7eb, active #60a5fa,
+                pickers bg #1f2937 / border #4b5563. */
     .mrcatz-editor-adv { position: relative; }
-    .mrcatz-editor-adv .tox-tinymce { border-radius: 0.5rem; }
+    .mrcatz-editor-adv .tox-tinymce {
+        border-radius: 0.5rem;
+        border-width: 1px;
+        border-color: #d1d5db;
+    }
+    /* Toolbar / edit area divider — match Quill's single 1px line
+       between .ql-toolbar and .ql-container. Drop TinyMCE's own
+       drop-shadow so we only see the clean border line. */
+    .mrcatz-editor-adv .tox-editor-header {
+        border-bottom: 1px solid #d1d5db !important;
+        box-shadow: none !important;
+    }
 
-    /* Transparent backgrounds so the editor inherits whatever palette
-       the surrounding container (card, dialog, full-page form) uses.
-       Covers the iframe wrapper, toolbar, menubar, statusbar, and the
-       editor's status footer. The iframe body itself is transparent
-       via `content_style` in the init config below. */
+    /* Transparent chrome so the editor picks up the surrounding card /
+       dialog / full-page form palette instead of stamping its own. */
     .mrcatz-editor-adv .tox-tinymce,
     .mrcatz-editor-adv .tox-editor-container,
     .mrcatz-editor-adv .tox-editor-header,
@@ -73,12 +132,85 @@
         background-color: transparent !important;
     }
 
-    /* When the editor lives inside a <dialog>.showModal() (top-layer),
-       we append .tox-tinymce-aux into that dialog so popovers ride
-       the top layer too. That aux container can inherit unintended
-       styles from the dialog — keep its layout clean. */
-    dialog .tox-tinymce-aux {
-        position: relative;
+    /* Dark theme — mirror Quill's dark palette. */
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-tinymce {
+        border-color: #4b5563;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-editor-header {
+        border-bottom-color: #4b5563 !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-editor-header,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-menubar,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-toolbar__primary {
+        background-color: oklch(var(--b2, var(--b1))) !important;
+    }
+    /* Toolbar / menubar buttons — icon + label color */
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-mbtn {
+        color: #9ca3af !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn svg,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-mbtn svg,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-icon svg {
+        fill: #9ca3af !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn:hover,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-mbtn:hover {
+        color: #e5e7eb !important;
+        background-color: #374151 !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn:hover svg,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-mbtn:hover svg {
+        fill: #e5e7eb !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn--enabled,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn--enabled:hover {
+        color: #60a5fa !important;
+        background-color: transparent !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn--enabled svg,
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn--enabled:hover svg {
+        fill: #60a5fa !important;
+    }
+    /* Select arrow inside toolbar dropdowns (blocks, fontfamily, fontsize) */
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn__select-label {
+        color: #9ca3af !important;
+    }
+    [data-theme*="dark"] .mrcatz-editor-adv .tox .tox-tbtn__select-chevron svg {
+        fill: #9ca3af !important;
+    }
+    /* Dropdown panels (picker menus) */
+    [data-theme*="dark"] .tox .tox-menu,
+    [data-theme*="dark"] .tox .tox-collection--list {
+        background-color: #1f2937 !important;
+        border-color: #4b5563 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    [data-theme*="dark"] .tox .tox-collection__item {
+        color: #9ca3af !important;
+    }
+    [data-theme*="dark"] .tox .tox-collection__item--active,
+    [data-theme*="dark"] .tox .tox-collection__item:hover {
+        color: #e5e7eb !important;
+        background-color: #374151 !important;
+    }
+    [data-theme*="dark"] .tox .tox-collection__item svg {
+        fill: #9ca3af !important;
+    }
+    /* Divider strokes between toolbar groups */
+    [data-theme*="dark"] .mrcatz-editor-adv .tox-toolbar__group {
+        border-color: #4b5563 !important;
+    }
+    /* Placeholder text in the iframe body — matched via content_style
+       (see init below) using oklch(var(--bc) / 0.4). */
+
+    /* Raise TinyMCE popup containers above DaisyUI's .modal-backdrop
+       (z-index 50). We use dialog.show() instead of showModal() so
+       everything competes via z-index — a high value on the aux keeps
+       menus + color pickers visible over the dialog backdrop. */
+    .tox-tinymce-aux,
+    .tox-silver-sink {
+        z-index: 2147483646 !important;
     }
 </style>
 
@@ -112,18 +244,26 @@
             window.tinymce?.remove(selector);
 
             // Resolve the current DaisyUI palette from the parent
-            // document and bake it into the iframe's content_style.
-            // Iframes don't inherit transparency from their embed
-            // ancestors the way regular divs do — a transparent
-            // iframe body just reveals the iframe element's default
-            // white background. Copying the host body's computed
-            // background + color gives us a true "follow the theme"
-            // appearance that also flips on theme toggle (we reinit
-            // the editor on data-theme changes, so these values get
-            // recomputed each time).
+            // document and bake it into the iframe content_style.
+            // Iframes don't inherit transparency from embed ancestors
+            // the way regular divs do — transparent iframe body just
+            // reveals the iframe element default white background.
+            // Copying the host body computed background + color gives
+            // a true follow-the-theme appearance that also flips on
+            // theme toggle (we reinit on data-theme change, so these
+            // values recompute each time).
             const hostStyle = getComputedStyle(document.body);
             const iframeBg    = hostStyle.backgroundColor || 'transparent';
             const iframeColor = hostStyle.color || 'inherit';
+            // Placeholder color mirrors the Quill variant's
+            // oklch(var(--bc) / 0.4) — resolve via a throwaway span
+            // so the iframe gets a concrete rgba instead of a var
+            // reference it can't look up.
+            const probe = document.createElement('span');
+            probe.style.color = 'oklch(var(--bc, 0.4) / 0.4)';
+            document.body.appendChild(probe);
+            const placeholderColor = getComputedStyle(probe).color;
+            probe.remove();
 
             window.tinymce.init({
                 target: el, // pass element directly — avoids selector scope quirks after morph
@@ -156,7 +296,7 @@
                 height: 500,
                 menubar: 'file edit view insert format tools table help',
                 plugins: 'advlist autolink lists link image charmap preview anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
-                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | subscript superscript | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | hr charmap emoticons | removeformat searchreplace | code fullscreen preview',
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | subscript superscript | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link mrcatzimage media table | hr charmap emoticons | removeformat searchreplace | code fullscreen preview',
                 toolbar_mode: 'sliding',
                 placeholder: @js($placeholder),
                 readonly: {{ $disabled ? 'true' : 'false' }},
@@ -170,7 +310,8 @@
                 // on the surrounding app.
                 content_style:
                     `html, body { background: ${iframeBg} !important; color: ${iframeColor} !important; font-family: inherit; font-size: 14px; }` +
-                    `p, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, table, td, th { background: transparent !important; color: inherit; }`,
+                    `p, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, table, td, th { background: transparent !important; color: inherit; }` +
+                    `body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: ${placeholderColor} !important; font-style: italic; }`,
                 // Paste handling: strip Word-specific styling cruft so
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
@@ -182,35 +323,32 @@
                      original quotes. {!! !!} would leak the literal " --}}
                 {{ $tinyUploadHandler }}
                 setup: (editor) => {
+                    // Custom toolbar button that bypasses TinyMCE Insert
+                    // Image dialog and opens a native file picker. We
+                    // register under a unique name (mrcatzimage) so the
+                    // image plugin cannot win a name race and replace
+                    // our handler with its own dialog behaviour. The
+                    // image plugin is still enabled for drag-drop /
+                    // paste image handling via images_upload_handler.
+                    editor.ui.registry.addButton('mrcatzimage', {
+                        icon: 'image',
+                        tooltip: editor.translate('Insert image'),
+                        onAction: () => {
+                            {{ $imageButtonOnAction }}
+                        },
+                    });
+
                     // Seed from Livewire on init + live-sync edits back.
                     editor.on('init', () => {
                         const initial = $wire.get('{{ $id }}');
                         if (initial) editor.setContent(initial);
 
-                        // Move TinyMCE's shared aux container (where
-                        // dropdowns, color pickers, and modal dialogs
-                        // render) INTO the ancestor <dialog> if we're
-                        // inside one. <dialog>.showModal() creates a
-                        // top-layer stacking context and anything
-                        // outside that layer paints behind its backdrop
-                        // regardless of z-index — so TinyMCE's popups
-                        // at document.body were hidden. The ui_container
-                        // option we'd tried first is ignored in v7, so
-                        // we relocate manually. Tear-down moves it back
-                        // (see below).
-                        const hostDialog = fieldset?.closest('dialog');
-                        const aux = document.querySelector('.tox-tinymce-aux');
-                        if (hostDialog && aux && aux.parentElement !== hostDialog) {
-                            aux.dataset.mrcatzOriginalParent ||= 'body';
-                            hostDialog.appendChild(aux);
-                        }
-                    });
-                    editor.on('remove', () => {
-                        const aux = document.querySelector('.tox-tinymce-aux');
-                        if (aux && aux.dataset.mrcatzOriginalParent === 'body'
-                                && aux.parentElement !== document.body) {
-                            document.body.appendChild(aux);
-                        }
+                        // Popup relocation into <dialog> is no longer
+                        // needed — the datatable-form now opens modal-
+                        // data via dialog.show() (non-modal, no browser
+                        // top layer), so TinyMCE popups at document.body
+                        // can render above the dialog via regular
+                        // z-index stacking.
                     });
                     const sync = () => {
                         const html = editor.getContent();

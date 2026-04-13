@@ -73,19 +73,16 @@
             </span>
         </button>
 
-        {{-- Popover — NOT teleported to body. Form Builder fields usually
-             live inside a `<dialog>` modal opened with showModal(), which
-             renders in the browser's top layer. Anything outside the dialog
-             (teleported to body) would be painted BELOW the dialog backdrop
-             regardless of z-index. Keeping the popover as a descendant of
-             the fieldset means it stays inside the same top-layer stacking
-             context when the form is in a modal, and still works fine when
-             the form is inline (e.g. filter sheets, full-page forms). --}}
+        {{-- Popover — absolute right-aligned to the fieldset, flip
+             between below (top-full) and above (bottom-full) based on
+             available viewport space. Absolute (not fixed) keeps
+             positioning correct inside transformed ancestors like
+             DaisyUI's .modal / .modal-box. --}}
         <div x-show="drOpen"
              x-ref="popover"
              style="display: none;"
-             :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-             class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
+             :class="flipUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+             class="absolute right-0 z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
             <div class="grid grid-cols-[7.5rem_1fr]">
                 {{-- Shortcuts column --}}
@@ -169,6 +166,7 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             // `open` binding to an outer scope, making the popover open
             // whenever the outer UI is open.
             drOpen: false,
+            flipUp: false,
             from: initial.from || '',
             to: initial.to || '',
             draftFrom: initial.from || '',
@@ -197,19 +195,22 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             ],
 
             init() {
-                // Sync drafts when popover opens + install scroll/resize
-                // handlers that reposition the teleported popover.
+                // Sync drafts when popover opens + dismiss on
+                // scroll (anywhere) and window resize. Since the
+                // popover is position:fixed with coords computed
+                // from the trigger rect, any layout shift would
+                // visually detach it — closing feels natural.
                 this.$watch('drOpen', (v) => {
                     if (v) {
                         this.draftFrom = this.from;
                         this.draftTo = this.to;
-                        this._reposition = () => this.positionPopover();
-                        window.addEventListener('scroll', this._reposition, true);
-                        window.addEventListener('resize', this._reposition);
-                    } else if (this._reposition) {
-                        window.removeEventListener('scroll', this._reposition, true);
-                        window.removeEventListener('resize', this._reposition);
-                        this._reposition = null;
+                        this._dismiss = () => { this.drOpen = false; };
+                        window.addEventListener('scroll', this._dismiss, true);
+                        window.addEventListener('resize', this._dismiss);
+                    } else if (this._dismiss) {
+                        window.removeEventListener('scroll', this._dismiss, true);
+                        window.removeEventListener('resize', this._dismiss);
+                        this._dismiss = null;
                     }
                 });
             },
@@ -234,27 +235,35 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             },
 
             computePosition() {
+                // Decide whether the popover drops below (default) or
+                // flips above the trigger based on available space in
+                // the nearest clipping ancestor (card, dialog body,
+                // viewport). Popover is positioned by CSS (absolute +
+                // right-0 + top-full / bottom-full) so there's no
+                // coord math — just toggle the `flipUp` class.
                 const trigger = this._getTrigger();
                 if (!trigger) return;
-                const rect = trigger.getBoundingClientRect();
-                const pw = 352;
-                const ph = 340;
-                const gap = 4;
-                const margin = 8;
+                const triggerRect = trigger.getBoundingClientRect();
+                const ph = this.$refs.popover?.offsetHeight || 340;
 
-                let top = rect.bottom + gap;
-                let left = rect.left;
-
-                if (top + ph > window.innerHeight - margin) {
-                    top = Math.max(margin, rect.top - ph - gap);
+                // Find the nearest scrollable / clipping ancestor.
+                let clipEl = trigger.parentElement;
+                while (clipEl && clipEl !== document.body) {
+                    const cs = getComputedStyle(clipEl);
+                    if (
+                        cs.overflowY === 'auto' || cs.overflowY === 'scroll' ||
+                        cs.overflowY === 'hidden' || cs.overflowY === 'clip'
+                    ) break;
+                    clipEl = clipEl.parentElement;
                 }
-                if (left + pw > window.innerWidth - margin) {
-                    left = window.innerWidth - pw - margin;
-                }
-                if (left < margin) left = margin;
+                const clipRect = clipEl && clipEl !== document.body
+                    ? clipEl.getBoundingClientRect()
+                    : { top: 0, bottom: window.innerHeight };
 
-                this.popoverTop = top;
-                this.popoverLeft = left;
+                const spaceBelow = clipRect.bottom - triggerRect.bottom;
+                const spaceAbove = triggerRect.top - clipRect.top;
+
+                this.flipUp = spaceBelow < ph && spaceAbove > spaceBelow;
             },
 
             positionPopover() { this.computePosition(); },
