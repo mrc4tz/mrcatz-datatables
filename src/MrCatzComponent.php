@@ -38,16 +38,35 @@ class MrCatzComponent extends Component
     public $deleteModalDismissOnClickOutside = true;
 
     /**
-     * Render the add/edit form in full-screen mode instead of a centered
-     * dialog. Useful for long-form content (articles, product descriptions,
-     * rich editors) where the default modal height is cramped.
+     * Render the add/edit form as a FULL-PAGE VIEW that replaces the
+     * datatable, instead of opening it as a dialog. Best for long-form
+     * content (articles, product descriptions, rich editors) where the
+     * dialog feels cramped and "tab-switch" UX reads more naturally.
      *
-     * Only affects desktop — mobile already uses `modal-bottom` which
-     * already gives a near-full-height sheet and reads well as-is.
+     * When enabled:
+     *   - Clicking Add / Edit swaps the datatable for the form page.
+     *   - Save success or Back button returns to the datatable.
+     *   - No backdrop, no ESC-to-close, no click-outside dismiss.
      *
      *     public $modalFullScreen = true;
      */
     public $modalFullScreen = false;
+
+    /**
+     * Internal flag: whether the full-page form is currently visible.
+     * Flipped on by listenAddData / listenEditData when $modalFullScreen
+     * is true, and back off by closeFormPage() on save or cancel.
+     */
+    public $formPageVisible = false;
+
+    /**
+     * Close the full-page form and return to the datatable view.
+     * Called by the Cancel button and by JS after a successful save.
+     */
+    public function closeFormPage(): void
+    {
+        $this->formPageVisible = false;
+    }
 
     public function setTitle(string $title): void
     {
@@ -64,6 +83,9 @@ class MrCatzComponent extends Component
         $this->index = -1;
         $this->isEdit = false;
         $this->prepareAddData();
+        if ($this->modalFullScreen) {
+            $this->formPageVisible = true;
+        }
     }
 
     public function prepareAddData() {}
@@ -75,6 +97,9 @@ class MrCatzComponent extends Component
     {
         $this->isEdit = true;
         $this->prepareEditData($data);
+        if ($this->modalFullScreen) {
+            $this->formPageVisible = true;
+        }
     }
 
     public function prepareEditData($data) {}

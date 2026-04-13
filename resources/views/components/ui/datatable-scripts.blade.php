@@ -10,20 +10,30 @@
             });
         });
 
+        // When $modalFullScreen is on, the Livewire listener flips
+        // $formPageVisible server-side which re-renders the component as
+        // a full-page form — no dialog to open, no modal API to call.
+        const isFullScreen = () => !!$wire.modalFullScreen;
+
         $wire.on('add-data', () => {
             $wire.dispatch('prepareAddData');
-            document.getElementById('modal-data')?.showModal();
+            if (!isFullScreen()) document.getElementById('modal-data')?.showModal();
         });
 
         $wire.on('edit-data', (d) => {
             $wire.dispatch('prepareEditData', { data: d[0] });
-            document.getElementById('modal-data')?.showModal();
+            if (!isFullScreen()) document.getElementById('modal-data')?.showModal();
         });
 
         $wire.on('refresh-data', (d) => {
             let data = d[0];
             if (data.status) {
-                document.getElementById('modal-data')?.close();
+                if (isFullScreen()) {
+                    // Close the full-page form by flipping the server flag.
+                    $wire.closeFormPage();
+                } else {
+                    document.getElementById('modal-data')?.close();
+                }
                 document.getElementById('modal-data-delete')?.close();
                 $wire.dispatch('refreshDataTable');
                 $wire.dispatch('notice', { type: 'success', text: data.text });
@@ -39,7 +49,11 @@
 
         $wire.on('show-notif', (d) => {
             let data = d[0];
-            document.getElementById('modal-data')?.close();
+            if (isFullScreen() && $wire.formPageVisible) {
+                $wire.closeFormPage();
+            } else {
+                document.getElementById('modal-data')?.close();
+            }
             document.getElementById('modal-data-delete')?.close();
             $wire.dispatch('notice', { type: data.type, text: data.text });
         });

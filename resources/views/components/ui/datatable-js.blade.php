@@ -95,13 +95,21 @@
         $totalColspan = $totalCols + ($bulkShow ? 1 : 0) + ($showExpand ? 1 : 0);
     @endphp
 
-    @include('mrcatz::components.ui.partials.toolbar')
+    {{-- Full-page form mode: when $modalFullScreen is enabled AND the user
+         has clicked Add/Edit, swap the entire datatable (toolbar + table +
+         modals) for a dedicated form view. Back / cancel / save-success
+         returns to the datatable. --}}
+    @if(($this->modalFullScreen ?? false) && ($formPageVisible ?? false))
+        @include('mrcatz::components.ui.form-page')
+    @else
+        @include('mrcatz::components.ui.partials.toolbar')
 
-    <div class="@if($cardContainer) md:card md:shadow-md @endif @if($borderContainer) md:border md:rounded-xl md:border-base-content/10 @endif md:bg-base-100 w-full md:overflow-hidden">
-        <div @if($cardContainer) class="md:card-body md:p-0" @endif>
-            @include('mrcatz::components.ui.partials.table-content')
+        <div class="@if($cardContainer) md:card md:shadow-md @endif @if($borderContainer) md:border md:rounded-xl md:border-base-content/10 @endif md:bg-base-100 w-full md:overflow-hidden">
+            <div @if($cardContainer) class="md:card-body md:p-0" @endif>
+                @include('mrcatz::components.ui.partials.table-content')
+            </div>
         </div>
-    </div>
 
-    @include('mrcatz::components.ui.partials.modals')
+        @include('mrcatz::components.ui.partials.modals')
+    @endif
 </div>
