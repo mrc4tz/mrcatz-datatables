@@ -59,6 +59,19 @@
     @endif
 </dialog>
 
+{{-- Full-page form mode. Rendered here (page-level blade) so $this
+     resolves to the PAGE component that owns $modalFullScreen and
+     $formPageVisible — those properties are NOT on the datatable
+     child component's $this. When visible, the overlay sits on top
+     of the datatable via position:fixed inset-0. --}}
+@if(($this->modalFullScreen ?? false) && ($this->formPageVisible ?? false))
+    <div class="fixed inset-0 z-40 bg-base-100 overflow-y-auto">
+        <div class="container mx-auto px-4 lg:px-6">
+            @include('mrcatz::components.ui.form-page')
+        </div>
+    </div>
+@endif
+
 <dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title">
     <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data-delete')?.open">
         {{-- Icon --}}
