@@ -14,14 +14,6 @@
     $editorUploadPath = $field['uploadPath'] ?? null;
 @endphp
 
-{{-- Load TinyMCE once per page via @@assets so Livewire lazy-load
-     morph doesn't skip the script tag. The load is idempotent — a
-     reload via SPA nav won't double-init because we check tinymce
-     in window. --}}
-@assets
-<script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
-@endassets
-
 <style>
     /* Container match the rest of the form field look — same border
        radius and border color language as the Quill editor. */
@@ -44,10 +36,28 @@
 <fieldset class="fieldset" id="fieldset-{{ $editorId }}"
     x-data
     x-init="
-        const waitForTiny = () => {
-            if (typeof window.tinymce === 'undefined') {
-                return setTimeout(waitForTiny, 50);
+        // Load TinyMCE lazily on first use — can't rely on @@assets
+        // here because this is a partial (not a Livewire component
+        // view). A plain <script> tag inside morphed HTML wouldn't
+        // execute either. Inject the script element via JS so it
+        // always runs regardless of Livewire's render path.
+        const ensureTinyLoaded = () => new Promise((resolve) => {
+            if (typeof window.tinymce !== 'undefined') return resolve();
+            const existing = document.querySelector('script[data-mrcatz-tinymce]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                return;
             }
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js';
+            s.referrerPolicy = 'origin';
+            s.setAttribute('data-mrcatz-tinymce', '');
+            s.onload = () => resolve();
+            document.head.appendChild(s);
+        });
+
+        const initTiny = async () => {
+            await ensureTinyLoaded();
             const selector = '#{{ $editorId }}';
             const el = document.querySelector(selector);
             if (!el || el.dataset.tinyReady) return;
@@ -140,7 +150,7 @@
                 },
             });
         };
-        $nextTick(waitForTiny);
+        $nextTick(initTiny);
     "
 >
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
