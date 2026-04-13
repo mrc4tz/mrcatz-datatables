@@ -57,7 +57,14 @@
             window.tinymce.init({
                 selector,
                 license_key: 'gpl',
+                // Pin the asset base URL so TinyMCE fetches its skin +
+                // plugins + icons from jsdelivr instead of trying to
+                // auto-detect from window.location (which produces 404s
+                // and gives you a boxless, toolbar-less editor).
+                base_url: 'https://cdn.jsdelivr.net/npm/tinymce@7',
+                suffix: '.min',
                 height: 500,
+                width: '100%',
                 menubar: 'file edit view insert format tools table help',
                 plugins: 'advlist autolink lists link image charmap preview anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
                 toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | subscript superscript | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | hr charmap emoticons | removeformat searchreplace | code fullscreen preview',
@@ -142,8 +149,8 @@
     "
 >
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-    <div class="mrcatz-editor-adv" wire:ignore>
-        <textarea id="{{ $editorId }}"></textarea>
+    <div class="mrcatz-editor-adv w-full" wire:ignore>
+        <textarea id="{{ $editorId }}" class="w-full"></textarea>
     </div>
     @include('mrcatz::components.ui.partials.form._error')
     @include('mrcatz::components.ui.partials.form._hint')
