@@ -61,24 +61,26 @@
             window.tinymce.init({
                 selector,
                 license_key: 'gpl',
-                // Pin the asset base URL so TinyMCE fetches its skin +
-                // plugins + icons from jsdelivr instead of trying to
-                // auto-detect from window.location (which produces 404s
-                // and gives you a boxless, toolbar-less editor).
+                // Pin asset URLs explicitly. TinyMCE's auto-detected
+                // base_url falls back to the host page origin when the
+                // main script was loaded from a CDN, which 404s every
+                // skin/icon/plugin file and produces a toolbar-less
+                // editor. skin_url + content_css_url bypass base_url
+                // entirely and are the most reliable pins.
+                skin_url: 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide',
+                content_css: 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/default/content.min.css',
                 base_url: 'https://cdn.jsdelivr.net/npm/tinymce@7',
                 suffix: '.min',
                 height: 500,
-                width: '100%',
                 menubar: 'file edit view insert format tools table help',
                 plugins: 'advlist autolink lists link image charmap preview anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
                 toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | subscript superscript | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | hr charmap emoticons | removeformat searchreplace | code fullscreen preview',
+                toolbar_mode: 'sliding',
                 placeholder: @js($placeholder),
                 readonly: {{ $disabled ? 'true' : 'false' }},
                 branding: false,
                 promotion: false,
                 resize: true,
-                skin: isDark ? 'oxide-dark' : 'oxide',
-                content_css: isDark ? 'dark' : 'default',
                 content_style: 'body { font-family: inherit; font-size: 14px; }',
                 // Paste handling: strip Word-specific styling cruft so
                 // content doesn't arrive carrying MSO-conditional HTML.
