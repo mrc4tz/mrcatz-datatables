@@ -25,8 +25,13 @@
         // inside the page wrapper but outside the datatable.
         const scrollPageToTop = () => {
             if (!isFullScreen) return;
-            const pageRoot = $wire.$el;
-            const target = pageRoot?.querySelector('[wire\\:id]') || pageRoot || document.querySelector('[wire\\:id]');
+            // Prefer the explicit [data-mrcatz-datatable-root] marker on
+            // the datatable child component — it sits ABOVE the toolbar
+            // (the toolbar is its first child), so scrollIntoView lands
+            // users exactly at the top of the datatable panel on close.
+            const target = document.querySelector('[data-mrcatz-datatable-root]')
+                || $wire.$el
+                || document.querySelector('[wire\\:id]');
             if (target && typeof target.scrollIntoView === 'function') {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {

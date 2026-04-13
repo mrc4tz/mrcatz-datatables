@@ -60,6 +60,18 @@ class MrCatzComponent extends Component
     public $formPageVisible = false;
 
     /**
+     * Full-page form container styling. Defaults mirror the datatable
+     * child component's $cardContainer / $borderContainer so the form
+     * panel reads as a natural extension of the table's look. Override
+     * on a child page to match a non-default datatable styling:
+     *
+     *     public $formPageCard   = false;
+     *     public $formPageBorder = true;
+     */
+    public $formPageCard   = true;
+    public $formPageBorder = false;
+
+    /**
      * Close the full-page form and return to the datatable view.
      * Called by the Cancel / Close buttons and by JS after a successful
      * save. Dispatches `mrcatz-form-page-closed` so the client can

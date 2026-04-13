@@ -1,4 +1,4 @@
-<div wire:init="showLoading" x-data="{
+<div wire:init="showLoading" data-mrcatz-datatable-root x-data="{
     open: false,
     focusedRow: -1,
     maxRows: {{ $posts->hasData() ? $posts->countRow() : 0 }},

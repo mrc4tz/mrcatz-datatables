@@ -20,7 +20,19 @@
     }
 </style>
 
-<div class="mrcatz-form-page w-full bg-base-100 border border-base-content/10 rounded-xl overflow-hidden flex flex-col">
+@php
+    // Mirror the datatable's container styling so the form panel reads
+    // as an extension of the table. `$formPageCard` and `$formPageBorder`
+    // on MrCatzComponent default to the same values as the datatable's
+    // `$cardContainer` / `$borderContainer`. Override on a child page if
+    // the datatable uses a different combination.
+    $fpCard   = $this->formPageCard   ?? true;
+    $fpBorder = $this->formPageBorder ?? false;
+@endphp
+<div class="mrcatz-form-page w-full bg-base-100 overflow-hidden flex flex-col
+            @if($fpCard) md:shadow-md md:rounded-xl @endif
+            @if($fpBorder) md:border md:rounded-xl md:border-base-content/10 @endif
+            @unless($fpCard || $fpBorder) md:rounded-xl @endunless">
     {{-- Header bar — title on the left, close (×) icon on the right to
          match the dialog variant's muscle memory. --}}
     <div class="flex items-center justify-between gap-3 px-4 md:px-6 py-4 border-b border-base-content/10 bg-base-200/40 shrink-0">
