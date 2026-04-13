@@ -268,36 +268,45 @@
                     },
 
                     togglePopover() {
+                        // Compute position BEFORE flipping open — otherwise the
+                        // popover renders for one frame with no top/left set
+                        // (position:fixed defaults to 0,0 = top-left of viewport),
+                        // and the entrance transition animates in from there
+                        // instead of from just below the trigger.
+                        if (!this.open) this.computePosition();
                         this.open = !this.open;
-                        if (this.open) this.positionPopover();
                     },
 
-                    positionPopover() {
-                        this.$nextTick(() => {
-                            const trigger = this.$refs.trigger;
-                            if (!trigger) return;
-                            const rect = trigger.getBoundingClientRect();
-                            const pw = 352; // w-[22rem] = 22 * 16
-                            const ph = 340; // approximate popover height
-                            const gap = 4;
-                            const margin = 8;
+                    // Synchronous — trigger always exists at this point, no need
+                    // to wait for $nextTick. Used both by togglePopover and by the
+                    // scroll/resize handler (where the popover is already open).
+                    computePosition() {
+                        const trigger = this.$refs.trigger;
+                        if (!trigger) return;
+                        const rect = trigger.getBoundingClientRect();
+                        const pw = 352; // w-[22rem] = 22 * 16
+                        const ph = 340; // approximate popover height
+                        const gap = 4;
+                        const margin = 8;
 
-                            let top = rect.bottom + gap;
-                            let left = rect.left;
+                        let top = rect.bottom + gap;
+                        let left = rect.left;
 
-                            // Flip above trigger if it would overflow viewport bottom
-                            if (top + ph > window.innerHeight - margin) {
-                                top = Math.max(margin, rect.top - ph - gap);
-                            }
-                            // Shift left if it would overflow viewport right
-                            if (left + pw > window.innerWidth - margin) {
-                                left = window.innerWidth - pw - margin;
-                            }
-                            if (left < margin) left = margin;
+                        // Flip above trigger if it would overflow viewport bottom
+                        if (top + ph > window.innerHeight - margin) {
+                            top = Math.max(margin, rect.top - ph - gap);
+                        }
+                        // Shift left if it would overflow viewport right
+                        if (left + pw > window.innerWidth - margin) {
+                            left = window.innerWidth - pw - margin;
+                        }
+                        if (left < margin) left = margin;
 
-                            this.popoverStyle = `top: ${top}px; left: ${left}px;`;
-                        });
+                        this.popoverStyle = `top: ${top}px; left: ${left}px;`;
                     },
+
+                    // Legacy alias kept for the scroll/resize handler wiring
+                    positionPopover() { this.computePosition(); },
 
                     hasValue() {
                         return !!(this.from || this.to);

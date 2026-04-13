@@ -203,34 +203,37 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             },
 
             togglePopover() {
+                // Compute position BEFORE flipping open — see datatable-filter
+                // blade for the full rationale. tl;dr: avoids the first-frame
+                // flash at viewport top-left before $nextTick fires.
+                if (!this.open) this.computePosition();
                 this.open = !this.open;
-                if (this.open) this.positionPopover();
             },
 
-            positionPopover() {
-                this.$nextTick(() => {
-                    const trigger = this.$refs.trigger;
-                    if (!trigger) return;
-                    const rect = trigger.getBoundingClientRect();
-                    const pw = 352;
-                    const ph = 340;
-                    const gap = 4;
-                    const margin = 8;
+            computePosition() {
+                const trigger = this.$refs.trigger;
+                if (!trigger) return;
+                const rect = trigger.getBoundingClientRect();
+                const pw = 352;
+                const ph = 340;
+                const gap = 4;
+                const margin = 8;
 
-                    let top = rect.bottom + gap;
-                    let left = rect.left;
+                let top = rect.bottom + gap;
+                let left = rect.left;
 
-                    if (top + ph > window.innerHeight - margin) {
-                        top = Math.max(margin, rect.top - ph - gap);
-                    }
-                    if (left + pw > window.innerWidth - margin) {
-                        left = window.innerWidth - pw - margin;
-                    }
-                    if (left < margin) left = margin;
+                if (top + ph > window.innerHeight - margin) {
+                    top = Math.max(margin, rect.top - ph - gap);
+                }
+                if (left + pw > window.innerWidth - margin) {
+                    left = window.innerWidth - pw - margin;
+                }
+                if (left < margin) left = margin;
 
-                    this.popoverStyle = `top: ${top}px; left: ${left}px;`;
-                });
+                this.popoverStyle = `top: ${top}px; left: ${left}px;`;
             },
+
+            positionPopover() { this.computePosition(); },
 
             hasValue() {
                 return !!(this.from || this.to);
