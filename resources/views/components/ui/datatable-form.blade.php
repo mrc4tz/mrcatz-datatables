@@ -1,24 +1,7 @@
-@php $fullScreen = $this->modalFullScreen ?? false; @endphp
 <dialog id="modal-data" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-data-title">
-    {{-- Full-screen mode (desktop only) fills the viewport with a gentle
-         inner gutter so the content still breathes. Mobile keeps the
-         bottom-sheet look either way because modal-bottom already reads
-         as near-full-height on small screens. Full-screen layout also
-         switches the modal-box to flex-column so the body grows between
-         header and footer instead of capping at 60vh. --}}
-    <div class="modal-box bg-base-100 shadow-2xl
-                @if($fullScreen)
-                    w-full sm:w-screen sm:h-screen sm:max-w-none sm:max-h-none
-                    sm:rounded-none sm:m-0 sm:p-6 lg:p-10
-                    rounded-t-2xl
-                    flex flex-col
-                @else
-                    w-full max-w-3xl lg:max-w-4xl
-                    rounded-t-2xl sm:rounded-2xl
-                @endif"
-         x-data x-trap.noscroll="document.getElementById('modal-data')?.open">
+    <div class="modal-box w-full max-w-3xl lg:max-w-4xl bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data')?.open">
         {{-- Header --}}
-        <div class="flex items-center justify-between pb-4 mb-4 border-b border-base-content/10 shrink-0">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-base-content/10">
             <h3 id="modal-data-title" class="text-lg font-bold text-base-content flex items-center gap-2">
                 {!! mrcatz_icon($isEdit ? 'edit_note' : 'add_circle', 'text-primary') !!}
                 {{ $form_title ?: mrcatz_lang('default_form_title') }}
@@ -30,11 +13,8 @@
             </form>
         </div>
 
-        {{-- Body — caps at 60vh in dialog mode, fills remaining height in
-             full-screen mode. `min-h-0` is required on the flex child so
-             overflow-y-auto actually clamps instead of expanding the parent. --}}
-        <div class="overflow-y-auto pr-1 -mr-1
-                    @if($fullScreen) flex-1 min-h-0 @else max-h-[60vh] @endif">
+        {{-- Body --}}
+        <div class="max-h-[60vh] overflow-y-auto pr-1 -mr-1">
             @if($this->hasFormBuilder())
                 @include('mrcatz::components.ui.form-builder')
             @else
@@ -45,7 +25,7 @@
         </div>
 
         {{-- Footer --}}
-        <div class="modal-action pt-4 mt-4 border-t border-base-content/10 shrink-0">
+        <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
             <button class="btn btn-primary gap-2 px-6 shadow-sm" wire:click="saveData">
                 {!! mrcatz_icon('check_circle', 'text-lg') !!}
                 {{ mrcatz_lang('btn_save') }}
