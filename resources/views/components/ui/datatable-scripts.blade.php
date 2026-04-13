@@ -23,20 +23,48 @@
         // toolbar) rather than the outer page component — otherwise
         // users land above unrelated hero/intro content that sits
         // inside the page wrapper but outside the datatable.
+        // Measure the total vertical space reserved by fixed/sticky
+        // elements anchored at the top of the viewport (app nav, docs
+        // sub-nav, announcement bars, etc). Walks the DOM once per call,
+        // which is fine for the occasional "close form" scroll — not hot
+        // path. Takes the furthest .bottom so stacked sticky bars all
+        // stay visible after the scroll lands.
+        const getStickyTopHeight = () => {
+            let bottom = 0;
+            for (const el of document.body.querySelectorAll('*')) {
+                const cs = getComputedStyle(el);
+                if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
+                const rect = el.getBoundingClientRect();
+                // Only count things actually painted at the top of the
+                // viewport — `rect.top <= 8` catches small negative
+                // offsets from shadows/transforms without sweeping in
+                // bottom-anchored sticky footers.
+                if (rect.top <= 8 && rect.bottom > 0 && rect.bottom > bottom) {
+                    bottom = rect.bottom;
+                }
+            }
+            return bottom;
+        };
+
         const scrollPageToTop = () => {
             if (!isFullScreen) return;
-            // Prefer the explicit [data-mrcatz-datatable-root] marker on
-            // the datatable child component — it sits ABOVE the toolbar
-            // (the toolbar is its first child), so scrollIntoView lands
-            // users exactly at the top of the datatable panel on close.
             const target = document.querySelector('[data-mrcatz-datatable-root]')
                 || $wire.$el
                 || document.querySelector('[wire\\:id]');
-            if (target && typeof target.scrollIntoView === 'function') {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!target) {
+                return window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+            // Manually scroll (instead of scrollIntoView) so we can
+            // subtract sticky-header height and add breathing room for
+            // whatever margin/padding sits between the sticky bar and
+            // the datatable — scrollIntoView only honours the target's
+            // scroll-margin-top, which can't account for runtime layout
+            // variations.
+            const rect = target.getBoundingClientRect();
+            const stickyOffset = getStickyTopHeight();
+            const buffer = 16; // ~1rem of breathing room above the toolbar
+            const top = window.scrollY + rect.top - stickyOffset - buffer;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
         };
 
         $wire.on('add-data', () => {

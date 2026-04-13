@@ -1,12 +1,5 @@
 <div wire:init="showLoading"
      data-mrcatz-datatable-root
-     {{-- scroll-margin-top keeps the toolbar visible under any
-          fixed/sticky page nav when scrollIntoView fires (e.g. after
-          closing the full-page form). Override via CSS variable on
-          a host element if your nav is taller/shorter than 4rem:
-            :root { --mrcatz-scroll-offset: 80px; }
-          Default 4rem covers the common 64px sticky navbar height. --}}
-     style="scroll-margin-top: var(--mrcatz-scroll-offset, 4rem);"
      x-data="{
     open: false,
     focusedRow: -1,
