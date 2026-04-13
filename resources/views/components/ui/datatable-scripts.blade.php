@@ -16,6 +16,21 @@
         // the component re-renders as a full-page form — no dialog needed.
         const isFullScreen = @json((bool) ($this->modalFullScreen ?? false));
 
+        // When returning from the full-page form to the datatable, the
+        // viewport is usually parked near the bottom (Save/Cancel bar).
+        // Scroll the page component's root back into view so users land
+        // at the top of the table again. Smooth scroll respects reduced-
+        // motion preferences automatically.
+        const scrollPageToTop = () => {
+            if (!isFullScreen) return;
+            const root = $wire.$el || document.querySelector('[wire\\:id]');
+            if (root && typeof root.scrollIntoView === 'function') {
+                root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
         $wire.on('add-data', () => {
             $wire.dispatch('prepareAddData');
             if (!isFullScreen) document.getElementById('modal-data')?.showModal();
@@ -26,11 +41,18 @@
             if (!isFullScreen) document.getElementById('modal-data')?.showModal();
         });
 
+        // All close paths (Cancel / Close button clicks, save success)
+        // funnel through closeFormPage() on the server, which dispatches
+        // this event. Scroll the datatable back into view on each close.
+        $wire.on('mrcatz-form-page-closed', scrollPageToTop);
+
         $wire.on('refresh-data', (d) => {
             let data = d[0];
             if (data.status) {
                 if (isFullScreen) {
-                    // Close the full-page form by flipping the server flag.
+                    // Close the full-page form by flipping the server flag
+                    // (which also dispatches mrcatz-form-page-closed for
+                    // the scroll-restore hook above).
                     $wire.closeFormPage();
                 } else {
                     document.getElementById('modal-data')?.close();

@@ -21,19 +21,19 @@
 </style>
 
 <div class="mrcatz-form-page w-full bg-base-100 border border-base-content/10 rounded-xl overflow-hidden flex flex-col">
-    {{-- Header bar — just the back + title. Save/Cancel live in the
-         sticky footer below. --}}
-    <div class="flex items-center gap-3 px-4 md:px-6 py-4 border-b border-base-content/10 bg-base-200/40 shrink-0">
-        <button type="button"
-                wire:click="closeFormPage"
-                class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors shrink-0"
-                aria-label="{{ mrcatz_lang('btn_cancel') }}">
-            {!! mrcatz_icon('arrow_back') !!}
-        </button>
+    {{-- Header bar — title on the left, close (×) icon on the right to
+         match the dialog variant's muscle memory. --}}
+    <div class="flex items-center justify-between gap-3 px-4 md:px-6 py-4 border-b border-base-content/10 bg-base-200/40 shrink-0">
         <h2 class="text-lg md:text-xl font-bold text-base-content flex items-center gap-2 min-w-0">
             {!! mrcatz_icon($isEdit ? 'edit_note' : 'add_circle', 'text-primary') !!}
             <span class="truncate">{{ $form_title ?: mrcatz_lang('default_form_title') }}</span>
         </h2>
+        <button type="button"
+                wire:click="closeFormPage"
+                class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors shrink-0"
+                aria-label="{{ mrcatz_lang('btn_cancel') }}">
+            {!! mrcatz_icon('close') !!}
+        </button>
     </div>
 
     {{-- Form body — inner gutter keeps long-form content breathable. --}}
