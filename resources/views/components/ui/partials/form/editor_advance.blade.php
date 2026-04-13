@@ -12,6 +12,42 @@
     $editorImageMode = config('mrcatz.editor_image.mode', 'base64');
     $editorUploadUrl = $editorImageMode === 'upload' ? route('mrcatz.editor.upload-image') : '';
     $editorUploadPath = $field['uploadPath'] ?? null;
+
+    // Build the image upload handler snippet as a raw JS string here
+    // in PHP so x-init has NO @if directives inside it. Livewire's
+    // Blade compiler wraps @if/@endif with <!--[if BLOCK]>...<![endif]-->
+    // HTML comments (for morph safety), and those comments become
+    // invalid JS when they land inside an x-init expression — you
+    // get "Unexpected token '.'" the moment Alpine tries to parse it.
+    $tinyUploadHandler = '';
+    if ($editorImageMode === 'upload') {
+        $uploadUrl  = json_encode($editorUploadUrl);
+        $uploadPath = $editorUploadPath ? json_encode($editorUploadPath) : null;
+        $pathAppend = $uploadPath ? "formData.append('path', {$uploadPath});" : '';
+        $failMsg    = json_encode(mrcatz_lang('editor_upload_failed'));
+        $tinyUploadHandler = "
+                images_upload_url: {$uploadUrl},
+                images_upload_handler: async (blobInfo) => {
+                    const formData = new FormData();
+                    formData.append('image', blobInfo.blob(), blobInfo.filename());
+                    {$pathAppend}
+                    const res = await fetch({$uploadUrl}, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || {$failMsg});
+                        throw new Error(msg);
+                    }
+                    const data = await res.json();
+                    return data.url;
+                },";
+    }
 @endphp
 
 <style>
@@ -86,31 +122,7 @@
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
                 paste_data_images: false,
-                @if($editorImageMode === 'upload')
-                images_upload_url: @js($editorUploadUrl),
-                images_upload_handler: async (blobInfo) => {
-                    const formData = new FormData();
-                    formData.append('image', blobInfo.blob(), blobInfo.filename());
-                    @if($editorUploadPath)
-                    formData.append('path', @js($editorUploadPath));
-                    @endif
-                    const res = await fetch(@js($editorUploadUrl), {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '',
-                            'Accept': 'application/json',
-                        },
-                        body: formData,
-                    });
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => null);
-                        const msg = err?.errors ? Object.values(err.errors).flat()[0] : (err?.message || @js(mrcatz_lang('editor_upload_failed')));
-                        throw new Error(msg);
-                    }
-                    const data = await res.json();
-                    return data.url;
-                },
-                @endif
+                {!! $tinyUploadHandler !!}
                 setup: (editor) => {
                     // Seed from Livewire on init + live-sync edits back.
                     editor.on('init', () => {
