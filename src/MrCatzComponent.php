@@ -37,6 +37,18 @@ class MrCatzComponent extends Component
      */
     public $deleteModalDismissOnClickOutside = true;
 
+    /**
+     * Render the add/edit form in full-screen mode instead of a centered
+     * dialog. Useful for long-form content (articles, product descriptions,
+     * rich editors) where the default modal height is cramped.
+     *
+     * Only affects desktop — mobile already uses `modal-bottom` which
+     * already gives a near-full-height sheet and reads well as-is.
+     *
+     *     public $modalFullScreen = true;
+     */
+    public $modalFullScreen = false;
+
     public function setTitle(string $title): void
     {
         $this->title = $title;
