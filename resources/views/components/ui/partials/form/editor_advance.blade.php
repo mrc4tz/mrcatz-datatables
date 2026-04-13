@@ -126,9 +126,12 @@
                 skin_url: isDark()
                     ? 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide-dark'
                     : 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide',
-                content_css: isDark()
-                    ? 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/dark/content.min.css'
-                    : 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/default/content.min.css',
+                // Deliberately NOT setting content_css — the dark / default
+                // content stylesheets both paint a solid body background
+                // that fights our transparent override, leaving white
+                // stripes behind paragraphs on dark themes. All content
+                // typography is handled inline via content_style below.
+                content_css: false,
                 base_url: 'https://cdn.jsdelivr.net/npm/tinymce@7',
                 suffix: '.min',
                 // Render TinyMCE popovers / dialogs inside the nearest
@@ -151,7 +154,12 @@
                 // (card, dialog, full-page form). Text color is
                 // inherited too — DaisyUI themes set a readable default
                 // on the surrounding app.
-                content_style: 'html, body { background: transparent !important; font-family: inherit; font-size: 14px; color: inherit; }',
+                // `html, body, *` transparent background + inherited text
+                // color so paragraphs / lists / tables don't stamp their
+                // own white fill from TinyMCE's default content CSS.
+                content_style:
+                    'html, body { background: transparent !important; font-family: inherit; font-size: 14px; color: inherit; }' +
+                    'p, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, table, td, th { background: transparent !important; color: inherit; }',
                 // Paste handling: strip Word-specific styling cruft so
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
