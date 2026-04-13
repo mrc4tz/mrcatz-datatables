@@ -78,6 +78,19 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $loadedRows = 0;
     public $hasMoreRows = false;
 
+    /**
+     * Whether to render the "Load more" button when $usePagination = false
+     * and the result set exceeds $maxRows. Default true.
+     *
+     * Set to false on your child component if you want the table to render
+     * exactly $maxRows rows and never offer a load-more affordance — useful
+     * for snapshots, print-friendly views, or when $maxRows is a hard
+     * product decision rather than a soft cap:
+     *
+     *     public $showLoadMoreButton = false;
+     */
+    public $showLoadMoreButton = true;
+
     public function CreateMrCatzTable(): MrCatzDataTables
     {
         $onDataLoaded = function ($dataBuilder, $data) {

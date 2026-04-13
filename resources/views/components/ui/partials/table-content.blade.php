@@ -436,7 +436,7 @@
 </div>
 </div>{{-- end relative wrapper --}}
 
-@if(!$usePagination && $hasMoreRows)
+@if(!$usePagination && $hasMoreRows && ($showLoadMoreButton ?? true))
     <div class="flex flex-col items-center gap-2 py-4">
         <p class="text-xs text-base-content/40">{{ mrcatz_lang('showing_rows', [':count' => $posts->countRow()]) }}</p>
         <button wire:click="loadMore" wire:loading.attr="disabled"
