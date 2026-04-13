@@ -73,16 +73,13 @@
             </span>
         </button>
 
-        {{-- Popover — teleported to <body> so it escapes any `overflow: hidden`
-             ancestor (modal dialogs, cards, scroll containers, etc.) and uses
-             position: fixed with coords computed from the trigger rect. --}}
+        {{-- Popover — teleported to <body> + x-if gated so the element
+             literally doesn't exist in the DOM while closed. See
+             datatable-filter blade for full rationale. --}}
         <template x-teleport="body">
-        {{-- Display controlled via object :style only — see datatable-filter
-             blade for full rationale. tl;dr: x-show + string :style was
-             leaking a visible popover at viewport 0,0. --}}
+        <template x-if="open">
         <div x-ref="popover"
-             style="display: none;"
-             :style="{ top: popoverTop + 'px', left: popoverLeft + 'px', display: open ? 'block' : 'none' }"
+             :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
              class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
             <div class="grid grid-cols-[7.5rem_1fr]">
@@ -133,6 +130,7 @@
                 </div>
             </div>
         </div>
+        </template>
         </template>
     </div>
 

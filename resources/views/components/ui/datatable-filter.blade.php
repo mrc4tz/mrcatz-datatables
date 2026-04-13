@@ -122,16 +122,20 @@
                                  `overflow: hidden` ancestor (card wrappers, scroll
                                  containers, etc.) and uses position: fixed with
                                  coords computed from the trigger rect on open +
-                                 scroll + resize. --}}
+                                 scroll + resize.
+
+                                 Wrapped in `<template x-if="open">` so the
+                                 popover element literally does NOT exist in
+                                 the DOM when closed. This is the only way to
+                                 be 100% sure it never flashes visible at
+                                 viewport 0,0 during the Alpine init / Livewire
+                                 morph / lazy-load window. No style/display/
+                                 class race can reveal an element that isn't
+                                 there. --}}
                             <template x-teleport="body">
-                            {{-- Display is controlled purely via object :style so
-                                 the popover can never be visible while `open`
-                                 is false — x-show + string :style combinations
-                                 were racing with inline style writes and
-                                 leaking a visible popover at viewport 0,0. --}}
+                            <template x-if="open">
                             <div x-ref="popover"
-                                 style="display: none;"
-                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px', display: open ? 'block' : 'none' }"
+                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
                                  class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
@@ -182,6 +186,7 @@
                                     </div>
                                 </div>
                             </div>
+                            </template>
                             </template>
                         </div>
                     </div>
