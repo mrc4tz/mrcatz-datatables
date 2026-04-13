@@ -73,14 +73,14 @@
             </span>
         </button>
 
-        {{-- Popover — teleported to <body> + x-if gated so the element
-             literally doesn't exist in the DOM while closed. See
-             datatable-filter blade for full rationale. --}}
+        {{-- Popover — teleported to <body>, SSR-hidden via Tailwind `hidden`
+             class, Alpine toggles reactively via :class. See datatable-filter
+             blade for full rationale. --}}
         <template x-teleport="body">
-        <template x-if="open">
         <div x-ref="popover"
              :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-             class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
+             :class="{ 'hidden': !open }"
+             class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
             <div class="grid grid-cols-[7.5rem_1fr]">
                 {{-- Shortcuts column --}}
@@ -130,7 +130,6 @@
                 </div>
             </div>
         </div>
-        </template>
         </template>
     </div>
 

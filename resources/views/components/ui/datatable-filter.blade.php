@@ -124,19 +124,17 @@
                                  coords computed from the trigger rect on open +
                                  scroll + resize.
 
-                                 Wrapped in `<template x-if="open">` so the
-                                 popover element literally does NOT exist in
-                                 the DOM when closed. This is the only way to
-                                 be 100% sure it never flashes visible at
-                                 viewport 0,0 during the Alpine init / Livewire
-                                 morph / lazy-load window. No style/display/
-                                 class race can reveal an element that isn't
-                                 there. --}}
+                                 SSR-hidden via Tailwind `hidden` class (applies
+                                 `display: none !important` pre-Alpine). Alpine
+                                 then toggles it reactively via :class based on
+                                 `open`. Tailwind's !important wins over any
+                                 timing race during lazy-hydration / morph, so
+                                 the popover can never leak visible at 0,0. --}}
                             <template x-teleport="body">
-                            <template x-if="open">
                             <div x-ref="popover"
                                  :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-                                 class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
+                                 :class="{ 'hidden': !open }"
+                                 class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
                                     {{-- Shortcuts column --}}
@@ -186,7 +184,6 @@
                                     </div>
                                 </div>
                             </div>
-                            </template>
                             </template>
                         </div>
                     </div>
