@@ -203,10 +203,18 @@
                  rows would bleed through and look "transparent" / overlapping
                  while scrolling. Putting bg-base-200 on every <th> directly
                  (and using a solid color, not /50 opacity) keeps the header
-                 row opaque under all browsers. --}}
+                 row opaque under all browsers.
+
+                 NOTE: NO explicit z-index on the sticky <th>. position:sticky
+                 alone already makes the header paint above scrolling <tbody>
+                 rows, so we don't need z-10 — and adding it creates a stacking
+                 context that sits above lower-z-index UI like DaisyUI tooltips
+                 (which use z-index: 1). Without it, toolbar button tooltips
+                 render correctly over the sticky header instead of being
+                 clipped under it. --}}
             @php
                 $thStickyBg = $stickyHeader
-                    ? 'bg-base-200 sticky top-0 z-10'
+                    ? 'bg-base-200 sticky top-0'
                     : 'bg-base-200/50';
             @endphp
             <thead>
