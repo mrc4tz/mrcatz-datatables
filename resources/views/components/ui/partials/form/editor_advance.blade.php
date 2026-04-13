@@ -36,14 +36,8 @@
 <fieldset class="fieldset" id="fieldset-{{ $editorId }}"
     x-data
     x-init="
-        // The host app is expected to load TinyMCE once in its main
-        // layout, same pattern as Quill for editor():
-        //
-        //   <script src=\"https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js\"
-        //           referrerpolicy=\"origin\"></script>
-        //
-        // Poll briefly in case it's deferred or still parsing when
-        // Alpine initialises (which happens early on SPA navigation).
+        // Host app loads TinyMCE in its layout (see docs). Poll briefly
+        // here in case the script is still parsing when Alpine runs.
         const waitForTiny = (attempts = 0) => {
             if (typeof window.tinymce === 'undefined') {
                 if (attempts > 100) {
