@@ -78,24 +78,25 @@
         // IIFE wrapper is required — Alpine/Livewire evaluate x-init as
         // `return <expression>` so top-level `const`/`let` statements
         // parse as syntax errors without the function wrap.
-        const waitForTiny = (attempts = 0) => {
-            if (typeof window.tinymce === 'undefined') {
-                if (attempts > 100) {
-                    console.warn('[mrcatz] editorAdvance: TinyMCE not found on window. Add the CDN script to your layout: https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js');
-                    return;
-                }
-                return setTimeout(() => waitForTiny(attempts + 1), 50);
-            }
-            const selector = '#{{ $editorId }}';
-            const el = document.querySelector(selector);
-            if (!el || el.dataset.tinyReady) return;
-            el.dataset.tinyReady = '1';
+        const fieldset = document.getElementById('fieldset-{{ $editorId }}');
+        // Resolve the nearest <dialog> ancestor so TinyMCE's popovers
+        // (color picker, Insert-link dialog, media dialog, etc.) render
+        // INSIDE the dialog's top layer instead of behind its backdrop.
+        // Falls back to document.body for inline / full-page usage.
+        const isDark = () => document.documentElement
+            ?.getAttribute('data-theme')?.includes('dark');
+        const uiContainer = fieldset?.closest('dialog') || document.body;
 
-            const isDark = document.documentElement
-                ?.getAttribute('data-theme')?.includes('dark');
+        const initTiny = () => {
+            const selector = '#{{ $editorId }}';
+            const el = document.getElementById('{{ $editorId }}');
+            if (!el) return;
+            // Clean up any stale instance (e.g. after Livewire morph
+            // re-inserted the fieldset) before attaching a new one.
+            window.tinymce?.remove(selector);
 
             window.tinymce.init({
-                selector,
+                target: el, // pass element directly — avoids selector scope quirks after morph
                 license_key: 'gpl',
                 // Pin asset URLs explicitly. TinyMCE's auto-detected
                 // base_url falls back to the host page origin when the
@@ -103,10 +104,22 @@
                 // skin/icon/plugin file and produces a toolbar-less
                 // editor. skin_url + content_css_url bypass base_url
                 // entirely and are the most reliable pins.
-                skin_url: 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide',
-                content_css: 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/default/content.min.css',
+                // Swap skin + content CSS based on data-theme on <html>.
+                // Reinit on theme toggle is handled by the MutationObserver
+                // at the bottom of this script.
+                skin_url: isDark()
+                    ? 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide-dark'
+                    : 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/ui/oxide',
+                content_css: isDark()
+                    ? 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/dark/content.min.css'
+                    : 'https://cdn.jsdelivr.net/npm/tinymce@7/skins/content/default/content.min.css',
                 base_url: 'https://cdn.jsdelivr.net/npm/tinymce@7',
                 suffix: '.min',
+                // Render TinyMCE popovers / dialogs inside the nearest
+                // <dialog> when this editor lives in a modal so they
+                // don't get clipped behind the dialog's top-layer
+                // backdrop. Body fallback for inline / full-page forms.
+                ui_container: uiContainer,
                 height: 500,
                 menubar: 'file edit view insert format tools table help',
                 plugins: 'advlist autolink lists link image charmap preview anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
@@ -168,6 +181,35 @@
                 },
             });
         };
+
+        // Poll for the TinyMCE global — host app loads it in the layout,
+        // but SPA navigation can run Alpine before the <script> finishes
+        // parsing, so give it up to ~5 seconds.
+        const waitForTiny = (attempts = 0) => {
+            if (typeof window.tinymce === 'undefined') {
+                if (attempts > 100) {
+                    console.warn('[mrcatz] editorAdvance: TinyMCE not found on window. Add the CDN script to your layout: https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js');
+                    return;
+                }
+                return setTimeout(() => waitForTiny(attempts + 1), 50);
+            }
+            initTiny();
+        };
+
+        // Watch <html data-theme> for light/dark toggles. TinyMCE can't
+        // hot-swap its skin so we tear down and re-init with the new
+        // theme's skin + content CSS — content is preserved via the
+        // Livewire property so users don't lose edits mid-toggle.
+        const themeObserver = new MutationObserver(() => {
+            if (!window.tinymce) return;
+            window.tinymce.remove('#{{ $editorId }}');
+            initTiny();
+        });
+        themeObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme', 'class'],
+        });
+
         $nextTick(() => waitForTiny());
         })()
     "
