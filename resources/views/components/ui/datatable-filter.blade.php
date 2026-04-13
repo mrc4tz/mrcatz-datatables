@@ -124,18 +124,15 @@
                                  coords computed from the trigger rect on open +
                                  scroll + resize. --}}
                             <template x-teleport="body">
-                            <div x-show="open"
-                                 x-ref="popover"
+                            {{-- Display is controlled purely via object :style so
+                                 the popover can never be visible while `open`
+                                 is false — x-show + string :style combinations
+                                 were racing with inline style writes and
+                                 leaking a visible popover at viewport 0,0. --}}
+                            <div x-ref="popover"
                                  style="display: none;"
-                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 -translate-y-1"
-                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                 x-transition:leave="transition ease-in duration-100"
-                                 x-transition:leave-start="opacity-100"
-                                 x-transition:leave-end="opacity-0"
-                                 class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
-                                 x-cloak>
+                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px', display: open ? 'block' : 'none' }"
+                                 class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
                                     {{-- Shortcuts column --}}
