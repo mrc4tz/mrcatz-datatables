@@ -36,8 +36,12 @@
 <fieldset class="fieldset" id="fieldset-{{ $editorId }}"
     x-data
     x-init="
+        (() => {
         // Host app loads TinyMCE in its layout (see docs). Poll briefly
         // here in case the script is still parsing when Alpine runs.
+        // IIFE wrapper is required — Alpine/Livewire evaluate x-init as
+        // `return <expression>` so top-level `const`/`let` statements
+        // parse as syntax errors without the function wrap.
         const waitForTiny = (attempts = 0) => {
             if (typeof window.tinymce === 'undefined') {
                 if (attempts > 100) {
@@ -146,6 +150,7 @@
             });
         };
         $nextTick(() => waitForTiny());
+        })()
     "
 >
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
