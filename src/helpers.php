@@ -102,8 +102,20 @@ if (!function_exists('mrcatz_icon_svg')) {
         }
 
         $path = $svgMap[$name] ?? '<circle cx="12" cy="12" r="1.5"/>';
-        $cls = 'inline-block w-5 h-5' . ($class ? ' ' . $class : '');
-        return '<svg class="' . $cls . '" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' . $path . '</svg>';
+        // Inline width/height/display attributes instead of relying on
+        // Tailwind utility classes. Tailwind's source scanner doesn't
+        // inspect PHP helpers, so classes concatenated here
+        // (`inline-block w-5 h-5`) aren't guaranteed to be in the host
+        // app's compiled CSS — the icon would render at 0×0 on projects
+        // that publish a trimmed Tailwind build. Hard-coded attributes
+        // make the default icon work out-of-the-box regardless of the
+        // host CSS setup. Caller-supplied $class (e.g. `text-error` or
+        // `w-4 h-4` for sizing overrides) still wins via CSS cascade.
+        $cls = $class ? ' class="' . $class . '"' : '';
+        return '<svg width="20" height="20" style="display:inline-block;vertical-align:middle"'
+            . $cls . ' xmlns="http://www.w3.org/2000/svg" fill="none"'
+            . ' viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">'
+            . $path . '</svg>';
     }
 }
 
