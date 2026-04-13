@@ -202,6 +202,8 @@
                     @include('mrcatz::components.ui.partials.form.rating')
                 @elseif($type === 'editor')
                     @include('mrcatz::components.ui.partials.form.editor')
+                @elseif($type === 'editor_advance')
+                    @include('mrcatz::components.ui.partials.form.editor_advance')
                 @elseif($type === 'taginput')
                     @include('mrcatz::components.ui.partials.form.taginput')
                 @elseif($type === 'date_range')
