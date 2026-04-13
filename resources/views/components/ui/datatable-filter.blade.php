@@ -214,7 +214,16 @@
         </div>
     </div>
 
-    {{-- Alpine.js component for the date range popover --}}
+    {{-- Alpine.js component for the date range popover.
+
+         Wrapped in @@assets so Livewire guarantees the script runs exactly
+         once per page — including when this blade is rendered inside a
+         lazy-loaded Livewire component. A plain <script> tag inside
+         morphed HTML does NOT execute (browsers only run script tags on
+         initial parse, not on DOM insertion), so without @@assets the
+         popover's x-data factory never gets registered on docs pages
+         that use <livewire:... lazy /> and every click becomes a no-op. --}}
+    @assets
     <script>
         if (typeof window.mrcatzDateRange === 'undefined') {
             window.mrcatzDateRange = function (config) {
@@ -439,4 +448,5 @@
             };
         }
     </script>
+    @endassets
 @endif

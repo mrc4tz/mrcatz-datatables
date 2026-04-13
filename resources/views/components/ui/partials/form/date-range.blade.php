@@ -141,7 +141,12 @@
     @include('mrcatz::components.ui.partials.form._hint')
 </fieldset>
 
-{{-- Alpine component definition (idempotent guard) --}}
+{{-- Alpine component definition — wrapped in @@assets so Livewire runs it
+     once per page even when rendered inside a lazy-loaded component. Plain
+     <script> tags inside morphed HTML don't execute; @@assets ensures the
+     window.mrcatzFormDateRange factory gets registered before Alpine tries
+     to instantiate x-data. --}}
+@assets
 <script>
 if (typeof window.mrcatzFormDateRange === 'undefined') {
     window.mrcatzFormDateRange = function (config) {
@@ -348,3 +353,4 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
     };
 }
 </script>
+@endassets
