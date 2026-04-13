@@ -55,6 +55,24 @@
     .mrcatz-editor-adv { position: relative; }
     .mrcatz-editor-adv .tox-tinymce { border-radius: 0.5rem; }
 
+    /* Transparent backgrounds so the editor inherits whatever palette
+       the surrounding container (card, dialog, full-page form) uses.
+       Covers the iframe wrapper, toolbar, menubar, statusbar, and the
+       editor's status footer. The iframe body itself is transparent
+       via `content_style` in the init config below. */
+    .mrcatz-editor-adv .tox-tinymce,
+    .mrcatz-editor-adv .tox-editor-container,
+    .mrcatz-editor-adv .tox-editor-header,
+    .mrcatz-editor-adv .tox-menubar,
+    .mrcatz-editor-adv .tox-toolbar,
+    .mrcatz-editor-adv .tox-toolbar__primary,
+    .mrcatz-editor-adv .tox-toolbar-overlord,
+    .mrcatz-editor-adv .tox-edit-area,
+    .mrcatz-editor-adv .tox-edit-area__iframe,
+    .mrcatz-editor-adv .tox-statusbar {
+        background-color: transparent !important;
+    }
+
     /* When the editor lives inside a <dialog>.showModal() (top-layer),
        we append .tox-tinymce-aux into that dialog so popovers ride
        the top layer too. That aux container can inherit unintended
@@ -128,7 +146,12 @@
                 branding: false,
                 promotion: false,
                 resize: true,
-                content_style: 'body { font-family: inherit; font-size: 14px; }',
+                // Transparent iframe body so the editor picks up the
+                // color scheme of whatever container it's embedded in
+                // (card, dialog, full-page form). Text color is
+                // inherited too — DaisyUI themes set a readable default
+                // on the surrounding app.
+                content_style: 'html, body { background: transparent !important; font-family: inherit; font-size: 14px; color: inherit; }',
                 // Paste handling: strip Word-specific styling cruft so
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
