@@ -236,7 +236,11 @@
                     filterId: config.filterId,
                     labels: config.labels,
                     activePreset: null,
-                    popoverStyle: '', // computed coords for the teleported popover
+                    // Start OFF-SCREEN so that if position compute ever fails
+                    // (e.g. $refs.trigger not yet registered after a Livewire
+                    // morph / lazy-load hydration), the popover is never seen
+                    // at the viewport top-left default of position:fixed.
+                    popoverStyle: 'top: -9999px; left: -9999px;',
 
                     presets: [
                         { key: 'today',      label: config.labels.today      },
@@ -275,13 +279,21 @@
                         // instead of from just below the trigger.
                         if (!this.open) this.computePosition();
                         this.open = !this.open;
+                        // Re-run after next tick as a safety net — covers the
+                        // edge case where $refs.trigger wasn't ready on the
+                        // synchronous call (can happen right after a Livewire
+                        // lazy-load hydration / morph on first click).
+                        if (this.open) this.$nextTick(() => this.computePosition());
                     },
 
                     // Synchronous — trigger always exists at this point, no need
                     // to wait for $nextTick. Used both by togglePopover and by the
                     // scroll/resize handler (where the popover is already open).
                     computePosition() {
-                        const trigger = this.$refs.trigger;
+                        // Fallback to querySelector because $refs.trigger can
+                        // be momentarily undefined during Livewire morph cycles.
+                        const trigger = this.$refs.trigger
+                            || (this.$el && this.$el.querySelector('[x-ref="trigger"]'));
                         if (!trigger) return;
                         const rect = trigger.getBoundingClientRect();
                         const pw = 352; // w-[22rem] = 22 * 16

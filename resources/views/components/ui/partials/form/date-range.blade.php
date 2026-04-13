@@ -171,7 +171,11 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             fieldId: config.fieldId,
             labels: config.labels,
             activePreset: null,
-            popoverStyle: '', // computed coords for the teleported popover
+            // Start OFF-SCREEN so that if position compute ever fails
+            // (e.g. $refs.trigger not yet registered after a Livewire morph
+            // / lazy-load hydration), the popover is never seen at the
+            // viewport top-left default of position:fixed.
+            popoverStyle: 'top: -9999px; left: -9999px;',
 
             presets: [
                 { key: 'today',      label: config.labels.today      },
@@ -208,10 +212,16 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
                 // flash at viewport top-left before $nextTick fires.
                 if (!this.open) this.computePosition();
                 this.open = !this.open;
+                // Safety net for morph/lazy-load edge cases where $refs.trigger
+                // wasn't ready on the synchronous call.
+                if (this.open) this.$nextTick(() => this.computePosition());
             },
 
             computePosition() {
-                const trigger = this.$refs.trigger;
+                // Fallback to querySelector because $refs.trigger can be
+                // momentarily undefined during Livewire morph cycles.
+                const trigger = this.$refs.trigger
+                    || (this.$el && this.$el.querySelector('[x-ref="trigger"]'));
                 if (!trigger) return;
                 const rect = trigger.getBoundingClientRect();
                 const pw = 352;
