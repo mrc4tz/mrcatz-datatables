@@ -73,10 +73,14 @@
             </span>
         </button>
 
-        {{-- Popover — teleported to <body>, SSR-hidden via Tailwind `hidden`
-             class, Alpine toggles reactively via :class. See datatable-filter
-             blade for full rationale. --}}
-        <template x-teleport="body">
+        {{-- Popover — NOT teleported to body. Form Builder fields usually
+             live inside a `<dialog>` modal opened with showModal(), which
+             renders in the browser's top layer. Anything outside the dialog
+             (teleported to body) would be painted BELOW the dialog backdrop
+             regardless of z-index. Keeping the popover as a descendant of
+             the fieldset means it stays inside the same top-layer stacking
+             context when the form is in a modal, and still works fine when
+             the form is inline (e.g. filter sheets, full-page forms). --}}
         <div x-ref="popover"
              :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
              :class="{ 'hidden': !open }"
@@ -130,7 +134,6 @@
                 </div>
             </div>
         </div>
-        </template>
     </div>
 
     @include('mrcatz::components.ui.partials.form._error')
