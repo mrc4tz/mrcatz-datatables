@@ -86,7 +86,7 @@
                                 ]),
                              })"
                              @keydown.escape.window="open = false"
-                             @click.outside="open = false">
+                             @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) open = false">
 
                             {{-- Clickable trigger.
                                  NOTE: must NOT contain a real <button> child — nested
@@ -95,7 +95,8 @@
                                  new line. The clear "x" is therefore a span with
                                  role=button for screen readers + click.stop. --}}
                             <button type="button"
-                                    @click="open = !open"
+                                    x-ref="trigger"
+                                    @click="togglePopover()"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': open }">
                                 <span class="flex items-center gap-2 min-w-0 flex-1">
@@ -117,15 +118,22 @@
                                 </span>
                             </button>
 
-                            {{-- Popover --}}
+                            {{-- Popover — teleported to <body> so it escapes any
+                                 `overflow: hidden` ancestor (card wrappers, scroll
+                                 containers, etc.) and uses position: fixed with
+                                 coords computed from the trigger rect on open +
+                                 scroll + resize. --}}
+                            <template x-teleport="body">
                             <div x-show="open"
+                                 x-ref="popover"
+                                 :style="popoverStyle"
                                  x-transition:enter="transition ease-out duration-150"
                                  x-transition:enter-start="opacity-0 -translate-y-1"
                                  x-transition:enter-end="opacity-100 translate-y-0"
                                  x-transition:leave="transition ease-in duration-100"
                                  x-transition:leave-start="opacity-100"
                                  x-transition:leave-end="opacity-0"
-                                 class="absolute z-50 mt-2 w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
+                                 class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
                                  x-cloak>
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
@@ -176,6 +184,7 @@
                                     </div>
                                 </div>
                             </div>
+                            </template>
                         </div>
                     </div>
 
@@ -227,6 +236,7 @@
                     filterId: config.filterId,
                     labels: config.labels,
                     activePreset: null,
+                    popoverStyle: '', // computed coords for the teleported popover
 
                     presets: [
                         { key: 'today',      label: config.labels.today      },
@@ -240,12 +250,52 @@
                     ],
 
                     init() {
-                        // Sync drafts when popover opens
+                        // Sync drafts when popover opens + install scroll/resize
+                        // handlers that reposition the teleported popover.
                         this.$watch('open', (v) => {
                             if (v) {
                                 this.draftFrom = this.from;
                                 this.draftTo = this.to;
+                                this._reposition = () => this.positionPopover();
+                                window.addEventListener('scroll', this._reposition, true);
+                                window.addEventListener('resize', this._reposition);
+                            } else if (this._reposition) {
+                                window.removeEventListener('scroll', this._reposition, true);
+                                window.removeEventListener('resize', this._reposition);
+                                this._reposition = null;
                             }
+                        });
+                    },
+
+                    togglePopover() {
+                        this.open = !this.open;
+                        if (this.open) this.positionPopover();
+                    },
+
+                    positionPopover() {
+                        this.$nextTick(() => {
+                            const trigger = this.$refs.trigger;
+                            if (!trigger) return;
+                            const rect = trigger.getBoundingClientRect();
+                            const pw = 352; // w-[22rem] = 22 * 16
+                            const ph = 340; // approximate popover height
+                            const gap = 4;
+                            const margin = 8;
+
+                            let top = rect.bottom + gap;
+                            let left = rect.left;
+
+                            // Flip above trigger if it would overflow viewport bottom
+                            if (top + ph > window.innerHeight - margin) {
+                                top = Math.max(margin, rect.top - ph - gap);
+                            }
+                            // Shift left if it would overflow viewport right
+                            if (left + pw > window.innerWidth - margin) {
+                                left = window.innerWidth - pw - margin;
+                            }
+                            if (left < margin) left = margin;
+
+                            this.popoverStyle = `top: ${top}px; left: ${left}px;`;
                         });
                     },
 

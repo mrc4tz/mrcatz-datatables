@@ -36,14 +36,15 @@
               ]),
           })"
           @keydown.escape.window="open = false"
-          @click.outside="open = false">
+          @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) open = false">
 
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
 
     {{-- Wrapper styled exactly like input.blade.php's <label class="input ..."> --}}
     <div class="relative">
         <button type="button"
-                @click="open = !open"
+                x-ref="trigger"
+                @click="togglePopover()"
                 @if($disabled) disabled @endif
                 class="input input-bordered w-full flex items-center gap-3 text-left transition-all duration-200 focus-within:shadow-sm
                        @error($id) input-error @enderror
@@ -72,15 +73,20 @@
             </span>
         </button>
 
-        {{-- Popover --}}
+        {{-- Popover — teleported to <body> so it escapes any `overflow: hidden`
+             ancestor (modal dialogs, cards, scroll containers, etc.) and uses
+             position: fixed with coords computed from the trigger rect. --}}
+        <template x-teleport="body">
         <div x-show="open"
+             x-ref="popover"
+             :style="popoverStyle"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0 -translate-y-1"
              x-transition:enter-end="opacity-100 translate-y-0"
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="absolute z-50 mt-2 w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
+             class="fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden"
              x-cloak>
 
             <div class="grid grid-cols-[7.5rem_1fr]">
@@ -131,6 +137,7 @@
                 </div>
             </div>
         </div>
+        </template>
     </div>
 
     @include('mrcatz::components.ui.partials.form._error')
@@ -164,6 +171,7 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             fieldId: config.fieldId,
             labels: config.labels,
             activePreset: null,
+            popoverStyle: '', // computed coords for the teleported popover
 
             presets: [
                 { key: 'today',      label: config.labels.today      },
@@ -177,12 +185,50 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             ],
 
             init() {
-                // Sync drafts when popover opens
+                // Sync drafts when popover opens + install scroll/resize
+                // handlers that reposition the teleported popover.
                 this.$watch('open', (v) => {
                     if (v) {
                         this.draftFrom = this.from;
                         this.draftTo = this.to;
+                        this._reposition = () => this.positionPopover();
+                        window.addEventListener('scroll', this._reposition, true);
+                        window.addEventListener('resize', this._reposition);
+                    } else if (this._reposition) {
+                        window.removeEventListener('scroll', this._reposition, true);
+                        window.removeEventListener('resize', this._reposition);
+                        this._reposition = null;
                     }
+                });
+            },
+
+            togglePopover() {
+                this.open = !this.open;
+                if (this.open) this.positionPopover();
+            },
+
+            positionPopover() {
+                this.$nextTick(() => {
+                    const trigger = this.$refs.trigger;
+                    if (!trigger) return;
+                    const rect = trigger.getBoundingClientRect();
+                    const pw = 352;
+                    const ph = 340;
+                    const gap = 4;
+                    const margin = 8;
+
+                    let top = rect.bottom + gap;
+                    let left = rect.left;
+
+                    if (top + ph > window.innerHeight - margin) {
+                        top = Math.max(margin, rect.top - ph - gap);
+                    }
+                    if (left + pw > window.innerWidth - margin) {
+                        left = window.innerWidth - pw - margin;
+                    }
+                    if (left < margin) left = margin;
+
+                    this.popoverStyle = `top: ${top}px; left: ${left}px;`;
                 });
             },
 

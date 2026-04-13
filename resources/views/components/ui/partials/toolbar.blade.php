@@ -90,11 +90,18 @@
 </div>
 
 {{-- ========== DESKTOP TOOLBAR (hidden md:flex) ========== --}}
-<div class="hidden md:flex md:items-center md:justify-between gap-3 mb-4">
-    <div class="flex items-center gap-2">
+{{-- Desktop toolbar wraps gracefully when the table is rendered inside a
+     narrow container (e.g. a sidebar panel or a 1/3-column card). md:flex
+     activates at viewport md+, but the CONTAINER may still be much narrower
+     than md, so the left + right action groups can exceed the row width and
+     overflow horizontally. flex-wrap + gap-y-2 keeps them on separate lines
+     when they don't fit, and max-w-full on the search input lets it shrink
+     below its 18rem ideal without blowing out the layout. --}}
+<div class="hidden md:flex md:flex-wrap md:items-center md:justify-between gap-y-2 gap-x-3 mb-4">
+    <div class="flex items-center gap-2 flex-wrap">
         @if($showSearch)
-            <form wire:submit="searchData">
-                <label class="input input-bordered input-md flex items-center gap-2 w-72 transition-all duration-200 focus-within:input-primary focus-within:shadow-sm">
+            <form wire:submit="searchData" class="min-w-0">
+                <label class="input input-bordered input-md flex items-center gap-2 w-72 max-w-full transition-all duration-200 focus-within:input-primary focus-within:shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 text-base-content/40">
                         <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd"/>
                     </svg>
@@ -142,7 +149,7 @@
         @endif
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
         @if($showAddButton)
             <button class="btn btn-md btn-primary gap-2 shadow-sm tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_add') }}" wire:click="addData()">
                 {!! mrcatz_icon('add', 'text-lg') !!}
