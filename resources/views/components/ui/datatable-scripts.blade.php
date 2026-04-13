@@ -91,10 +91,16 @@
             if (!isFullScreen) document.getElementById('modal-data')?.showModal();
         });
 
-        // All close paths (Cancel / Close button clicks, save success)
-        // funnel through closeFormPage() on the server, which dispatches
-        // this event. Scroll the datatable back into view on each close.
-        $wire.on('mrcatz-form-page-closed', scrollPageToTop);
+        // All close paths (Cancel button, save success) funnel through
+        // closeFormPage(true) on the server, which dispatches this
+        // event. Defer the scroll via double rAF so Livewire has
+        // finished morphing the datatable back into the DOM before we
+        // try to measure its position — otherwise target is null and
+        // we fall through to window.scrollTo(0) which sends the user
+        // to the very top of the page instead of the toolbar.
+        $wire.on('mrcatz-form-page-closed', () => {
+            requestAnimationFrame(() => requestAnimationFrame(scrollPageToTop));
+        });
 
         $wire.on('refresh-data', (d) => {
             let data = d[0];
