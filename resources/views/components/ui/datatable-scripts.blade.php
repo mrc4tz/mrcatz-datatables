@@ -46,6 +46,21 @@
             return bottom;
         };
 
+        // Immediate visual gap above the datatable — either the host
+        // container's own top padding (e.g. `p-4` on the wrapper) or the
+        // datatable's own top margin. We include just THIS gap in the
+        // scroll, not whatever content may sit further up the page, so
+        // the table lands right under the sticky bar with the exact
+        // breathing room the host layout already specifies.
+        const getImmediateTopGap = (el) => {
+            const targetMarginTop = parseFloat(getComputedStyle(el).marginTop) || 0;
+            const parent = el.parentElement;
+            const parentPaddingTop = parent
+                ? parseFloat(getComputedStyle(parent).paddingTop) || 0
+                : 0;
+            return targetMarginTop + parentPaddingTop;
+        };
+
         const scrollPageToTop = () => {
             if (!isFullScreen) return;
             const target = document.querySelector('[data-mrcatz-datatable-root]')
@@ -55,15 +70,14 @@
                 return window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             // Manually scroll (instead of scrollIntoView) so we can
-            // subtract sticky-header height and add breathing room for
-            // whatever margin/padding sits between the sticky bar and
-            // the datatable — scrollIntoView only honours the target's
-            // scroll-margin-top, which can't account for runtime layout
-            // variations.
+            // subtract sticky-header height + preserve the immediate
+            // container gap. scrollIntoView only honours scroll-margin-
+            // top, a single static CSS value that can't react to runtime
+            // layout variations.
             const rect = target.getBoundingClientRect();
             const stickyOffset = getStickyTopHeight();
-            const buffer = 16; // ~1rem of breathing room above the toolbar
-            const top = window.scrollY + rect.top - stickyOffset - buffer;
+            const gap = getImmediateTopGap(target);
+            const top = window.scrollY + rect.top - stickyOffset - gap;
             window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
         };
 
