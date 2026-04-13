@@ -85,8 +85,8 @@
                                     'last_year' => mrcatz_lang('filter_date_last_year'),
                                 ]),
                              })"
-                             @keydown.escape.window="open = false"
-                             @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) open = false">
+                             @keydown.escape.window="drOpen = false"
+                             @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) drOpen = false">
 
                             {{-- Clickable trigger.
                                  NOTE: must NOT contain a real <button> child — nested
@@ -98,7 +98,7 @@
                                     x-ref="trigger"
                                     @click="togglePopover($event.currentTarget)"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
-                                    :class="{ 'border-primary': open }">
+                                    :class="{ 'border-primary': drOpen }">
                                 <span class="flex items-center gap-2 min-w-0 flex-1">
                                     {!! mrcatz_icon('event', 'text-base-content/50 shrink-0 w-4 h-4') !!}
                                     <span class="truncate text-left" x-text="triggerText()"></span>
@@ -133,7 +133,7 @@
                             <template x-teleport="body">
                             <div x-ref="popover"
                                  :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-                                 :class="{ 'hidden': !open }"
+                                 :class="{ 'hidden': !drOpen }"
                                  class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
                                 <div class="grid grid-cols-[7.5rem_1fr]">
@@ -173,7 +173,7 @@
 
                                         <div class="flex gap-2 pt-1">
                                             <button type="button"
-                                                    @click="clear(); open = false"
+                                                    @click="clear(); drOpen = false"
                                                     class="btn btn-ghost btn-sm flex-1"
                                                     x-text="labels.clear"></button>
                                             <button type="button"
@@ -226,7 +226,13 @@
                 };
 
                 return {
-                    open: false,
+                    // Renamed from `open` to avoid shadowing the outer filter
+                    // panel's `open` x-data property. When Livewire morphs a
+                    // lazy-loaded component, Alpine scope chain resolution
+                    // for teleported popovers can resolve `open` to the PARENT
+                    // scope (toolbar panel open state), making the popover
+                    // appear whenever the filter toolbar is open.
+                    drOpen: false,
                     from: config.from || '',
                     to: config.to || '',
                     draftFrom: config.from || '',
@@ -258,7 +264,7 @@
                     init() {
                         // Sync drafts when popover opens + install scroll/resize
                         // handlers that reposition the teleported popover.
-                        this.$watch('open', (v) => {
+                        this.$watch('drOpen', (v) => {
                             if (v) {
                                 this.draftFrom = this.from;
                                 this.draftTo = this.to;
@@ -285,11 +291,11 @@
                         // (position:fixed defaults to 0,0 = top-left of viewport),
                         // and the entrance transition animates in from there
                         // instead of from just below the trigger.
-                        if (!this.open) this.computePosition();
-                        this.open = !this.open;
+                        if (!this.drOpen) this.computePosition();
+                        this.drOpen = !this.drOpen;
                         // Re-run after next tick as a safety net for lazy-load
                         // / morph edge cases.
-                        if (this.open) this.$nextTick(() => this.computePosition());
+                        if (this.drOpen) this.$nextTick(() => this.computePosition());
                     },
 
                     // Resolve trigger from: cached event element → $refs → DOM query.
@@ -391,7 +397,7 @@
                         }
                         this.from = this.draftFrom;
                         this.to = this.draftTo;
-                        this.open = false;
+                        this.drOpen = false;
 
                         // Push both halves to Livewire — separate calls so server-side
                         // changeDateRange handles each part with its existing clamp + swap logic

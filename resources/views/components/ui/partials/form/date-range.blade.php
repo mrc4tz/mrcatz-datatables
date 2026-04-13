@@ -35,8 +35,8 @@
                   'last_year'  => mrcatz_lang('filter_date_last_year'),
               ]),
           })"
-          @keydown.escape.window="open = false"
-          @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) open = false">
+          @keydown.escape.window="drOpen = false"
+          @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) drOpen = false">
 
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
 
@@ -49,7 +49,7 @@
                 class="input input-bordered w-full flex items-center gap-3 text-left transition-all duration-200 focus-within:shadow-sm
                        @error($id) input-error @enderror
                        @if($disabled) opacity-60 bg-base-200 @endif"
-                :class="{ 'input-primary': open }">
+                :class="{ 'input-primary': drOpen }">
             @if($field['icon'])
                 <span class="text-base-content/40 text-lg shrink-0">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
             @endif
@@ -83,7 +83,7 @@
              the form is inline (e.g. filter sheets, full-page forms). --}}
         <div x-ref="popover"
              :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
-             :class="{ 'hidden': !open }"
+             :class="{ 'hidden': !drOpen }"
              class="hidden fixed z-[100] w-[22rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden">
 
             <div class="grid grid-cols-[7.5rem_1fr]">
@@ -123,7 +123,7 @@
 
                     <div class="flex gap-2 pt-1">
                         <button type="button"
-                                @click="clear(); open = false"
+                                @click="clear(); drOpen = false"
                                 class="btn btn-ghost btn-sm flex-1"
                                 x-text="labels.clear"></button>
                         <button type="button"
@@ -157,7 +157,12 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             : { from: null, to: null };
 
         return {
-            open: false,
+            // Renamed from `open` to avoid shadowing any ancestor x-data's
+            // `open` property (e.g. modal toggles, accordions). Nested Alpine
+            // scopes + Livewire lazy-load morphs can mis-resolve a generic
+            // `open` binding to an outer scope, making the popover open
+            // whenever the outer UI is open.
+            drOpen: false,
             from: initial.from || '',
             to: initial.to || '',
             draftFrom: initial.from || '',
@@ -188,7 +193,7 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
             init() {
                 // Sync drafts when popover opens + install scroll/resize
                 // handlers that reposition the teleported popover.
-                this.$watch('open', (v) => {
+                this.$watch('drOpen', (v) => {
                     if (v) {
                         this.draftFrom = this.from;
                         this.draftTo = this.to;
@@ -210,10 +215,10 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
                 // Compute position BEFORE flipping open — see datatable-filter
                 // blade for the full rationale. tl;dr: avoids the first-frame
                 // flash at viewport top-left before $nextTick fires.
-                if (!this.open) this.computePosition();
-                this.open = !this.open;
+                if (!this.drOpen) this.computePosition();
+                this.drOpen = !this.drOpen;
                 // Safety net for morph/lazy-load edge cases.
-                if (this.open) this.$nextTick(() => this.computePosition());
+                if (this.drOpen) this.$nextTick(() => this.computePosition());
             },
 
             _getTrigger() {
@@ -309,7 +314,7 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
                 }
                 this.from = this.draftFrom;
                 this.to = this.draftTo;
-                this.open = false;
+                this.drOpen = false;
 
                 // Sync to Livewire as a single associative array property
                 this.$wire.set(this.fieldId, {
