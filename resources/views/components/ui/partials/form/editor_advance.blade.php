@@ -122,7 +122,12 @@
                 // content doesn't arrive carrying MSO-conditional HTML.
                 paste_as_text: false,
                 paste_data_images: false,
-                {!! $tinyUploadHandler !!}
+                {{-- {{ }} auto-escapes " to &quot; so the inner JSON
+                     strings don't close x-init's outer double-quoted
+                     HTML attribute. Browser decodes the entities back
+                     before Alpine reads the attribute, so JS sees the
+                     original quotes. {!! !!} would leak the literal " --}}
+                {{ $tinyUploadHandler }}
                 setup: (editor) => {
                     // Seed from Livewire on init + live-sync edits back.
                     editor.on('init', () => {
