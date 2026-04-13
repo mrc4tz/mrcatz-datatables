@@ -40,8 +40,13 @@
             {!! mrcatz_icon($isEdit ? 'edit_note' : 'add_circle', 'text-primary') !!}
             <span class="truncate">{{ $form_title ?: mrcatz_lang('default_form_title') }}</span>
         </h2>
+        {{-- Close (×) — dismiss without scrolling back to the top.
+             Pass scroll=false so the user's current scroll stays put;
+             the intent of a top-right × is "get me out of here", not
+             "navigate me back to the table". Cancel in the sticky
+             footer still scrolls. --}}
         <button type="button"
-                wire:click="closeFormPage"
+                wire:click="closeFormPage(false)"
                 class="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors shrink-0"
                 aria-label="{{ mrcatz_lang('btn_cancel') }}">
             {!! mrcatz_icon('close') !!}

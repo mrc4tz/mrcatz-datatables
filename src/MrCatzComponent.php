@@ -73,14 +73,19 @@ class MrCatzComponent extends Component
 
     /**
      * Close the full-page form and return to the datatable view.
-     * Called by the Cancel / Close buttons and by JS after a successful
-     * save. Dispatches `mrcatz-form-page-closed` so the client can
-     * restore scroll position to the top of the datatable.
+     * When `$scroll` is true, dispatches `mrcatz-form-page-closed` so
+     * the client can restore scroll position to the top of the
+     * datatable. Used by Cancel / successful-save paths. The top-right
+     * close (×) passes `false` because its visual affordance is "get
+     * out now" — preserving the user's current scroll feels more like
+     * a true dismissal than a return-to-top.
      */
-    public function closeFormPage(): void
+    public function closeFormPage(bool $scroll = true): void
     {
         $this->formPageVisible = false;
-        $this->dispatch('mrcatz-form-page-closed');
+        if ($scroll) {
+            $this->dispatch('mrcatz-form-page-closed');
+        }
     }
 
     public function setTitle(string $title): void
