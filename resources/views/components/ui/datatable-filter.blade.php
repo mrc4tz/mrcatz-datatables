@@ -96,7 +96,7 @@
                                  role=button for screen readers + click.stop. --}}
                             <button type="button"
                                     x-ref="trigger"
-                                    @click="togglePopover()"
+                                    @click="togglePopover($event.currentTarget)"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': open }">
                                 <span class="flex items-center gap-2 min-w-0 flex-1">
@@ -271,7 +271,13 @@
                         });
                     },
 
-                    togglePopover() {
+                    _triggerEl: null, // last-known trigger element for re-positioning
+
+                    togglePopover(el) {
+                        // Remember the clicked trigger — used by scroll/resize
+                        // re-positioning. Falls back to $refs / querySelector
+                        // only for defensive paths.
+                        if (el) this._triggerEl = el;
                         // Compute position BEFORE flipping open — otherwise the
                         // popover renders for one frame with no top/left set
                         // (position:fixed defaults to 0,0 = top-left of viewport),
@@ -279,21 +285,22 @@
                         // instead of from just below the trigger.
                         if (!this.open) this.computePosition();
                         this.open = !this.open;
-                        // Re-run after next tick as a safety net — covers the
-                        // edge case where $refs.trigger wasn't ready on the
-                        // synchronous call (can happen right after a Livewire
-                        // lazy-load hydration / morph on first click).
+                        // Re-run after next tick as a safety net for lazy-load
+                        // / morph edge cases.
                         if (this.open) this.$nextTick(() => this.computePosition());
                     },
 
-                    // Synchronous — trigger always exists at this point, no need
-                    // to wait for $nextTick. Used both by togglePopover and by the
-                    // scroll/resize handler (where the popover is already open).
-                    computePosition() {
-                        // Fallback to querySelector because $refs.trigger can
-                        // be momentarily undefined during Livewire morph cycles.
-                        const trigger = this.$refs.trigger
+                    // Resolve trigger from: cached event element → $refs → DOM query.
+                    // $refs can be momentarily undefined during Livewire morphs
+                    // following lazy-hydration, so we never rely on it alone.
+                    _getTrigger() {
+                        return this._triggerEl
+                            || this.$refs.trigger
                             || (this.$el && this.$el.querySelector('[x-ref="trigger"]'));
+                    },
+
+                    computePosition() {
+                        const trigger = this._getTrigger();
                         if (!trigger) return;
                         const rect = trigger.getBoundingClientRect();
                         const pw = 352; // w-[22rem] = 22 * 16

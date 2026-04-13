@@ -44,7 +44,7 @@
     <div class="relative">
         <button type="button"
                 x-ref="trigger"
-                @click="togglePopover()"
+                @click="togglePopover($event.currentTarget)"
                 @if($disabled) disabled @endif
                 class="input input-bordered w-full flex items-center gap-3 text-left transition-all duration-200 focus-within:shadow-sm
                        @error($id) input-error @enderror
@@ -206,22 +206,27 @@ if (typeof window.mrcatzFormDateRange === 'undefined') {
                 });
             },
 
-            togglePopover() {
+            _triggerEl: null,
+
+            togglePopover(el) {
+                if (el) this._triggerEl = el;
                 // Compute position BEFORE flipping open — see datatable-filter
                 // blade for the full rationale. tl;dr: avoids the first-frame
                 // flash at viewport top-left before $nextTick fires.
                 if (!this.open) this.computePosition();
                 this.open = !this.open;
-                // Safety net for morph/lazy-load edge cases where $refs.trigger
-                // wasn't ready on the synchronous call.
+                // Safety net for morph/lazy-load edge cases.
                 if (this.open) this.$nextTick(() => this.computePosition());
             },
 
-            computePosition() {
-                // Fallback to querySelector because $refs.trigger can be
-                // momentarily undefined during Livewire morph cycles.
-                const trigger = this.$refs.trigger
+            _getTrigger() {
+                return this._triggerEl
+                    || this.$refs.trigger
                     || (this.$el && this.$el.querySelector('[x-ref="trigger"]'));
+            },
+
+            computePosition() {
+                const trigger = this._getTrigger();
                 if (!trigger) return;
                 const rect = trigger.getBoundingClientRect();
                 const pw = 352;
