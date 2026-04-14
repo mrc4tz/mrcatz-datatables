@@ -46,6 +46,13 @@ return [
     'filter_date_this_year'  => 'Tahun ini',
     'filter_date_last_year'  => '1 tahun terakhir',
 
+    // Map picker
+    'map_use_my_location' => 'Gunakan lokasi saya',
+    'map_clear'           => 'Reset',
+    'map_radius'          => 'Radius',
+    'map_show_inputs'     => 'Input manual',
+    'map_hide_inputs'     => 'Sembunyikan',
+
     // Empty states
     'no_results_for' => "Tidak ada hasil ditemukan untuk pencarian ':query'",
     'no_results' => 'Tidak ada hasil ditemukan',

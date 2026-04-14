@@ -46,6 +46,13 @@ return [
     'filter_date_this_year'  => 'This year',
     'filter_date_last_year'  => 'Last year',
 
+    // Map picker
+    'map_use_my_location' => 'Use my location',
+    'map_clear'           => 'Clear',
+    'map_radius'          => 'Radius',
+    'map_show_inputs'     => 'Manual input',
+    'map_hide_inputs'     => 'Hide inputs',
+
     // Empty states
     'no_results_for' => "No results found for ':query'",
     'no_results' => 'No results found',

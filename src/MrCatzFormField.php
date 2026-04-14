@@ -92,6 +92,18 @@ class MrCatzFormField
     // range() — show the live value badge in the legend (default true)
     private bool $showValue = true;
 
+    // mapPicker() — provider + config
+    private string $mapProvider = 'leaflet';
+    private ?string $mapApiKey = null;
+    private ?float $defaultLat = null;
+    private ?float $defaultLng = null;
+    private int $defaultZoom = 13;
+    private bool $showRadius = false;
+    private int $defaultRadius = 500;
+    private int $minRadius = 10;
+    private int $maxRadius = 10000;
+    private string $mapHeight = '320px';
+
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
         $this->type = $type;
@@ -517,6 +529,75 @@ class MrCatzFormField
         $field = new static('color', $id, $label);
         $field->rules = $rules;
         $field->messages = $messages;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    /**
+     * Interactive map picker — click / drag a marker to set lat/lng,
+     * with an optional radius slider for geofence / coverage area use
+     * cases. Binds to a single array property:
+     *
+     *     public array $location = ['lat' => null, 'lng' => null];
+     *     // or with showRadius:
+     *     public array $location = ['lat' => null, 'lng' => null, 'radius' => null];
+     *
+     *     MrCatzFormField::mapPicker('location', 'Delivery Zone',
+     *         provider: 'leaflet',  // 'leaflet' | 'google'
+     *         apiKey:   null,        // required when provider: 'google'
+     *         defaultLat:   -6.2088, defaultLng: 106.8456, defaultZoom: 13,
+     *         showRadius:   true,
+     *         defaultRadius: 500, minRadius: 10, maxRadius: 10000,
+     *         height: '320px',
+     *     )
+     *
+     * Leaflet (default) uses OpenStreetMap tiles — no API key, no billing.
+     * Google requires the host app to pass its Maps JavaScript API key.
+     */
+    public static function mapPicker(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        string $provider = 'leaflet',
+        ?string $apiKey = null,
+        ?float $defaultLat = null,
+        ?float $defaultLng = null,
+        int $defaultZoom = 13,
+        bool $showRadius = false,
+        int $defaultRadius = 500,
+        int $minRadius = 10,
+        int $maxRadius = 10000,
+        string $height = '320px',
+        mixed $disabled = false,
+    ): static {
+        if (!in_array($provider, ['leaflet', 'google'], true)) {
+            throw new \InvalidArgumentException(
+                "MrCatzFormField::mapPicker provider must be 'leaflet' or 'google', got '{$provider}'."
+            );
+        }
+        if ($provider === 'google' && empty($apiKey)) {
+            throw new \InvalidArgumentException(
+                "MrCatzFormField::mapPicker requires an apiKey when provider is 'google'. "
+                . "Leave provider as 'leaflet' (default) for a key-free OpenStreetMap map."
+            );
+        }
+
+        $field = new static('map_picker', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->mapProvider = $provider;
+        $field->mapApiKey = $apiKey;
+        $field->defaultLat = $defaultLat;
+        $field->defaultLng = $defaultLng;
+        $field->defaultZoom = $defaultZoom;
+        $field->showRadius = $showRadius;
+        $field->defaultRadius = $defaultRadius;
+        $field->minRadius = $minRadius;
+        $field->maxRadius = $maxRadius;
+        $field->mapHeight = $height;
         $field->disabled = $disabled;
         return $field;
     }
@@ -1065,6 +1146,16 @@ class MrCatzFormField
             'cardBreak' => $this->cardBreak,
             'dateFormat' => $this->dateFormat,
             'showValue' => $this->showValue,
+            'mapProvider' => $this->mapProvider,
+            'mapApiKey' => $this->mapApiKey,
+            'defaultLat' => $this->defaultLat,
+            'defaultLng' => $this->defaultLng,
+            'defaultZoom' => $this->defaultZoom,
+            'showRadius' => $this->showRadius,
+            'defaultRadius' => $this->defaultRadius,
+            'minRadius' => $this->minRadius,
+            'maxRadius' => $this->maxRadius,
+            'mapHeight' => $this->mapHeight,
         ];
     }
 
