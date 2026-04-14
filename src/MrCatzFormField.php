@@ -89,6 +89,9 @@ class MrCatzFormField
     // Card break — section rendered as separate card
     private bool $cardBreak = false;
 
+    // range() — show the live value badge in the legend (default true)
+    private bool $showValue = true;
+
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
         $this->type = $type;
@@ -353,18 +356,92 @@ class MrCatzFormField
         return $field;
     }
 
+    /**
+     * Date + time picker (HTML `<input type="datetime-local">`). Set
+     * `$showSecond: true` to expose a seconds segment in the native
+     * picker — maps to `step="1"` which opt-ins to second-level
+     * precision. Default `false` keeps the minute-resolution picker
+     * most users expect.
+     */
     public static function datetime(
         string $id,
         string $label,
         ?string $rules = null,
         ?array $messages = null,
         ?string $icon = null,
+        bool $showSecond = false,
         mixed $disabled = false,
     ): static {
         $field = new static('datetime-local', $id, $label);
         $field->rules = $rules;
         $field->messages = $messages;
         $field->icon = $icon;
+        if ($showSecond) {
+            $field->step = 1;
+        }
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    /**
+     * Month + year picker. Renders <input type="month"> which browsers
+     * expose as a native month/year dropdown (e.g. "June 2026"). Bound
+     * value is a string "YYYY-MM".
+     *
+     *     MrCatzFormField::monthYear('billing_period', 'Billing Period',
+     *         rules: 'required|date_format:Y-m',
+     *         min: '2020-01',
+     *         max: '2030-12',
+     *     )
+     */
+    public static function monthYear(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?string $min = null,
+        ?string $max = null,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('month', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->min = $min;
+        $field->max = $max;
+        $field->disabled = $disabled;
+        return $field;
+    }
+
+    /**
+     * Year-only picker. Renders a <input type="number"> constrained to
+     * a year range (default 1900–2100). Bound value is an integer.
+     *
+     *     MrCatzFormField::year('graduation_year', 'Graduation Year',
+     *         rules: 'required|integer|min:1900|max:2100',
+     *         min: 1950,
+     *         max: 2030,
+     *     )
+     */
+    public static function year(
+        string $id,
+        string $label,
+        ?string $rules = null,
+        ?array $messages = null,
+        ?string $icon = null,
+        ?int $min = 1900,
+        ?int $max = 2100,
+        mixed $disabled = false,
+    ): static {
+        $field = new static('year', $id, $label);
+        $field->rules = $rules;
+        $field->messages = $messages;
+        $field->icon = $icon;
+        $field->min = $min;
+        $field->max = $max;
+        $field->step = 1;
+        $field->placeholder = 'YYYY';
         $field->disabled = $disabled;
         return $field;
     }
@@ -443,6 +520,7 @@ class MrCatzFormField
         ?int $step = null,
         ?string $rules = null,
         ?array $messages = null,
+        bool $showValue = true,
         mixed $disabled = false,
     ): static {
         $field = new static('range', $id, $label);
@@ -451,6 +529,7 @@ class MrCatzFormField
         $field->step = $step;
         $field->rules = $rules;
         $field->messages = $messages;
+        $field->showValue = $showValue;
         $field->disabled = $disabled;
         return $field;
     }
@@ -976,6 +1055,7 @@ class MrCatzFormField
             'uploadPath' => $this->uploadPath,
             'cardBreak' => $this->cardBreak,
             'dateFormat' => $this->dateFormat,
+            'showValue' => $this->showValue,
         ];
     }
 

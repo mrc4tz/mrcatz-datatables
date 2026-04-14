@@ -4,13 +4,28 @@
     $pwToggle = $field['showPasswordToggle'] ?? true;
     $pwGenerate = $field['showPasswordGenerate'] ?? true;
     $hasPwButtons = $type === 'password' && !$disabled && ($pwToggle || $pwGenerate);
+    // Native date/time/datetime pickers only open when the user clicks
+    // the tiny indicator icon at the right of the input. Clicking the
+    // wrapping label area normally just focuses — call showPicker()
+    // programmatically so the whole field opens the native picker.
+    $isPickerInput = in_array($type, ['date', 'time', 'datetime-local', 'month', 'week']);
 @endphp
 <fieldset class="fieldset">
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
     <label class="input input-bordered {{ $sc }} flex items-center gap-3 w-full transition-all duration-200
         focus-within:shadow-sm
+        @if($isPickerInput) cursor-pointer @endif
         @error($id) input-error @enderror
         @if($disabled) opacity-60 bg-base-200 @endif"
+        @if($isPickerInput && !$disabled)
+        {{-- Only call showPicker when the click lands OUTSIDE the input
+             itself — native input clicks already open the picker, a
+             second programmatic call throws "NotAllowedError" and can
+             close the picker back up. The label still looks clickable
+             thanks to cursor-pointer, and any whitespace / icon area
+             click now reliably opens the calendar. --}}
+        @click="if ($event.target !== $el.querySelector('input')) { try { $el.querySelector('input').showPicker?.() } catch (e) {} }"
+        @endif
         @if($type === 'password' && $hasPwButtons)
         x-data="{
             show: false,
@@ -29,7 +44,7 @@
         }"
         @endif>
         @if($field['icon'])
-            <span class="text-base-content/40 text-lg shrink-0">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
+            <span class="inline-flex items-center justify-center text-base-content/40 text-lg shrink-0 self-center">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
         @endif
         @if($field['prefix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['prefix'] }}</span>
@@ -39,9 +54,19 @@
                placeholder="{{ $field['placeholder'] ?? '...' }}"
                {!! $wireDirective !!}
                {!! $onChangeAttr !!}
+               @if($type === 'datetime-local' && !empty($field['step'])) step="{{ $field['step'] }}" @endif
                @if($disabled) disabled @endif />
         @if($field['suffix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>
+        @endif
+        @if($type === 'datetime-local' && !$disabled)
+            {{-- Affordance chevron on the right — native datetime-local
+                 doesn't render a built-in indicator in most browsers
+                 (unlike date / time which show a calendar / clock
+                 icon), so users miss that the field is a picker. --}}
+            <span class="inline-flex items-center justify-center shrink-0 self-center pointer-events-none">
+                {!! mrcatz_form_icon('expand_more', 'text-base-content/40 w-5 h-5') !!}
+            </span>
         @endif
         @if($hasPwButtons && $pwGenerate)
             <button type="button"

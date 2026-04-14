@@ -51,7 +51,7 @@
                        @if($disabled) opacity-60 bg-base-200 @endif"
                 :class="{ 'input-primary': drOpen }">
             @if($field['icon'])
-                <span class="text-base-content/40 text-lg shrink-0">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
+                <span class="inline-flex items-center justify-center text-base-content/40 text-lg shrink-0 self-center">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>
             @endif
 
             <span class="grow text-sm min-w-0 truncate"
