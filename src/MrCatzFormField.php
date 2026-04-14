@@ -340,18 +340,27 @@ class MrCatzFormField
         return $field;
     }
 
+    /**
+     * Time picker (HTML `<input type="time">`). Pass
+     * `$showSecond: true` to expose a seconds segment in the native
+     * picker — maps to `step="1"` for HH:MM:SS resolution.
+     */
     public static function time(
         string $id,
         string $label,
         ?string $rules = null,
         ?array $messages = null,
         ?string $icon = null,
+        bool $showSecond = false,
         mixed $disabled = false,
     ): static {
         $field = new static('time', $id, $label);
         $field->rules = $rules;
         $field->messages = $messages;
         $field->icon = $icon;
+        if ($showSecond) {
+            $field->step = 1;
+        }
         $field->disabled = $disabled;
         return $field;
     }

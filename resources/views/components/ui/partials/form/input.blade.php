@@ -54,7 +54,7 @@
                placeholder="{{ $field['placeholder'] ?? '...' }}"
                {!! $wireDirective !!}
                {!! $onChangeAttr !!}
-               @if($type === 'datetime-local' && !empty($field['step'])) step="{{ $field['step'] }}" @endif
+               @if(in_array($type, ['datetime-local', 'time']) && !empty($field['step'])) step="{{ $field['step'] }}" @endif
                @if($disabled) disabled @endif />
         @if($field['suffix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>
