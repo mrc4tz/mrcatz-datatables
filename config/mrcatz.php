@@ -182,7 +182,6 @@ return [
 
         // -- Export Modal --
         // 'table_view'               => '<i class="fas fa-table"></i>',
-        // 'description'              => '<i class="fas fa-file-csv"></i>',
         // 'picture_as_pdf'           => '<i class="fas fa-file-pdf"></i>',
         // 'info'                     => '<i class="fas fa-info-circle"></i>',
 

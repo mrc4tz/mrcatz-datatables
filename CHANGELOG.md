@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.12] - 2026-04-16
+
+### Added
+- CSV icon (`description` key) in the default inline-SVG icon set (`mrcatz_icon_svg()`), and mapped to `document-text` / `fa-solid fa-file-csv` in the Heroicon and Font Awesome icon sets — so the export modal's new CSV card renders a matching glyph regardless of the configured `icon_set`.
+- CSV-aware rendering in the export banner. `MrCatzExport` now accepts `setFormat()` and `setHasIndexCol()`; the export blade reuses the same HTML template for XLSX and CSV but pads rows with empty cells instead of using `colspan`, and (on CSV) shifts the title / meta banner one column to the right when the first column is an index/No column so that column doesn't get auto-sized to the title string's width.
+- `export_banner_exported`, `export_banner_total`, `export_banner_rows` translation keys (EN / ID). Excel and PDF export banners now use `mrcatz_lang()` instead of the hard-coded Indonesian "Diekspor / Total / data" string.
+
+### Changed
+- Export modal format cards reordered to **PDF → CSV → Excel**, with PDF as the default selection (previously Excel-first).
+- `styles()` on `MrCatzExport` (and the published `App\Exports\DatatableExport` stub) now early-returns for CSV. `mergeCells()` is a spreadsheet mutation, not pure styling — for CSV it collapsed the shifted title-banner cells into the empty anchor column, producing three empty rows in the output.
+
 ## [1.29.11] - 2026-04-16
 
 ### Added

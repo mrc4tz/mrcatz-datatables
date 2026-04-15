@@ -42,7 +42,7 @@
 <body>
     <div class="header">
         <h2>{{ $title }}</h2>
-        <div class="meta">Diekspor: {{ now()->translatedFormat('d F Y, H:i') }} &mdash; Total: {{ count($rows) }} data</div>
+        <div class="meta">{{ mrcatz_lang('export_banner_exported') }}: {{ now()->translatedFormat('d F Y, H:i') }} &mdash; {{ mrcatz_lang('export_banner_total') }}: {{ count($rows) }} {{ mrcatz_lang('export_banner_rows') }}</div>
     </div>
 
     <table>

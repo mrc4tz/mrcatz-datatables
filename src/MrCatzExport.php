@@ -10,11 +10,26 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite\Excel\Concerns\ShouldAutoSize, \Maatwebsite\Excel\Concerns\WithStyles
 {
+    private string $format = 'xlsx';
+    private bool $hasIndexCol = false;
+
     public function __construct(
         private string $title,
         private array $headers,
         private array $rows
     ) {}
+
+    public function setFormat(string $format): static
+    {
+        $this->format = $format;
+        return $this;
+    }
+
+    public function setHasIndexCol(bool $hasIndexCol): static
+    {
+        $this->hasIndexCol = $hasIndexCol;
+        return $this;
+    }
 
     public function view(): View
     {
@@ -26,11 +41,22 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
             'title' => $this->title,
             'headers' => $this->headers,
             'rows' => $this->rows,
+            'format' => $this->format,
+            'hasIndexCol' => $this->hasIndexCol,
         ]);
     }
 
     public function styles(Worksheet $sheet): array
     {
+        // CSV writer ignores cell styling, but `mergeCells()` mutates
+        // the underlying spreadsheet BEFORE the writer runs —
+        // consolidating multi-cell values into the anchor cell. That
+        // collapses the CSV title banner to empty rows, so for CSV we
+        // skip every sheet-mutation here entirely.
+        if ($this->format === 'csv') {
+            return [];
+        }
+
         $c = self::colors();
         $colCount = count($this->headers);
         $lastCol = self::columnLetter($colCount);

@@ -81,6 +81,9 @@ return [
     'export_search' => 'Search',
     'export_search_placeholder' => 'Search keyword...',
     'export_count' => 'data will be exported',
+    'export_banner_exported' => 'Exported',
+    'export_banner_total' => 'Total',
+    'export_banner_rows' => 'rows',
 
     // Reset modal
     'reset_title' => 'Reset Search & Filter?',

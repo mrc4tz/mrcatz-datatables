@@ -14,11 +14,26 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class DatatableExport implements FromView, ShouldAutoSize, WithStyles
 {
+    private string $format = 'xlsx';
+    private bool $hasIndexCol = false;
+
     public function __construct(
         private string $title,
         private array $headers,
         private array $rows
     ) {}
+
+    public function setFormat(string $format): static
+    {
+        $this->format = $format;
+        return $this;
+    }
+
+    public function setHasIndexCol(bool $hasIndexCol): static
+    {
+        $this->hasIndexCol = $hasIndexCol;
+        return $this;
+    }
 
     public function view(): View
     {
@@ -26,6 +41,8 @@ class DatatableExport implements FromView, ShouldAutoSize, WithStyles
             'title' => $this->title,
             'headers' => $this->headers,
             'rows' => $this->rows,
+            'format' => $this->format,
+            'hasIndexCol' => $this->hasIndexCol,
         ]);
     }
 
@@ -37,6 +54,13 @@ class DatatableExport implements FromView, ShouldAutoSize, WithStyles
      */
     public function styles(Worksheet $sheet): array
     {
+        // CSV writer ignores styling, and mergeCells() would collapse
+        // the title banner cells into the (empty) anchor column. Skip
+        // all sheet mutations for CSV.
+        if ($this->format === 'csv') {
+            return [];
+        }
+
         $c = MrCatzExport::colors();
         $lastCol = MrCatzExport::columnLetter(count($this->headers));
         $headerRow = 4;

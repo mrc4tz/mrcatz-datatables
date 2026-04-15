@@ -118,6 +118,13 @@ trait HasExport
                 ? new \App\Exports\DatatableExport($title, $headers, $rows)
                 : new \MrCatz\DataTable\MrCatzExport($title, $headers, $rows);
 
+            if (method_exists($exportClass, 'setFormat')) {
+                $exportClass->setFormat($format);
+            }
+            if (method_exists($exportClass, 'setHasIndexCol')) {
+                $exportClass->setHasIndexCol($exportData['hasIndexCol'] ?? false);
+            }
+
             $this->afterExport($format, $scope);
 
             if ($format === 'csv') {
@@ -178,6 +185,10 @@ trait HasExport
             }
         });
 
-        return ['headers' => $headers, 'rows' => $rows];
+        $firstExportableCol = $exportableColumns[0] ?? null;
+        $hasIndexCol = $firstExportableCol !== null
+            && ($dataTableSet[$firstExportableCol]['index'] ?? null) !== null;
+
+        return ['headers' => $headers, 'rows' => $rows, 'hasIndexCol' => $hasIndexCol];
     }
 }

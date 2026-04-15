@@ -81,6 +81,9 @@ return [
     'export_search' => 'Pencarian',
     'export_search_placeholder' => 'Kata kunci pencarian...',
     'export_count' => 'data akan di-export',
+    'export_banner_exported' => 'Diekspor',
+    'export_banner_total' => 'Total',
+    'export_banner_rows' => 'data',
 
     // Reset modal
     'reset_title' => 'Reset Pencarian & Filter?',
