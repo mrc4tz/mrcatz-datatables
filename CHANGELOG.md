@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.0] - 2026-04-15
+
+### Added
+- **Custom bulk actions.** New `MrCatzBulkAction` class + `setBulkAction()` hook on the table component, paired with `setBulkForm($id)` and `processBulkActionData($id, $selectedRows, $bulkFormData)` hooks on the page component. Two modes supported:
+  - `'confirmation'` — simple confirm dialog (e.g. "Delete Selected Data?").
+  - `'form'` — opens a modal rendering either a Form Builder form (`setBulkForm()` returns `MrCatzFormField[]`, auto-bound to `$bulkFormData` and auto-validated) or a blade `@yield` escape hatch (`setBulkForm()` returns a section name, user wires `wire:model="bulkFormData.*"` manually).
+  Buttons render in the existing bulk toolbar alongside the built-in delete button. Example:
+  ```php
+  public function setBulkAction(): array
+  {
+      return [
+          MrCatzBulkAction::create('bulk_category', 'form', 'Update Selected Data', null, null, 'edit'),
+          MrCatzBulkAction::create('bulk_delete', 'confirmation', 'Delete Selected Data?', null, 'Selected data will be permanently deleted.', 'delete'),
+      ];
+  }
+  ```
+- `$showBulkDeleteAction` property on the table component (default `true`) to hide the built-in bulk delete button when you want full control over bulk operations via custom actions.
+- `$bulkFormData` array property on `MrCatzComponent` holding form values submitted through bulk form modals.
+- `MrCatzEvent::BULK_ACTION` event constant for the new table→page handoff.
+
+### Changed
+- `form-builder.blade.php` now accepts an optional `$formFields` include variable, enabling callers to render a pre-built, differently-namespaced field set (used internally by the bulk action modal so fields bind to `bulkFormData.*`). Existing call sites continue to use `$this->getFormFields()` unchanged.
+
 ## [1.23.10] - 2026-04-05
 
 ### Fixed

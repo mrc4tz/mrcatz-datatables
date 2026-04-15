@@ -212,17 +212,31 @@
 @include('mrcatz::components.ui.datatable-filter')
 
 @if($bulkShow && count($selectedRows) > 0)
+    @php
+        $bulkActions = method_exists($this, 'getBulkActions') ? $this->getBulkActions() : [];
+        $showBulkDelete = !property_exists($this, 'showBulkDeleteAction') || $this->showBulkDeleteAction;
+    @endphp
     <div class="mb-4 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center gap-2">
             {!! mrcatz_icon('check_circle', 'text-sm text-primary') !!}
             <span class="text-sm font-medium text-primary">{{ count($selectedRows) }} {{ mrcatz_lang('data_selected') }}</span>
         </div>
-        <div class="flex gap-2">
-            <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none"
-                    x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
-                {!! mrcatz_icon('delete', 'text-xs') !!}
-                {{ mrcatz_lang('btn_delete') }}
-            </button>
+        <div class="flex flex-wrap gap-2">
+            @foreach($bulkActions as $ba)
+                <button type="button"
+                        class="btn btn-xs btn-primary btn-outline gap-1 flex-1 sm:flex-none"
+                        wire:click="openBulkAction('{{ $ba['id'] }}')">
+                    {!! mrcatz_icon($ba['icon'], 'text-xs') !!}
+                    {{ $ba['buttonText'] }}
+                </button>
+            @endforeach
+            @if($showBulkDelete)
+                <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none"
+                        x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
+                    {!! mrcatz_icon('delete', 'text-xs') !!}
+                    {{ mrcatz_lang('btn_delete') }}
+                </button>
+            @endif
             <button class="btn btn-xs btn-ghost gap-1 flex-1 sm:flex-none" wire:click="clearSelection">
                 {!! mrcatz_icon('close', 'text-xs') !!}
                 {{ mrcatz_lang('btn_cancel') }}

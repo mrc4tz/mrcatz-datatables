@@ -142,7 +142,7 @@
 </dialog>
 
 {{-- Bulk delete modal --}}
-@if($bulkPrimaryKey !== null)
+@if($bulkPrimaryKey !== null && (!property_exists($this, 'showBulkDeleteAction') || $this->showBulkDeleteAction))
     <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-bulk-delete-title">
         <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-bulk-delete')?.open">
             <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">

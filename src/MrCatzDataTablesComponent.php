@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use MrCatz\DataTable\Concerns\HasBulkActions;
+use MrCatz\DataTable\Concerns\HasCustomBulkActions;
 use MrCatz\DataTable\Concerns\HasExport;
 use MrCatz\DataTable\Concerns\HasFilters;
 
@@ -17,6 +18,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     use HasFilters;
     use HasExport;
     use HasBulkActions;
+    use HasCustomBulkActions;
 
     // Public properties — no strict types to allow child class override without type declaration
     public $tableTitle = '';

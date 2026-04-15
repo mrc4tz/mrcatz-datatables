@@ -72,6 +72,17 @@ class MrCatzComponent extends Component
     public $formPageBorder = false;
 
     /**
+     * Bulk action form state. Populated from setBulkForm($id) fields when
+     * an action runs in 'form' mode. Lives here (on the page component)
+     * so user's processBulkActionData() hook can read the submitted
+     * values directly. Always wire:model your bulk fields as
+     * "bulkFormData.fieldId" — the Form Builder handles this for you
+     * when setBulkForm() returns MrCatzFormField[]; for blade-mode bulk
+     * forms you bind inputs manually.
+     */
+    public $bulkFormData = [];
+
+    /**
      * Close the full-page form and return to the datatable view.
      * When `$scroll` is true, dispatches `mrcatz-form-page-closed` so
      * the client can restore scroll position to the top of the
@@ -146,6 +157,39 @@ class MrCatzComponent extends Component
     }
 
     public function dropBulkData($selectedRows) {}
+
+    /**
+     * Override to define the form rendered inside a bulk action modal
+     * for the given action id.
+     *
+     * Return MrCatzFormField[] to use the Form Builder (fields are
+     * auto-bound to $bulkFormData and validated). Return a string to
+     * use a blade @yield section you define in your page blade — you
+     * are responsible for wire:model binding in that case (bind to
+     * "bulkFormData.your_field_id" so processBulkActionData receives
+     * the values).
+     *
+     * @return array|string
+     */
+    public function setBulkForm(string $id)
+    {
+        return [];
+    }
+
+    #[On(MrCatzEvent::BULK_ACTION)]
+    public function listenBulkAction($id, $selectedRows, $bulkFormData): void
+    {
+        $this->processBulkActionData($id, $selectedRows, (array) $bulkFormData);
+    }
+
+    /**
+     * Override to handle a custom bulk action submission.
+     *
+     * @param string $id            The MrCatzBulkAction id that fired.
+     * @param array  $selectedRows  IDs of the currently selected rows.
+     * @param array  $bulkFormData  Form values (only populated for mode=form).
+     */
+    public function processBulkActionData(string $id, array $selectedRows, array $bulkFormData): void {}
 
     #[On(MrCatzEvent::INLINE_UPDATE)]
     public function listenInlineUpdate($rowData, $columnKey, $newValue): void

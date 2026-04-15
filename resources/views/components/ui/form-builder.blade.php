@@ -1,6 +1,9 @@
-{{-- MrCatz Form Builder — auto-generated form from setForm() --}}
+{{-- MrCatz Form Builder — auto-generated form from setForm().
+     Accepts an optional `$formFields` include variable so callers can
+     render a pre-built, differently-namespaced field set (e.g. the bulk
+     action modal passes fields wired to `bulkFormData.*`). --}}
 @php
-    $formFields = $this->getFormFields();
+    $formFields = isset($formFields) ? $formFields : $this->getFormFields();
 
     if (!function_exists('mrcatz_fb_classes')) {
         function mrcatz_fb_classes(string $component, array $field): string {
