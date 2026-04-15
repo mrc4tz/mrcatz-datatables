@@ -11,7 +11,7 @@ class {{name}}Table extends MrCatzDataTablesComponent
 {
     public $showSearch = true;
     public $showAddButton = true;
-    public $exportTitle = 'Data {{name}}';
+    public $exportTitle = '{{name}} Data';
 
     public function configTable()
     {
@@ -30,17 +30,17 @@ class {{name}}Table extends MrCatzDataTablesComponent
     {
         return $this->CreateMrCatzTable()
             ->withColumnIndex('No')
-            // Tambahkan kolom sesuai kebutuhan:
-            // ->withColumn('Nama', 'name')
+            // Add columns as needed:
+            // ->withColumn('Name', 'name')
             // ->withColumn('Email', 'email')
-            ->withCustomColumn('Aksi', function ($data, $i) {
+            ->withCustomColumn('Action', function ($data, $i) {
                 return MrCatzDataTables::getActionView($data, $i, true, true);
             });
     }
 
     public function setFilter()
     {
-        // Tambahkan filter jika dibutuhkan:
+        // Add filters if needed:
         // $filter = MrCatzDataTableFilter::create(
         //     'filter_id', 'Label', $data, 'value', 'label', 'db_column'
         // )->get();

@@ -1,20 +1,20 @@
 <div>
 
     {{-- ============================================================
-       FILE INI OPSIONAL jika menggunakan Form Builder (setForm()).
-       Jika {{name}}Page sudah override setForm(), file ini tidak dipakai.
-       Hapus file ini jika menggunakan Form Builder sepenuhnya.
+       THIS FILE IS OPTIONAL when using the Form Builder (setForm()).
+       If {{name}}Page overrides setForm(), this file is not used.
+       Delete this file if you are fully using the Form Builder.
        ============================================================ --}}
 
     @extends('mrcatz::components.ui.datatable-form')
 
     @section('forms')
 
-        {{-- Tambahkan form fields di sini --}}
-        {{-- Contoh form field: --}}
+        {{-- Add form fields here --}}
+        {{-- Example form field: --}}
         {{-- <div class="space-y-4">
                 <label class="form-control">
-                    <div class="label"><span class="label-text">Nama</span></div>
+                    <div class="label"><span class="label-text">Name</span></div>
                     <input type="text" class="input input-bordered" wire:model="name" />
                     @error('name') <span class="text-error text-xs">{{ '{{ $message }}' }}</span> @enderror
                 </label>

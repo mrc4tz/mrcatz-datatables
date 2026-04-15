@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Auth;
 
 class {{name}}Page extends MrCatzComponent
 {
-    // Tambahkan property form sesuai kebutuhan
+    // Add form properties as needed
     // public $field_name;
 
     /**
-     * (Opsional) Definisikan form fields menggunakan Form Builder.
-     * Jika method ini di-override, Blade form file ({{snake}}_form.blade.php) tidak diperlukan.
-     * Jika tidak di-override, form akan menggunakan Blade file seperti biasa.
+     * (Optional) Define form fields using the Form Builder.
+     * If this method is overridden, the Blade form file ({{snake}}_form.blade.php) is not required.
+     * If not overridden, the form will use the Blade file as usual.
      *
-     * Contoh:
+     * Example:
      * public function setForm(): array
      * {
      *     return [
-     *         MrCatzFormField::text('name', label: 'Nama', rules: 'required|max:255', icon: 'person'),
+     *         MrCatzFormField::text('name', label: 'Name', rules: 'required|max:255', icon: 'person'),
      *         MrCatzFormField::email('email', label: 'Email', rules: 'required|email', icon: 'mail'),
      *         MrCatzFormField::select('role', label: 'Role', data: [
      *             ['id' => 'admin', 'name' => 'Admin'],
@@ -51,7 +51,7 @@ class {{name}}Page extends MrCatzComponent
 
     public function prepareAddData()
     {
-        $this->form_title = 'Tambah {{name}}';
+        $this->form_title = 'Add {{name}}';
         $this->resetErrorBag();
         $this->resetValidation();
         // Reset form fields
@@ -63,22 +63,22 @@ class {{name}}Page extends MrCatzComponent
         $this->form_title = 'Edit {{name}}';
         $this->resetErrorBag();
         $this->resetValidation();
-        // Set form fields dari $data
+        // Set form fields from $data
     }
 
     public function prepareDeleteData($data)
     {
         $this->id = $data['id'];
-        $this->form_title = 'Hapus {{name}}';
+        $this->form_title = 'Delete {{name}}';
         $this->deleted_text = $data['id'];
     }
 
     public function saveData()
     {
-        // Jika menggunakan Form Builder:
+        // If using Form Builder:
         // $this->validate($this->getFormValidationRules(), $this->getFormValidationMessages());
         //
-        // Jika menggunakan Blade form manual:
+        // If using manual Blade form:
         // $this->validate([...]);
 
         if ($this->isEdit) {
@@ -96,7 +96,7 @@ class {{name}}Page extends MrCatzComponent
         $record = {{name}}::find($this->id);
 
         if (!$record) {
-            $this->show_notif('error', '{{name}} tidak ditemukan!');
+            $this->show_notif('error', '{{name}} not found!');
             return;
         }
 
@@ -112,7 +112,7 @@ class {{name}}Page extends MrCatzComponent
 
         $this->dispatch('refresh-data', [
             'status' => true,
-            'text' => $count . ' {{lower}} berhasil dihapus!'
+            'text' => $count . ' {{lower}} deleted successfully!'
         ]);
     }
 }
