@@ -109,6 +109,16 @@ if (!function_exists('mrcatz_icon_svg')) {
                 'schedule'                => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
                 'expand_more'             => '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>',
                 'expand_less'             => '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/>',
+                // Person silhouette — name / user fields
+                'person'                  => '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>',
+                // ID card — identity / badge fields
+                'badge'                   => '<path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"/>',
+                // Two short lines — short single-line text input
+                'short_text'              => '<path stroke-linecap="round" stroke-linejoin="round" d="M4 7.5h16M4 13.5h10"/>',
+                // Document with lines — multi-line / textarea
+                'subtitles'               => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5H3.75a1.5 1.5 0 0 1-1.5-1.5v-7.5a1.5 1.5 0 0 1 1.5-1.5Zm2.25 6h3.75m3 0h6.75m-13.5 3h10.5"/>',
+                // Quote marks — notes / quotes
+                'format_quote'            => '<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h3v3a3 3 0 0 1-3 3m9-6h3v3a3 3 0 0 1-3 3"/>',
             ];
         }
 
