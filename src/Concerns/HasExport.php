@@ -79,8 +79,8 @@ trait HasExport
             $this->notice('error', 'PDF export memerlukan barryvdh/laravel-dompdf. Jalankan: composer require barryvdh/laravel-dompdf');
             return null;
         }
-        if ($format === 'xlsx' && !class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
-            $this->notice('error', 'Excel export memerlukan maatwebsite/excel. Jalankan: composer require maatwebsite/excel');
+        if (in_array($format, ['xlsx', 'excel', 'csv'], true) && !class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
+            $this->notice('error', 'Excel/CSV export memerlukan maatwebsite/excel. Jalankan: composer require maatwebsite/excel');
             return null;
         }
 
@@ -120,9 +120,13 @@ trait HasExport
 
             $this->afterExport($format, $scope);
 
+            if ($format === 'csv') {
+                return Excel::download($exportClass, $filename . '.csv', \Maatwebsite\Excel\Excel::CSV);
+            }
+
             return Excel::download($exportClass, $filename . '.xlsx');
         } catch (\Throwable $e) {
-            $this->notice('error', 'Gagal export Excel: ' . $e->getMessage());
+            $this->notice('error', 'Gagal export ' . ($format === 'csv' ? 'CSV' : 'Excel') . ': ' . $e->getMessage());
             return null;
         }
     }

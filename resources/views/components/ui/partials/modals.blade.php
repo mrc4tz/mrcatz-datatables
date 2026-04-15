@@ -29,12 +29,18 @@
             <div class="max-h-[65vh] overflow-y-auto pr-1 -mr-1 space-y-5">
                 <div>
                     <label class="text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-2 block">{{ mrcatz_lang('export_format') }}</label>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                :class="format === 'excel' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
                                @click="format = 'excel'">
                             {!! mrcatz_icon('table_view', 'text-2xl text-success') !!}
                             <div><p class="text-sm font-semibold text-base-content">Excel</p><p class="text-xs text-base-content/40">.xlsx</p></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
+                               :class="format === 'csv' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"
+                               @click="format = 'csv'">
+                            {!! mrcatz_icon('description', 'text-2xl text-info') !!}
+                            <div><p class="text-sm font-semibold text-base-content">CSV</p><p class="text-xs text-base-content/40">.csv</p></div>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all"
                                :class="format === 'pdf' ? 'border-primary bg-primary/5' : 'border-base-content/10 hover:bg-base-200/50'"

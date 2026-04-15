@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.10] - 2026-04-16
+
+### Added
+- CSV as a third export format alongside Excel and PDF. The export modal now renders a three-column format picker (Excel / CSV / PDF); selecting CSV routes through Laravel Excel's `\Maatwebsite\Excel\Excel::CSV` writer and downloads a `.csv` file. No extra dependency — `maatwebsite/excel` already handles CSV out of the box. Requested in a user-filed issue.
+
 ## [1.29.9] - 2026-04-16
 
 ### Fixed
