@@ -32,7 +32,7 @@
         @if($isUploadMode)
             <div class="w-full max-w-xs">
                 <input type="file"
-                       class="file-input file-input-bordered file-input-sm {{ $sc }} w-full @error($id) file-input-error @enderror"
+                       class="file-input file-input-bordered file-input-sm {{ $sc }} w-full @error($errorKey ?? $id) file-input-error @enderror"
                        {!! $wireDirective !!}
                        @if($field['accept']) accept="{{ $field['accept'] }}" @endif
                        @if($disabled) disabled @endif />

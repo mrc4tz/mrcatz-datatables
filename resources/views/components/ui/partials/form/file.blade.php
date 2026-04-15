@@ -46,7 +46,7 @@
         </div>
     @endif
     <input type="file"
-           class="file-input file-input-bordered {{ $sc }} w-full @error($id) file-input-error @enderror @if($disabled) opacity-60 bg-base-200 @endif"
+           class="file-input file-input-bordered {{ $sc }} w-full @error($errorKey ?? $id) file-input-error @enderror @if($disabled) opacity-60 bg-base-200 @endif"
            {!! $wireDirective !!}
            @if($field['accept']) accept="{{ $field['accept'] }}" @endif
            @if($disabled) disabled @endif />

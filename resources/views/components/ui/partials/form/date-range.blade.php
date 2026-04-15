@@ -47,7 +47,7 @@
                 @click="togglePopover($event.currentTarget)"
                 @if($disabled) disabled @endif
                 class="input input-bordered w-full flex items-center gap-3 text-left transition-all duration-200 focus-within:shadow-sm
-                       @error($id) input-error @enderror
+                       @error($errorKey ?? $id) input-error @enderror
                        @if($disabled) opacity-60 bg-base-200 @endif"
                 :class="{ 'input-primary': drOpen }">
             @if($field['icon'])

@@ -254,30 +254,35 @@
             {{-- Mobile-only "More" dropdown. Holds every custom action
                  that wasn't picked as the mobile-primary button. --}}
             @if(!empty($mobileOverflow))
-                <div class="dropdown dropdown-end dropdown-top sm:hidden flex-1">
-                    <label tabindex="0"
-                           class="btn btn-xs btn-ghost btn-outline gap-1 w-full min-w-0"
-                           title="{{ mrcatz_lang('btn_more') ?: 'More' }} ({{ count($mobileOverflow) }})">
-                        <span class="truncate">{{ mrcatz_lang('btn_more') ?: 'More' }}</span>
-                        {!! mrcatz_icon('expand_more', 'text-xs shrink-0') !!}
-                    </label>
-                    <ul tabindex="0"
-                        class="dropdown-content z-[70] menu p-1 shadow-lg bg-base-100 rounded-box w-56 border border-base-content/10 text-sm">
-                        @foreach($mobileOverflow as $ba)
-                            @php $ba_color = $ba['buttonColor'] ?? 'primary'; @endphp
-                            <li>
-                                <button type="button"
-                                        class="flex items-center gap-2"
-                                        wire:click="openBulkAction('{{ $ba['id'] }}')">
-                                    <span class="text-{{ $ba_color }} shrink-0">
-                                        {!! mrcatz_icon($ba['icon'], 'text-sm') !!}
-                                    </span>
-                                    <span class="truncate">{{ $ba['buttonText'] }}</span>
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                {{-- DaisyUI v5 popover-API dropdown — browser handles
+                     viewport-aware positioning via CSS anchor positioning. --}}
+                <button type="button"
+                        popovertarget="mrcatz-bulk-more"
+                        class="btn btn-xs btn-ghost btn-outline gap-1 flex-1 sm:hidden min-w-0"
+                        style="anchor-name: --mrcatz-bulk-more"
+                        title="{{ mrcatz_lang('btn_more') ?: 'More' }} ({{ count($mobileOverflow) }})">
+                    <span class="truncate">{{ mrcatz_lang('btn_more') ?: 'More' }}</span>
+                    {!! mrcatz_icon('expand_more', 'text-xs shrink-0') !!}
+                </button>
+                <ul popover
+                    id="mrcatz-bulk-more"
+                    class="dropdown menu p-1 shadow-lg bg-base-100 rounded-box border border-base-content/10 text-sm"
+                    style="position-anchor: --mrcatz-bulk-more; width: 14rem; max-width: calc(100vw - 1.5rem);">
+                    @foreach($mobileOverflow as $ba)
+                        @php $ba_color = $ba['buttonColor'] ?? 'primary'; @endphp
+                        <li>
+                            <button type="button"
+                                    class="flex items-center gap-2"
+                                    wire:click="openBulkAction('{{ $ba['id'] }}')"
+                                    onclick="document.getElementById('mrcatz-bulk-more')?.hidePopover()">
+                                <span class="text-{{ $ba_color }} shrink-0">
+                                    {!! mrcatz_icon($ba['icon'], 'text-sm') !!}
+                                </span>
+                                <span class="truncate">{{ $ba['buttonText'] }}</span>
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
             @endif
 
             @if($showBulkDelete)

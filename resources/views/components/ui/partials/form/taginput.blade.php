@@ -21,7 +21,7 @@
     }
 }">
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-    <div class="p-3 border border-base-content/15 rounded-lg bg-base-200/30 min-h-12 @error($id) border-error @enderror">
+    <div class="p-3 border border-base-content/15 rounded-lg bg-base-200/30 min-h-12 @error($errorKey ?? $id) border-error @enderror">
         <div class="flex flex-wrap gap-2 mb-2">
             @foreach(($this->{$id} ?? []) as $index => $tag)
                 <span class="badge badge-primary gap-1 text-sm">

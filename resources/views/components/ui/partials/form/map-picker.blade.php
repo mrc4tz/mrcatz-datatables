@@ -97,7 +97,7 @@
         @endif
     </legend>
 
-    <div class="mrcatz-map-wrap @error($id) mrcatz-map-error @enderror @error($id.'.lat') mrcatz-map-error @enderror @error($id.'.lng') mrcatz-map-error @enderror @error($id.'.radius') mrcatz-map-error @enderror">
+    <div class="mrcatz-map-wrap @error($errorKey ?? $id) mrcatz-map-error @enderror @error(($errorKey ?? $id).'.lat') mrcatz-map-error @enderror @error(($errorKey ?? $id).'.lng') mrcatz-map-error @enderror @error(($errorKey ?? $id).'.radius') mrcatz-map-error @enderror">
     <div class="mrcatz-map-container"
          x-data="mrcatzMapPicker({
              fieldId: @js($id),

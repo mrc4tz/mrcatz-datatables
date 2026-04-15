@@ -4,7 +4,7 @@
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
     <select class="select select-bordered {{ $sc }} w-full text-sm transition-all duration-200
         focus:shadow-sm
-        @error($id) select-error @enderror
+        @error($errorKey ?? $id) select-error @enderror
         @if($disabled) opacity-60 bg-base-200 @endif"
             {!! $wireDirective !!}
             {!! $onChangeAttr !!}

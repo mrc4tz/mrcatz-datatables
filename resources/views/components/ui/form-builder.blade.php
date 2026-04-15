@@ -79,6 +79,7 @@
                             $show = $this->shouldShowField($field);
                             $type = $field['type'];
                             $id = $field['id'];
+                            $errorKey = $field['errorKey'] ?? $id;
                             $span = $field['span'] ?? 12;
                             $disabled = $field['disabled'] ?? false;
                             $wireDirective = $field['wireDirective'] ?? '';
@@ -154,6 +155,7 @@
                 $show = $this->shouldShowField($field);
                 $type = $field['type'];
                 $id = $field['id'];
+                $errorKey = $field['errorKey'] ?? $id;
                 $span = $field['span'] ?? 12;
                 $disabled = $field['disabled'] ?? false;
                 $wireDirective = $field['wireDirective'] ?? '';

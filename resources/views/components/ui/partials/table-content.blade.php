@@ -229,9 +229,16 @@
                 @endif
                 @if($bulkShow)
                     <th class="w-10 text-center {{ $thStickyBg }}">
+                        {{-- Bind .checked PROPERTY via Alpine so Livewire
+                             morph re-syncs when $selectAll changes server-side
+                             (e.g. clearSelection from the bulk toolbar's
+                             Cancel). @checked alone only sets the HTML
+                             attribute, which morphdom doesn't always
+                             propagate to the live DOM property. --}}
                         <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
                                aria-label="{{ mrcatz_lang('btn_select') }} all"
-                               @checked($selectAll)
+                               x-data
+                               :checked="$wire.selectAll"
                                wire:click="toggleSelectAll"/>
                     </th>
                 @endif

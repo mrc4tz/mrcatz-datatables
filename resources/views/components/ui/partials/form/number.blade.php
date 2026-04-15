@@ -4,7 +4,7 @@
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
     <label class="input input-bordered {{ $sc }} flex items-center gap-3 w-full transition-all duration-200
         focus-within:shadow-sm
-        @error($id) input-error @enderror
+        @error($errorKey ?? $id) input-error @enderror
         @if($disabled) opacity-60 bg-base-200 @endif">
         @if($field['icon'])
             <span class="inline-flex items-center justify-center text-base-content/40 text-lg shrink-0 self-center">{!! mrcatz_form_icon($field['icon'], 'text-base-content/40 text-lg') !!}</span>

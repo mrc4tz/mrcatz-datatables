@@ -6,7 +6,7 @@
 @endphp
 <fieldset class="fieldset">
     <legend class="fieldset-legend text-xs font-semibold text-base-content/70 uppercase tracking-wide">{{ $field['label'] }}</legend>
-    <div class="p-4 border border-base-content/15 rounded-lg bg-base-200/30 @error($id) border-error @enderror"
+    <div class="p-4 border border-base-content/15 rounded-lg bg-base-200/30 @error($errorKey ?? $id) border-error @enderror"
          @if($chooserSearchable)
          x-data="{ search: '' }"
          @endif

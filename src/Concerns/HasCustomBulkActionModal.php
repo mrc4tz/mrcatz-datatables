@@ -114,6 +114,9 @@ trait HasCustomBulkActionModal
             $field['disabled'] = $field['disabled'] instanceof \Closure ? (bool) ($field['disabled'])() : (bool) $field['disabled'];
             $field['hidden']   = $field['hidden']   instanceof \Closure ? (bool) ($field['hidden'])()   : (bool) $field['hidden'];
             $field['wireDirective'] = $this->buildBulkWireDirective($field);
+            // Validation errors live under the namespaced key, so
+            // partials can `@error($errorKey)` regardless of mode.
+            $field['errorKey'] = $field['id'] ? "bulkFormData.{$field['id']}" : null;
             $fields[] = $field;
         }
         return $fields;

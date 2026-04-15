@@ -15,7 +15,7 @@
     <label class="input input-bordered {{ $sc }} flex items-center gap-3 w-full transition-all duration-200
         focus-within:shadow-sm
         @if($isPickerInput) cursor-pointer @endif
-        @error($id) input-error @enderror
+        @error($errorKey ?? $id) input-error @enderror
         @if($disabled) opacity-60 bg-base-200 @endif"
         @if($isPickerInput && !$disabled)
         {{-- Only call showPicker when the click lands OUTSIDE the input

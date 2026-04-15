@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.3] - 2026-04-15
+
+### Added
+- Validation errors for bulk action form-builder fields now render under the field. New `errorKey` field metadata (set to `bulkFormData.{id}` for bulk fields, falls back to `id` for the standard edit form) is consumed by every form partial via `@error($errorKey ?? $id)`.
+- Mobile "More" dropdown in the bulk toolbar now uses DaisyUI v5's popover-API with CSS anchor positioning, so the menu auto-flips/clamps inside the viewport instead of overflowing off-screen on narrow widths.
+
+### Fixed
+- Bulk toolbar header **select-all checkbox** stayed visually checked after `clearSelection()` (e.g. clicking Cancel) because Livewire's morph only updates the `checked` HTML attribute, not the live DOM property. Now bound via Alpine `:checked="$wire.selectAll"` so it stays in sync across server-driven state changes.
+
 ## [1.29.2] - 2026-04-15
 
 ### Added
