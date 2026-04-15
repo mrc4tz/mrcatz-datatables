@@ -57,6 +57,25 @@
                @if(in_array($type, ['datetime-local', 'time']) && !empty($field['step'])) step="{{ $field['step'] }}" @endif
                @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['min'])) min="{{ $field['min'] }}" @endif
                @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['max'])) max="{{ $field['max'] }}" @endif
+               @if(in_array($type, ['date', 'time', 'datetime-local']) && (!empty($field['min']) || !empty($field['max'])))
+               x-on:change="
+                   (() => {
+                       const el = $event.target;
+                       const v = el.value;
+                       if (!v) return;
+                       const mn = el.getAttribute('min');
+                       const mx = el.getAttribute('max');
+                       let next = v;
+                       if (mn && next < mn) next = mn;
+                       if (mx && next > mx) next = mx;
+                       if (next !== v) {
+                           el.value = next;
+                           el.dispatchEvent(new Event('input', { bubbles: true }));
+                           el.dispatchEvent(new Event('change', { bubbles: true }));
+                       }
+                   })()
+               "
+               @endif
                @if($disabled) disabled @endif />
         @if($field['suffix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>

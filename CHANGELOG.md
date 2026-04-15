@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.8] - 2026-04-16
+
+### Fixed
+- `min` / `max` on `time()` and `datetime-local()` pickers are only validated natively on form-submit; the picker itself still lets users scroll past the range. Input now clamps the value on `change` and re-dispatches `input` / `change` so Livewire syncs the clamped value, giving real-time enforcement to match the `date()` behavior.
+
 ## [1.29.7] - 2026-04-16
 
 ### Added
