@@ -1479,8 +1479,12 @@ class MrCatzDataTables
             'type' => 'image', 'imageMeta' => $imgMeta,
         ];
         $this->callbacks[$this->index] = function ($data, $i) use ($key, $width, $height, $previewClass, $fallback, $urlPrefix, $gravity) {
-            $url = self::resolveImageUrl($data->{$key} ?? null, $urlPrefix);
-            $fallbackText = $fallback ? ($data->{$fallback} ?? null) : null;
+            // Row objects carry unqualified column names (e.g. `image_url`),
+            // so strip the table prefix before reading — same rule getData() uses.
+            $readKey = str_contains($key, '.') ? substr($key, strrpos($key, '.') + 1) : $key;
+            $fallbackReadKey = $fallback && str_contains($fallback, '.') ? substr($fallback, strrpos($fallback, '.') + 1) : $fallback;
+            $url = self::resolveImageUrl($data->{$readKey} ?? null, $urlPrefix);
+            $fallbackText = $fallbackReadKey ? ($data->{$fallbackReadKey} ?? null) : null;
             return self::getImageView($url, $i, $width, $height, $previewClass, $fallbackText, $key, $gravity);
         };
         $this->index++;
@@ -1577,9 +1581,11 @@ class MrCatzDataTables
 
                 if ($type === 'image') {
                     $key = $value['key'] ?? '';
+                    $readKey = str_contains($key, '.') ? substr($key, strrpos($key, '.') + 1) : $key;
                     $imgPrefix = $value['urlPrefix'] ?? null;
-                    $url = self::resolveImageUrl($data->{$key} ?? null, $imgPrefix);
+                    $url = self::resolveImageUrl($data->{$readKey} ?? null, $imgPrefix);
                     $fallbackKey = $value['fallback'] ?? null;
+                    $fallbackKey = $fallbackKey && str_contains($fallbackKey, '.') ? substr($fallbackKey, strrpos($fallbackKey, '.') + 1) : $fallbackKey;
                     $mapped[] = [
                         'label' => $label,
                         'type' => 'image',
@@ -1619,10 +1625,11 @@ class MrCatzDataTables
                 } else {
                     // Text with key
                     $key = $value['key'] ?? '';
+                    $readKey = str_contains($key, '.') ? substr($key, strrpos($key, '.') + 1) : $key;
                     $mapped[] = [
                         'label' => $label,
                         'type' => 'text',
-                        'value' => $data->{$key} ?? '-',
+                        'value' => $data->{$readKey} ?? '-',
                     ];
                 }
             }

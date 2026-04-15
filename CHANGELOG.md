@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.5] - 2026-04-15
+
+### Fixed
+- `withColumnImage()` with a table-prefixed key (e.g. `'demo_products.image_url'`) rendered the fallback initial instead of the image because the callback looked up `$data->{'demo_products.image_url'}` on a row object whose property is just `image_url`. The callback now strips the table prefix the same way `getData()` does, and applies the same rule to the `fallback` key. `getExpandView()` image and text field readers get the same treatment so their `key` / `fallback` entries can be qualified too.
+
 ## [1.29.4] - 2026-04-15
 
 ### Fixed
