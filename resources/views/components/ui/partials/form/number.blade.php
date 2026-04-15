@@ -20,6 +20,26 @@
                @if($field['step']) step="{{ $field['step'] }}" @endif
                @if($field['min'] !== null) min="{{ $field['min'] }}" @endif
                @if($field['max'] !== null) max="{{ $field['max'] }}" @endif
+               @if($field['min'] !== null || $field['max'] !== null)
+               x-on:change="
+                   (() => {
+                       const el = $event.target;
+                       if (el.value === '') return;
+                       const mn = el.getAttribute('min');
+                       const mx = el.getAttribute('max');
+                       const n = Number(el.value);
+                       if (Number.isNaN(n)) return;
+                       let next = n;
+                       if (mn !== null && n < Number(mn)) next = Number(mn);
+                       if (mx !== null && n > Number(mx)) next = Number(mx);
+                       if (next !== n) {
+                           el.value = String(next);
+                           el.dispatchEvent(new Event('input', { bubbles: true }));
+                           el.dispatchEvent(new Event('change', { bubbles: true }));
+                       }
+                   })()
+               "
+               @endif
                @if($disabled) disabled @endif />
         @if($field['suffix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>

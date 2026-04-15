@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.9] - 2026-04-16
+
+### Fixed
+- `dateRange()` field was silently skipped inside sections flagged with `->asCard()`. The multi-card layout branch in `form-builder.blade.php` was missing the `date_range` case that the single-grid branch already had, so any form using card-grouped sections (including the standalone playground) rendered every other field but dropped the date range.
+- `monthYear()` and `year()` `min` / `max` parameters are now enforced at runtime. `monthYear()` gains native `min` / `max` attributes on its `<input type="month">` plus a JS clamp; `year()` (`<input type="number">`) gains a JS clamp so values typed past the range snap back before Livewire syncs (native number inputs only validate on submit).
+
 ## [1.29.8] - 2026-04-16
 
 ### Fixed

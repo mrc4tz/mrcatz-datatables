@@ -55,9 +55,9 @@
                {!! $wireDirective !!}
                {!! $onChangeAttr !!}
                @if(in_array($type, ['datetime-local', 'time']) && !empty($field['step'])) step="{{ $field['step'] }}" @endif
-               @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['min'])) min="{{ $field['min'] }}" @endif
-               @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['max'])) max="{{ $field['max'] }}" @endif
-               @if(in_array($type, ['date', 'time', 'datetime-local']) && (!empty($field['min']) || !empty($field['max'])))
+               @if(in_array($type, ['date', 'time', 'datetime-local', 'month']) && !empty($field['min'])) min="{{ $field['min'] }}" @endif
+               @if(in_array($type, ['date', 'time', 'datetime-local', 'month']) && !empty($field['max'])) max="{{ $field['max'] }}" @endif
+               @if(in_array($type, ['date', 'time', 'datetime-local', 'month']) && (!empty($field['min']) || !empty($field['max'])))
                x-on:change="
                    (() => {
                        const el = $event.target;
