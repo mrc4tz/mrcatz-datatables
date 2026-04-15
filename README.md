@@ -32,6 +32,7 @@ Think of it as **"Filament's CRUD productivity, but you keep full control over y
 - 📊 **Excel & PDF export** — built-in styling, fully customizable layouts
 - 🧱 **Form Builder** — define add/edit forms in PHP with chainable modifiers, sections, conditional fields
 - ☑️ **Bulk actions** & **expandable rows**
+- 📱 **Fully responsive** — adapts cleanly from desktop tables to mobile card layouts out of the box
 - 🎨 **Themed via DaisyUI** — works with any DaisyUI theme, full control over colors
 
 ## Quick install
