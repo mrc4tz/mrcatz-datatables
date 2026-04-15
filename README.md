@@ -29,7 +29,7 @@ Think of it as **"Filament's CRUD productivity, but you keep full control over y
 - 🔍 **Smart search** — multi-keyword highlighting, per-column relevance scoring, typo tolerance, optional Meilisearch driver (beta)
 - 🎯 **Powerful filters** — select, callback, dependent, and full date / date-range filters with operator support
 - ✏️ **Inline editing** — click any cell to edit, with validation rules, keyboard navigation, per-row gating
-- 📊 **Excel & PDF export** — built-in styling, fully customizable layouts
+- 📊 **PDF, CSV & Excel export** — built-in styling, fully customizable layouts
 - 🧱 **Form Builder** — define add/edit forms in PHP with chainable modifiers, sections, conditional fields
 - ☑️ **Bulk actions** & **expandable rows**
 - 📱 **Fully responsive** — adapts cleanly from desktop tables to mobile card layouts out of the box
@@ -88,7 +88,7 @@ The complete reference, with code samples and live demos for every feature, is h
 | [Core Features](https://datatable.catzoid.tech/docs/columns) | Columns, filters, search, sorting, pagination |
 | [Editing & Actions](https://datatable.catzoid.tech/docs/inline-editing) | Inline editing, bulk actions, expandable rows |
 | [Form Builder](https://datatable.catzoid.tech/docs/form-builder) | Programmatic forms with chainable modifiers |
-| [Export](https://datatable.catzoid.tech/docs/export) | Excel & PDF with custom layouts |
+| [Export](https://datatable.catzoid.tech/docs/export) | PDF, CSV & Excel with custom layouts |
 | [Advanced Search](https://datatable.catzoid.tech/docs/advanced/scoring) | Per-column scoring, typo tolerance, **Meilisearch (beta)** |
 | [Customization](https://datatable.catzoid.tech/docs/customization/theming) | Icons, localization, theming |
 | [Deployment](https://datatable.catzoid.tech/docs/deployment/docker) | Docker patterns for vendor blade scanning |
