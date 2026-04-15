@@ -1,6 +1,7 @@
 {{-- Reusable inline edit cell (desktop only) --}}
 {{-- @props: $cellId, $value, $ref, $columnKey, $rowIndex, $rowDataJson, $display --}}
-<div x-data="{
+<div data-current-value="{{ e($value) }}"
+    x-data="{
         editing: false,
         saving: false,
         val: '{{ e($value) }}',
@@ -14,8 +15,8 @@
     }"
     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $cellId }}') { saving = false; error = $event.detail.error; editing = true; $nextTick(() => $refs['{{ $ref }}']?.focus()) }"
     x-on:inline-save-done.window="if ($event.detail.cellId === '{{ $cellId }}') { saving = false }"
-    @dblclick.stop="editing = true; error = ''; $nextTick(() => $refs['{{ $ref }}']?.focus())"
-    @click.stop="if (window.innerWidth < 768 && !editing) { editing = true; error = ''; $nextTick(() => $refs['{{ $ref }}']?.focus()) }">
+    @dblclick.stop="val = $el.dataset.currentValue; editing = true; error = ''; $nextTick(() => $refs['{{ $ref }}']?.focus())"
+    @click.stop="if (window.innerWidth < 768 && !editing) { val = $el.dataset.currentValue; editing = true; error = ''; $nextTick(() => $refs['{{ $ref }}']?.focus()) }">
 
     <span x-show="!editing && !saving" class="group/edit inline-flex items-center gap-1.5 cursor-text px-2 py-0.5 -mx-2 rounded bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/20 hover:border-primary/40 transition-all duration-150">
         <span>{!! $display !!}</span>

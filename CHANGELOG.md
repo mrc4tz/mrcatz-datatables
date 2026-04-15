@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.4] - 2026-04-15
+
+### Fixed
+- Inline-edit default value showed the page-1 row's value when editing on other pagination pages. Alpine's `x-data` only initializes `val` once and Livewire's morph preserves Alpine state across re-renders, so the input opened with stale data even though the Blade-rendered display was correct. The wrappers now carry a `data-current-value` attribute (which morphs cleanly), and the double-click / mobile click handlers reset `val` from it before opening the editor.
+
 ## [1.29.3] - 2026-04-15
 
 ### Added
