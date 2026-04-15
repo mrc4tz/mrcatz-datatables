@@ -104,7 +104,7 @@ The complete reference, with code samples and live demos for every feature, is h
 ## Optional dependencies
 
 ```bash
-composer require maatwebsite/excel        # Excel export
+composer require maatwebsite/excel        # CSV & Excel export
 composer require barryvdh/laravel-dompdf  # PDF export
 composer require laravel/scout meilisearch/meilisearch-php  # Meilisearch search driver (beta)
 ```
