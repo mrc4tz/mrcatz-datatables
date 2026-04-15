@@ -23,8 +23,10 @@ class MrCatzBulkAction
     private ?string $formTitle;
     private ?string $formSubtitle;
     private ?string $icon;
+    private string $buttonColor;
 
     private const VALID_MODES = ['form', 'confirmation'];
+    private const VALID_COLORS = ['primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error', 'ghost'];
 
     private function __construct() {}
 
@@ -36,6 +38,11 @@ class MrCatzBulkAction
      * @param string|null $formSubtitle  Optional subtitle below the title.
      * @param string|null $icon          Icon name; resolved via mrcatz_icon().
      *                                   Defaults to 'edit' for both modes.
+     * @param string      $buttonColor   DaisyUI theme color used on the toolbar
+     *                                   button and the modal submit button.
+     *                                   One of: primary, secondary, accent,
+     *                                   neutral, info, success, warning, error,
+     *                                   ghost. Defaults to 'primary'.
      */
     public static function create(
         string $id,
@@ -44,10 +51,16 @@ class MrCatzBulkAction
         ?string $formTitle = null,
         ?string $formSubtitle = null,
         ?string $icon = null,
+        string $buttonColor = 'primary',
     ): self {
         if (!in_array($mode, self::VALID_MODES, true)) {
             throw new \InvalidArgumentException(
                 "MrCatzBulkAction mode must be one of: " . implode(', ', self::VALID_MODES) . ". Got '{$mode}'."
+            );
+        }
+        if (!in_array($buttonColor, self::VALID_COLORS, true)) {
+            throw new \InvalidArgumentException(
+                "MrCatzBulkAction buttonColor must be one of: " . implode(', ', self::VALID_COLORS) . ". Got '{$buttonColor}'."
             );
         }
 
@@ -58,6 +71,7 @@ class MrCatzBulkAction
         $action->formTitle = $formTitle;
         $action->formSubtitle = $formSubtitle;
         $action->icon = $icon ?? 'edit';
+        $action->buttonColor = $buttonColor;
         return $action;
     }
 
@@ -73,6 +87,7 @@ class MrCatzBulkAction
             'formTitle'    => $this->formTitle ?? $this->buttonText,
             'formSubtitle' => $this->formSubtitle,
             'icon'         => $this->icon,
+            'buttonColor'  => $this->buttonColor,
         ];
     }
 }

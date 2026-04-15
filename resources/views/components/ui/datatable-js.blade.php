@@ -116,5 +116,4 @@
     </div>
 
     @include('mrcatz::components.ui.partials.modals')
-    @include('mrcatz::components.ui.datatable-bulk-action')
 </div>

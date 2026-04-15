@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.1] - 2026-04-15
+
+### Added
+- `buttonColor` parameter on `MrCatzBulkAction::create()` — pick any DaisyUI theme color (`primary`, `secondary`, `accent`, `neutral`, `info`, `success`, `warning`, `error`, `ghost`) for the toolbar button outline and the modal's submit button. Defaults to `'primary'`. The modal's header icon + background tint follow the same color automatically.
+
+### Fixed
+- Custom bulk action modal now renders on the **Page** component instead of the Table component, so `setBulkForm($id)` and `processBulkActionData()` hooks resolve correctly (they're defined on the page). The initial `1.29.0` release mistakenly colocated the modal with the table component, which caused the modal to fall back to the Edit form's fields.
+- Bulk action modal visibility — the old implementation relied on Alpine + browser events that raced with Livewire re-renders, leaving the backdrop visible but the modal body hidden. Reworked to use a native `<dialog open>` with DaisyUI `.modal.modal-open` classes so visibility is driven entirely by Livewire state (`$activeBulkActionId`).
+- Form Builder blade (`form-builder.blade.php`) now accepts an optional `$formFields` include parameter via `isset()` check so callers (e.g. the bulk modal) can pass a pre-built, namespaced field set without clashing with the Edit form's `$this->getFormFields()`.
+
+### Changed
+- Split `HasCustomBulkActions` trait into two: `HasCustomBulkActions` on the Table component (toolbar buttons + dispatch), and `HasCustomBulkActionModal` on `MrCatzComponent` (modal state + form rendering + submit handling).
+- New `MrCatzEvent::BULK_ACTION_OPEN` event carries action metadata + selectedRows from the table to the page when a bulk button is clicked.
+
 ## [1.29.0] - 2026-04-15
 
 ### Added

@@ -222,9 +222,12 @@
             <span class="text-sm font-medium text-primary">{{ count($selectedRows) }} {{ mrcatz_lang('data_selected') }}</span>
         </div>
         <div class="flex flex-wrap gap-2">
+            {{-- Tailwind safelist (custom bulk action button outline variants):
+                 btn-outline btn-primary btn-secondary btn-accent btn-neutral btn-info btn-success btn-warning btn-error btn-ghost --}}
             @foreach($bulkActions as $ba)
+                @php $ba_color = $ba['buttonColor'] ?? 'primary'; @endphp
                 <button type="button"
-                        class="btn btn-xs btn-primary btn-outline gap-1 flex-1 sm:flex-none"
+                        class="btn btn-xs btn-{{ $ba_color }} btn-outline gap-1 flex-1 sm:flex-none"
                         wire:click="openBulkAction('{{ $ba['id'] }}')">
                     {!! mrcatz_icon($ba['icon'], 'text-xs') !!}
                     {{ $ba['buttonText'] }}

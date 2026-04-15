@@ -4,11 +4,13 @@ namespace MrCatz\DataTable;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use MrCatz\DataTable\Concerns\HasCustomBulkActionModal;
 use MrCatz\DataTable\Concerns\HasFormBuilder;
 
 class MrCatzComponent extends Component
 {
     use HasFormBuilder;
+    use HasCustomBulkActionModal;
     // Public properties — no strict types to allow child class override without type declaration
     public $title = '';
     public $form_title = '';
@@ -174,12 +176,6 @@ class MrCatzComponent extends Component
     public function setBulkForm(string $id)
     {
         return [];
-    }
-
-    #[On(MrCatzEvent::BULK_ACTION)]
-    public function listenBulkAction($id, $selectedRows, $bulkFormData): void
-    {
-        $this->processBulkActionData($id, $selectedRows, (array) $bulkFormData);
     }
 
     /**

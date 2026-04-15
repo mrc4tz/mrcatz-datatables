@@ -82,6 +82,8 @@
     @include('mrcatz::components.ui.form-page')
 @endif
 
+@include('mrcatz::components.ui.datatable-bulk-action')
+
 <dialog id="modal-data-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title">
     <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data-delete')?.open">
         {{-- Icon --}}
