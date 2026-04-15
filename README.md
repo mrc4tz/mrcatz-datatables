@@ -40,6 +40,22 @@ Think of it as **"Filament's CRUD productivity, but you keep full control over y
 composer require mrcatz/datatable
 ```
 
+Wire your base layout. In your app's base layout (usually `layouts/app.blade.php`), add these three directives before `</body>`. All three are required — without them the datatable, form modal, and toast notifications silently fail.
+
+```blade
+{{-- resources/views/layouts/app.blade.php --}}
+<body>
+    {{-- ... your app content ... --}}
+
+    @include('mrcatz::components.ui.notification')
+
+    @livewireScripts
+    @stack('scripts')
+</body>
+```
+
+> Using Jetstream, Breeze, or Filament? Your layout likely already has `@livewireScripts` and `@stack('scripts')` — you only need to add the notification include.
+
 Add the package's blade path to your Tailwind content scan:
 
 ```css
