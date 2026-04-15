@@ -175,6 +175,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         }
     }
 
+
     public function render(): mixed
     {
         $this->dataFilters = $this->getDataFilter();
