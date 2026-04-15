@@ -103,6 +103,7 @@ class MrCatzFormField
     private int $minRadius = 10;
     private int $maxRadius = 10000;
     private string $mapHeight = '320px';
+    private ?string $mapForceTheme = null; // 'light' | 'dark' | null (follow data-theme) — Leaflet only
 
     private function __construct(string $type, ?string $id = null, ?string $label = null)
     {
@@ -570,6 +571,7 @@ class MrCatzFormField
         int $minRadius = 10,
         int $maxRadius = 10000,
         string $height = '320px',
+        ?string $forceTheme = null,
         mixed $disabled = false,
     ): static {
         if (!in_array($provider, ['leaflet', 'google'], true)) {
@@ -581,6 +583,11 @@ class MrCatzFormField
             throw new \InvalidArgumentException(
                 "MrCatzFormField::mapPicker requires an apiKey when provider is 'google'. "
                 . "Leave provider as 'leaflet' (default) for a key-free OpenStreetMap map."
+            );
+        }
+        if ($forceTheme !== null && !in_array($forceTheme, ['light', 'dark'], true)) {
+            throw new \InvalidArgumentException(
+                "MrCatzFormField::mapPicker forceTheme must be 'light', 'dark', or null, got '{$forceTheme}'."
             );
         }
 
@@ -598,6 +605,7 @@ class MrCatzFormField
         $field->minRadius = $minRadius;
         $field->maxRadius = $maxRadius;
         $field->mapHeight = $height;
+        $field->mapForceTheme = $forceTheme;
         $field->disabled = $disabled;
         return $field;
     }
@@ -1156,6 +1164,7 @@ class MrCatzFormField
             'minRadius' => $this->minRadius,
             'maxRadius' => $this->maxRadius,
             'mapHeight' => $this->mapHeight,
+            'mapForceTheme' => $this->mapForceTheme,
         ];
     }
 

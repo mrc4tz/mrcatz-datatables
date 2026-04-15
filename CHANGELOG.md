@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.6] - 2026-04-15
+
+### Added
+- `MrCatzFormField::mapPicker()` gains a `forceTheme` parameter (`'light' | 'dark' | null`). When set, the Leaflet tile layer is pinned to that theme regardless of the host app's `<html data-theme>`. Null (default) preserves the existing behavior of following `data-theme`. Leaflet-only — Google Maps ignores this flag because its default rendering doesn't hot-swap styles.
+
 ## [1.29.5] - 2026-04-15
 
 ### Fixed

@@ -24,6 +24,7 @@
     $minRadius     = $field['minRadius'] ?? 10;
     $maxRadius     = $field['maxRadius'] ?? 10000;
     $mapHeight     = $field['mapHeight'] ?? '320px';
+    $forceTheme    = $field['mapForceTheme'] ?? null; // 'light' | 'dark' | null — Leaflet only
 
     // Build the provider init snippet as PHP so the x-init expression
     // stays free of Blade @if (which would leak Livewire BLOCK
@@ -109,6 +110,7 @@
              showRadius: {{ $showRadius ? 'true' : 'false' }},
              defaultRadius: {{ (int) $defaultRadius }},
              disabled: {{ $disabled ? 'true' : 'false' }},
+             forceTheme: @js($forceTheme),
          })"
          x-init="init()"
          wire:ignore>
@@ -399,7 +401,13 @@ if (typeof window.mrcatzMapPicker === 'undefined') {
                     .setView([lat, lng], config.defaultZoom);
 
                 // Tile layer — swap to dark variant when DaisyUI theme is dark.
-                const dark = document.documentElement?.getAttribute('data-theme')?.includes('dark');
+                // `forceTheme` ('light' | 'dark') overrides the data-theme sniff
+                // so the map can be pinned regardless of the host app's theme.
+                const dark = config.forceTheme === 'dark'
+                    ? true
+                    : config.forceTheme === 'light'
+                        ? false
+                        : !!document.documentElement?.getAttribute('data-theme')?.includes('dark');
                 const tileUrl = dark
                     ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
                     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
