@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.11] - 2026-04-16
+
+### Added
+- `description` icon hint in `config/mrcatz.php` under the Export Modal section, mapped to `fa-file-csv` — so projects using the FontAwesome fallback icon set get a matching CSV glyph in the export modal instead of a missing icon.
+
 ## [1.29.10] - 2026-04-16
 
 ### Added
