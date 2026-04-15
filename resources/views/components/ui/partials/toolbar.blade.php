@@ -215,6 +215,14 @@
     @php
         $bulkActions = method_exists($this, 'getBulkActions') ? $this->getBulkActions() : [];
         $showBulkDelete = !property_exists($this, 'showBulkDeleteAction') || $this->showBulkDeleteAction;
+
+        // Mobile rule: only ONE custom action button shows — the first —
+        // and only when the built-in delete is hidden (so the user
+        // always has Cancel + at least one destructive/primary button).
+        // All OTHER custom actions go into the "More" dropdown on mobile.
+        // On sm+ every action renders as its own button and the dropdown
+        // is hidden.
+        $mobileOverflow = $showBulkDelete ? $bulkActions : array_slice($bulkActions, 1);
     @endphp
     <div class="mb-4 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -223,26 +231,65 @@
         </div>
         <div class="flex flex-wrap gap-2">
             {{-- Tailwind safelist (custom bulk action button outline variants):
-                 btn-outline btn-primary btn-secondary btn-accent btn-neutral btn-info btn-success btn-warning btn-error btn-ghost --}}
-            @foreach($bulkActions as $ba)
-                @php $ba_color = $ba['buttonColor'] ?? 'primary'; @endphp
+                 btn-outline btn-primary btn-secondary btn-accent btn-neutral btn-info btn-success btn-warning btn-error btn-ghost
+                 text-primary text-secondary text-accent text-neutral text-info text-success text-warning text-error text-ghost --}}
+            @foreach($bulkActions as $idx => $ba)
+                @php
+                    $ba_color = $ba['buttonColor'] ?? 'primary';
+                    // First action is kept on mobile only if the built-in
+                    // delete is hidden — otherwise Delete fills the
+                    // "primary visible button" slot.
+                    $visibleOnMobile = !$showBulkDelete && $idx === 0;
+                    $responsiveClass = $visibleOnMobile ? 'flex' : 'hidden sm:flex';
+                @endphp
                 <button type="button"
-                        class="btn btn-xs btn-{{ $ba_color }} btn-outline gap-1 flex-1 sm:flex-none"
+                        class="btn btn-xs btn-{{ $ba_color }} btn-outline gap-1 flex-1 sm:flex-none min-w-0 max-w-full sm:max-w-[14rem] {{ $responsiveClass }}"
+                        title="{{ $ba['buttonText'] }}"
                         wire:click="openBulkAction('{{ $ba['id'] }}')">
-                    {!! mrcatz_icon($ba['icon'], 'text-xs') !!}
-                    {{ $ba['buttonText'] }}
+                    {!! mrcatz_icon($ba['icon'], 'text-xs shrink-0') !!}
+                    <span class="truncate">{{ $ba['buttonText'] }}</span>
                 </button>
             @endforeach
+
+            {{-- Mobile-only "More" dropdown. Holds every custom action
+                 that wasn't picked as the mobile-primary button. --}}
+            @if(!empty($mobileOverflow))
+                <div class="dropdown dropdown-end dropdown-top sm:hidden flex-1">
+                    <label tabindex="0"
+                           class="btn btn-xs btn-ghost btn-outline gap-1 w-full min-w-0"
+                           title="{{ mrcatz_lang('btn_more') ?: 'More' }} ({{ count($mobileOverflow) }})">
+                        <span class="truncate">{{ mrcatz_lang('btn_more') ?: 'More' }}</span>
+                        {!! mrcatz_icon('expand_more', 'text-xs shrink-0') !!}
+                    </label>
+                    <ul tabindex="0"
+                        class="dropdown-content z-[70] menu p-1 shadow-lg bg-base-100 rounded-box w-56 border border-base-content/10 text-sm">
+                        @foreach($mobileOverflow as $ba)
+                            @php $ba_color = $ba['buttonColor'] ?? 'primary'; @endphp
+                            <li>
+                                <button type="button"
+                                        class="flex items-center gap-2"
+                                        wire:click="openBulkAction('{{ $ba['id'] }}')">
+                                    <span class="text-{{ $ba_color }} shrink-0">
+                                        {!! mrcatz_icon($ba['icon'], 'text-sm') !!}
+                                    </span>
+                                    <span class="truncate">{{ $ba['buttonText'] }}</span>
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @if($showBulkDelete)
-                <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none"
+                <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none min-w-0"
                         x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
-                    {!! mrcatz_icon('delete', 'text-xs') !!}
-                    {{ mrcatz_lang('btn_delete') }}
+                    {!! mrcatz_icon('delete', 'text-xs shrink-0') !!}
+                    <span class="truncate">{{ mrcatz_lang('btn_delete') }}</span>
                 </button>
             @endif
-            <button class="btn btn-xs btn-ghost gap-1 flex-1 sm:flex-none" wire:click="clearSelection">
-                {!! mrcatz_icon('close', 'text-xs') !!}
-                {{ mrcatz_lang('btn_cancel') }}
+            <button class="btn btn-xs btn-ghost gap-1 flex-1 sm:flex-none min-w-0" wire:click="clearSelection">
+                {!! mrcatz_icon('close', 'text-xs shrink-0') !!}
+                <span class="truncate">{{ mrcatz_lang('btn_cancel') }}</span>
             </button>
         </div>
     </div>

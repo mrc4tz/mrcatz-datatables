@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.2] - 2026-04-15
+
+### Added
+- Responsive bulk toolbar. On mobile the custom action buttons collapse into a "More" dropdown (chevron-down icon) so only Cancel + one primary button stay visible; desktop (sm+) keeps every action as its own button. Built-in bulk Delete (when `$showBulkDeleteAction = true`) is always the mobile primary; if disabled, the first custom action takes its place.
+- Button text inside the bulk toolbar now truncates with `…` + native tooltip (`title` attribute) so very long labels never overflow the button.
+- New `btn_more` translation key (`More` / `Lainnya`).
+- New `MrCatzEvent::BULK_ACTION_DONE` event — page-side modal dispatches it after a successful submit, the table clears its selection via an `#[On]` listener on `HasCustomBulkActions`.
+
+### Changed
+- Selection persistence: clicking a custom bulk action no longer clears `$selectedRows` immediately. Rows stay selected while the modal is open, so cancelling doesn't force the user to re-pick. Selection is cleared only after a successful `processBulkActionData()` run.
+
 ## [1.29.1] - 2026-04-15
 
 ### Added

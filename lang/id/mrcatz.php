@@ -6,6 +6,7 @@ return [
     'btn_save' => 'Simpan',
     'btn_cancel' => 'Batal',
     'btn_delete' => 'Hapus',
+    'btn_more' => 'Lainnya',
     'btn_reset' => 'Reset',
     'btn_export' => 'Export',
     'btn_select' => 'Pilih',

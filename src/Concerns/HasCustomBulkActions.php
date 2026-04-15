@@ -50,6 +50,11 @@ trait HasCustomBulkActions
     /**
      * Toolbar click handler. Dispatches to the page component, which
      * owns the modal + form state.
+     *
+     * Note: selection is NOT cleared here. The user may cancel the
+     * modal, and losing their selection every time they peek inside
+     * would be frustrating. Selection is cleared by the BULK_ACTION_DONE
+     * listener below, only after a successful submit.
      */
     public function openBulkAction(string $id): void
     {
@@ -62,13 +67,21 @@ trait HasCustomBulkActions
         }
         if (!$found) return;
 
-        $rows = $this->selectedRows;
-        $this->clearSelection();
-
         $this->dispatch(
             MrCatzEvent::BULK_ACTION_OPEN,
             action: $found,
-            selectedRows: $rows,
+            selectedRows: $this->selectedRows,
         );
+    }
+
+    /**
+     * Page component dispatches this once the bulk action has been
+     * processed successfully. We clear the selection then so the
+     * toolbar closes and checkboxes reset.
+     */
+    #[\Livewire\Attributes\On(MrCatzEvent::BULK_ACTION_DONE)]
+    public function onBulkActionDone(): void
+    {
+        $this->clearSelection();
     }
 }

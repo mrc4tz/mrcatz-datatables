@@ -6,6 +6,7 @@ return [
     'btn_save' => 'Save',
     'btn_cancel' => 'Cancel',
     'btn_delete' => 'Delete',
+    'btn_more' => 'More',
     'btn_reset' => 'Reset',
     'btn_export' => 'Export',
     'btn_select' => 'Select',

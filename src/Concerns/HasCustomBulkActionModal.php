@@ -84,6 +84,11 @@ trait HasCustomBulkActionModal
         // inside the hook sees a clean slate.
         $this->resetBulkModalState();
         $this->processBulkActionData($id, $rows, $formData);
+
+        // Tell the table component to clear its selection now that
+        // the action has been applied. Safe to fire even if the user
+        // hook short-circuited — the table just resets $selectedRows.
+        $this->dispatch(MrCatzEvent::BULK_ACTION_DONE);
     }
 
     public function cancelBulkAction(): void
