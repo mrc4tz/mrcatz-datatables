@@ -62,7 +62,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($headers) }}" style="text-align:center;color:#9ca3af;padding:20px;">Tidak ada data</td>
+                    <td colspan="{{ count($headers) }}" style="text-align:center;color:#9ca3af;padding:20px;">{{ mrcatz_lang('no_data') }}</td>
                 </tr>
             @endforelse
         </tbody>
