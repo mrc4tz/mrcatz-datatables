@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.7] - 2026-04-16
+
+### Added
+- `MrCatzFormField::date()` gains `minDate` / `maxDate`, `datetime()` gains `minDateTime` / `maxDateTime`, and `time()` gains `minTime` / `maxTime`. Values are emitted as native `min` / `max` attributes on the picker input so browsers clamp selection on both mouse and keyboard.
+
 ## [1.29.6] - 2026-04-15
 
 ### Added

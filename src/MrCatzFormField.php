@@ -343,12 +343,16 @@ class MrCatzFormField
         ?string $rules = null,
         ?array $messages = null,
         ?string $icon = null,
+        ?string $minDate = null,
+        ?string $maxDate = null,
         mixed $disabled = false,
     ): static {
         $field = new static('date', $id, $label);
         $field->rules = $rules;
         $field->messages = $messages;
         $field->icon = $icon;
+        $field->min = $minDate;
+        $field->max = $maxDate;
         $field->disabled = $disabled;
         return $field;
     }
@@ -365,6 +369,8 @@ class MrCatzFormField
         ?array $messages = null,
         ?string $icon = null,
         bool $showSecond = false,
+        ?string $minTime = null,
+        ?string $maxTime = null,
         mixed $disabled = false,
     ): static {
         $field = new static('time', $id, $label);
@@ -374,6 +380,8 @@ class MrCatzFormField
         if ($showSecond) {
             $field->step = 1;
         }
+        $field->min = $minTime;
+        $field->max = $maxTime;
         $field->disabled = $disabled;
         return $field;
     }
@@ -392,6 +400,8 @@ class MrCatzFormField
         ?array $messages = null,
         ?string $icon = null,
         bool $showSecond = false,
+        ?string $minDateTime = null,
+        ?string $maxDateTime = null,
         mixed $disabled = false,
     ): static {
         $field = new static('datetime-local', $id, $label);
@@ -401,6 +411,8 @@ class MrCatzFormField
         if ($showSecond) {
             $field->step = 1;
         }
+        $field->min = $minDateTime;
+        $field->max = $maxDateTime;
         $field->disabled = $disabled;
         return $field;
     }

@@ -55,6 +55,8 @@
                {!! $wireDirective !!}
                {!! $onChangeAttr !!}
                @if(in_array($type, ['datetime-local', 'time']) && !empty($field['step'])) step="{{ $field['step'] }}" @endif
+               @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['min'])) min="{{ $field['min'] }}" @endif
+               @if(in_array($type, ['date', 'time', 'datetime-local']) && !empty($field['max'])) max="{{ $field['max'] }}" @endif
                @if($disabled) disabled @endif />
         @if($field['suffix'])
             <span class="text-base-content/50 text-sm font-medium shrink-0">{{ $field['suffix'] }}</span>
