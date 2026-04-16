@@ -339,12 +339,9 @@ trait HasExport
                     $col = $dataTableSet[$colIndex];
                     if ($col['index'] !== null) {
                         $row[] = ++$globalIndex;
-                    } elseif (($col['type'] ?? null) === 'image') {
-                        // Image column: export the raw URL instead of rendered HTML
-                        $row[] = $chunkDt->getRawKeyData($rowIndex, $colIndex) ?? '';
                     } elseif ($col['key'] !== null) {
-                        // Column with key (including withCustomColumn with key):
-                        // use raw key value so callbacks that return HTML are bypassed
+                        // Column with key (withColumn, withColumnImage, withCustomColumn with key):
+                        // use raw DB value — bypasses callbacks that return HTML
                         $row[] = $chunkDt->getRawKeyData($rowIndex, $colIndex) ?? '';
                     } else {
                         // Custom column without key: call callback and strip HTML

@@ -1530,6 +1530,12 @@ class MrCatzDataTables
         return $this->pluckCache[$pluckKey][$indexRow] ?? null;
     }
 
+    public function hasCallback(int $i): bool
+    {
+        $this->validateColumnIndex($i);
+        return $this->callbacks[$i] !== null;
+    }
+
     public function getColumnType(int $i): ?string
     {
         return $this->dataTableSet[$i]['type'] ?? null;
