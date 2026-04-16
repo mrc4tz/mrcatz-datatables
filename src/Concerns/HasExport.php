@@ -11,28 +11,12 @@ trait HasExport
 {
     public $showExportButton = true;
     public $exportTitle = 'Data Export';
-    public $exportSearch = '';
-    public $exportFilterValues = [];
     public $exportCount = 0;
+    public $exportPreview = [];
 
     public function openExportModal(): void
     {
-        $this->exportSearch = $this->search;
-        $this->exportFilterValues = [];
-
-        foreach ($this->setFilter() as $filter) {
-            $df = $filter->getDataFilter();
-            $id = $df['id'];
-            $this->exportFilterValues[$id] = null;
-
-            foreach ($this->activeFilters as $af) {
-                if ($af['id'] === $id) {
-                    $this->exportFilterValues[$id] = $af['value'];
-                    break;
-                }
-            }
-        }
-
+        $this->exportPreview = $this->buildExportPreview();
         $this->updateExportCount('filtered');
         $this->dispatch(MrCatzEvent::OPEN_EXPORT_MODAL);
     }
@@ -47,26 +31,196 @@ trait HasExport
         $query = clone $this->baseQuery();
 
         if ($scope === 'filtered') {
-            if (!empty($this->exportSearch)) {
+            // Apply search (mirrors main table)
+            if (!empty($this->search)) {
                 $dt = $this->setTable();
                 $searchableColumns = collect($dt->getDataTableSet())->filter(fn($d) => $d['key'] !== null)->toArray();
-                $query = MrCatzDataTables::applySearchWhere($query, $this->exportSearch, $searchableColumns);
+                $query = MrCatzDataTables::applySearchWhere($query, $this->search, $searchableColumns);
             }
 
+            // Apply active filters (mirrors main table engine logic)
             foreach ($this->setFilter() as $filter) {
                 $df = $filter->getDataFilter();
                 $id = $df['id'];
-                $value = $this->exportFilterValues[$id] ?? null;
+                $activeValue = null;
 
-                if (!empty($value)) {
-                    $callback = $filter->getCallback();
-                    if ($callback != null) { $query = $callback($query, $value); }
-                    elseif ($df['key'] != '-') { $query = $query->where($df['key'], $df['condition'], $value); }
+                foreach ($this->activeFilters as $af) {
+                    if ($af['id'] === $id) {
+                        $activeValue = $af['value'];
+                        break;
+                    }
                 }
+
+                if ($activeValue === null || $activeValue === '') continue;
+
+                $callback = $filter->getCallback();
+                $type = $df['type'] ?? 'select';
+
+                if ($type === 'date_range') {
+                    $from = is_array($activeValue) ? ($activeValue['from'] ?? null) : null;
+                    $to   = is_array($activeValue) ? ($activeValue['to']   ?? null) : null;
+                    if (!$from && !$to) continue;
+
+                    if ($callback !== null) {
+                        $query = $callback($query, ['from' => $from, 'to' => $to]);
+                    } elseif ($df['key'] !== '-') {
+                        $format = $df['format'] ?? 'date';
+                        if ($from) $query = $this->exportDateWhere($query, $df['key'], $format, '>=', $from);
+                        if ($to)   $query = $this->exportDateWhere($query, $df['key'], $format, '<=', $to);
+                    }
+                } elseif ($type === 'date') {
+                    if ($callback !== null) {
+                        $query = $callback($query, $activeValue);
+                    } elseif ($df['key'] !== '-') {
+                        $query = $this->exportDateWhere($query, $df['key'], $df['format'] ?? 'date', $df['condition'] ?? '=', $activeValue);
+                    }
+                } else {
+                    if ($callback !== null) {
+                        $query = $callback($query, $activeValue);
+                    } elseif ($df['key'] !== '-') {
+                        $query = $query->where($df['key'], $df['condition'], $activeValue);
+                    }
+                }
+            }
+
+            // Apply bulk selection filter
+            if ($this->bulkActive && !empty($this->selectedRows) && $this->bulkPrimaryKey) {
+                $pk = $this->bulkPrimaryKey;
+                // Qualify with base table name to avoid ambiguity on JOINed queries
+                if (!str_contains($pk, '.')) {
+                    $pk = $query->from . '.' . $pk;
+                }
+                $query->whereIn($pk, $this->selectedRows);
             }
         }
 
         return $query;
+    }
+
+    /**
+     * Apply a date-aware where clause — mirrors MrCatzDataTables::applyDateComparison.
+     */
+    private function exportDateWhere($query, string $key, string $format, string $operator, mixed $value)
+    {
+        return match ($format) {
+            'date'            => $query->whereDate($key, $operator, $value),
+            'datetime'        => $query->where($key, $operator, $value),
+            'time', 'time_hm' => $query->whereTime($key, $operator, $value),
+            'year'            => $query->whereYear($key, $operator, $value),
+            'month_year'      => $this->exportMonthYearWhere($query, $key, $operator, $value),
+            default           => $query->where($key, $operator, $value),
+        };
+    }
+
+    private function exportMonthYearWhere($query, string $key, string $operator, string $value)
+    {
+        $parts = explode('-', $value);
+        if (count($parts) !== 2) return $query;
+
+        $year  = (int) $parts[0];
+        $month = (int) $parts[1];
+
+        if ($operator === '=') {
+            return $query->whereYear($key, $year)->whereMonth($key, $month);
+        }
+        if ($operator === '!=' || $operator === '<>') {
+            return $query->where(fn($q) => $q->whereYear($key, '!=', $year)->orWhereMonth($key, '!=', $month));
+        }
+        if (in_array($operator, ['>', '>='], true)) {
+            $strict = $operator === '>';
+            return $query->where(fn($q) => $q->whereYear($key, '>', $year)
+                ->orWhere(fn($q2) => $q2->whereYear($key, $year)->whereMonth($key, $strict ? '>' : '>=', $month)));
+        }
+        if (in_array($operator, ['<', '<='], true)) {
+            $strict = $operator === '<';
+            return $query->where(fn($q) => $q->whereYear($key, '<', $year)
+                ->orWhere(fn($q2) => $q2->whereYear($key, $year)->whereMonth($key, $strict ? '<' : '<=', $month)));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Build preview data for the export dialog.
+     */
+    private function buildExportPreview(): array
+    {
+        $preview = [];
+
+        // Search
+        if (!empty($this->search)) {
+            $preview[] = ['icon' => 'search', 'label' => mrcatz_lang('export_search'), 'value' => $this->search];
+        }
+
+        // Active filters
+        foreach ($this->setFilter() as $f => $filter) {
+            $df = $filter->getDataFilter();
+            $id = $df['id'];
+
+            $activeValue = null;
+            foreach ($this->activeFilters as $af) {
+                if ($af['id'] === $id) {
+                    $activeValue = $af['value'];
+                    break;
+                }
+            }
+            if ($activeValue === null || $activeValue === '') continue;
+
+            $type = $df['type'] ?? 'select';
+
+            if ($type === 'date_range') {
+                $from = is_array($activeValue) ? ($activeValue['from'] ?? null) : null;
+                $to   = is_array($activeValue) ? ($activeValue['to']   ?? null) : null;
+                if (!$from && !$to) continue;
+                $display = ($from ?? '...') . '  →  ' . ($to ?? '...');
+            } elseif ($type === 'date') {
+                $display = $activeValue;
+            } else {
+                // Resolve select value to display label
+                $display = $activeValue;
+                foreach ($this->filterData[$f] ?? [] as $data) {
+                    if (($data[$df['value']] ?? null) == $activeValue) {
+                        $display = $data[$df['option']] ?? $activeValue;
+                        break;
+                    }
+                }
+            }
+
+            $icon = match ($type) {
+                'date', 'date_range' => 'event',
+                default => 'filter_alt',
+            };
+
+            $preview[] = ['icon' => $icon, 'label' => $df['label'], 'value' => $display];
+        }
+
+        // Sort — strip table prefix for display (e.g. 'demo_products.name' → 'name')
+        $sortLabel = function (string $key): string {
+            return str_contains($key, '.') ? substr($key, strrpos($key, '.') + 1) : $key;
+        };
+        $sorts = [];
+        if (!empty($this->multiSort)) {
+            foreach ($this->multiSort as $s) {
+                $sorts[] = $sortLabel($s['key']) . ' ' . strtoupper($s['dir']);
+            }
+        } elseif (!empty($this->key)) {
+            $sorts[] = $sortLabel($this->key) . ' ' . strtoupper($this->value);
+        }
+        if (!empty($sorts)) {
+            $preview[] = ['icon' => 'sort', 'label' => mrcatz_lang('export_preview_sort'), 'value' => implode(', ', $sorts)];
+        }
+
+        // Hidden columns
+        if ($this->enableColumnVisibility && !empty($this->hiddenColumns)) {
+            $preview[] = ['icon' => 'visibility_off', 'label' => mrcatz_lang('col_visibility'), 'value' => str_replace(':count', count($this->hiddenColumns), mrcatz_lang('export_preview_hidden'))];
+        }
+
+        // Bulk selection
+        if ($this->bulkActive && !empty($this->selectedRows)) {
+            $preview[] = ['icon' => 'checklist', 'label' => mrcatz_lang('export_preview_bulk'), 'value' => count($this->selectedRows) . ' ' . mrcatz_lang('data_selected')];
+        }
+
+        return $preview;
     }
 
     // Override-able export hooks
@@ -148,22 +302,30 @@ trait HasExport
         $headers = [];
         $exportableColumns = [];
         foreach ($dataTableSet as $i => $col) {
-            // Skip explicit action columns (withActionColumn() or
-            // withCustomColumn(..., type: 'action')). Display-only custom
-            // columns like computed per-row values or dynamic year columns
-            // must still be exported — they're data, not UI.
-            if (($col['type'] ?? null) === 'action') {
-                continue;
-            }
-            // Skip image columns
-            if (($col['type'] ?? null) === 'image') {
-                continue;
-            }
+            if (($col['type'] ?? null) === 'action') continue;
+            // Skip hidden columns when exporting filtered data
+            if ($scope === 'filtered' && in_array($i, $this->hiddenColumns ?? [])) continue;
+
             $headers[] = $col['head'];
             $exportableColumns[] = $i;
         }
 
-        $baseQuery = $this->buildExportQuery($scope)->orderBy('created_at', 'desc');
+        $baseQuery = $this->buildExportQuery($scope);
+
+        // Apply sort: use current table sort for filtered scope, default for all
+        if ($scope === 'filtered') {
+            if (!empty($this->multiSort)) {
+                foreach ($this->multiSort as $s) {
+                    $baseQuery = $baseQuery->orderBy($s['key'], $s['dir']);
+                }
+            } elseif (!empty($this->key)) {
+                $baseQuery = $baseQuery->orderBy($this->key, $this->value);
+            } else {
+                $baseQuery = $baseQuery->orderBy('created_at', 'desc');
+            }
+        } else {
+            $baseQuery = $baseQuery->orderBy('created_at', 'desc');
+        }
         $rows = [];
         $globalIndex = 0;
 
@@ -177,7 +339,15 @@ trait HasExport
                     $col = $dataTableSet[$colIndex];
                     if ($col['index'] !== null) {
                         $row[] = ++$globalIndex;
+                    } elseif (($col['type'] ?? null) === 'image') {
+                        // Image column: export the raw URL instead of rendered HTML
+                        $row[] = $chunkDt->getRawKeyData($rowIndex, $colIndex) ?? '';
+                    } elseif ($col['key'] !== null) {
+                        // Column with key (including withCustomColumn with key):
+                        // use raw key value so callbacks that return HTML are bypassed
+                        $row[] = $chunkDt->getRawKeyData($rowIndex, $colIndex) ?? '';
                     } else {
+                        // Custom column without key: call callback and strip HTML
                         $row[] = strip_tags($chunkDt->getData($rowIndex, $colIndex) ?? '');
                     }
                 }

@@ -71,35 +71,20 @@
 
                 <div x-show="scope === 'filtered'" x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                    <div class="rounded-xl bg-base-200/40 p-4 space-y-3">
+                    <div class="rounded-xl bg-base-200/40 p-4 space-y-2">
                         <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide flex items-center gap-1">
                             {!! mrcatz_icon('tune', 'text-xs') !!}
-                            {{ mrcatz_lang('export_settings') }}
+                            {{ mrcatz_lang('export_preview_title') }}
                         </p>
-                        <div>
-                            <label class="text-xs text-base-content/50 mb-1 block">{{ mrcatz_lang('export_search') }}</label>
-                            <label class="input input-bordered input-sm flex items-center gap-2 w-full focus-within:input-primary transition-all">
-                                {!! mrcatz_icon('search', 'text-sm text-base-content/30') !!}
-                                <input type="text" class="grow text-sm" placeholder="{{ mrcatz_lang('export_search_placeholder') }}" wire:model="exportSearch"/>
-                            </label>
-                        </div>
-                        @foreach($dataFilters as $f => $filter)
-                            @if($filterShow[$f] ?? true)
-                                <div>
-                                    <label class="text-xs text-base-content/50 mb-1 block">{{ $filter['label'] }}</label>
-                                    <select class="select select-bordered select-sm w-full text-sm focus:select-primary transition-all"
-                                            wire:model="exportFilterValues.{{ $filter['id'] }}">
-                                        <option value="{{ $default_filter_value }}">{{ mrcatz_lang('filter_all') }}</option>
-                                        @foreach($filterData[$f] as $data)
-                                            <option value="{{ $data[$filter['value']] }}">{{ $data[$filter['option']] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @endif
-                        @endforeach
-                        @if(count($dataFilters) === 0)
-                            <p class="text-xs text-base-content/40 italic py-1">{{ mrcatz_lang('filter_no_available') }}</p>
-                        @endif
+                        @forelse($exportPreview as $item)
+                            <div class="flex items-center gap-2 py-1">
+                                {!! mrcatz_icon($item['icon'], 'text-sm text-base-content/40 shrink-0') !!}
+                                <span class="text-xs text-base-content/50 shrink-0">{{ $item['label'] }}</span>
+                                <span class="text-xs font-medium text-base-content truncate">{{ $item['value'] }}</span>
+                            </div>
+                        @empty
+                            <p class="text-xs text-base-content/40 italic py-1">{{ mrcatz_lang('export_preview_empty') }}</p>
+                        @endforelse
                     </div>
                 </div>
             </div>

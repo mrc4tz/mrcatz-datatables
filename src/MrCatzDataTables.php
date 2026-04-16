@@ -1511,6 +1511,25 @@ class MrCatzDataTables
         };
     }
 
+    /**
+     * Read raw value from the key column, bypassing callbacks.
+     * Returns null when the column has no key defined.
+     */
+    public function getRawKeyData(int $indexRow, int $indexColumn): mixed
+    {
+        $this->validateColumnIndex($indexColumn);
+        $this->validateRowIndex($indexRow);
+
+        $columnKey = $this->dataTableSet[$indexColumn]['key'] ?? null;
+        if ($columnKey === null) return null;
+
+        $pluckKey = str_contains($columnKey, '.') ? substr($columnKey, strrpos($columnKey, '.') + 1) : $columnKey;
+        if (!isset($this->pluckCache[$pluckKey])) {
+            $this->pluckCache[$pluckKey] = $this->data->pluck($pluckKey)->all();
+        }
+        return $this->pluckCache[$pluckKey][$indexRow] ?? null;
+    }
+
     public function getColumnType(int $i): ?string
     {
         return $this->dataTableSet[$i]['type'] ?? null;
