@@ -292,6 +292,18 @@ trait HasExport
         }
     }
 
+    /**
+     * Check if a column key belongs to a joined table (not the base FROM table).
+     * e.g. 'demo_categories.name' on a query FROM 'demo_products' → true
+     */
+    private function isJoinedTableKey(string $key): bool
+    {
+        if (!str_contains($key, '.')) return false;
+        $tablePrefix = substr($key, 0, strrpos($key, '.'));
+        $baseTable = $this->baseQuery()->from ?? '';
+        return $tablePrefix !== $baseTable;
+    }
+
     protected int $exportChunkSize = 500;
 
     protected function buildExportData(string $scope): array
@@ -339,12 +351,13 @@ trait HasExport
                     $col = $dataTableSet[$colIndex];
                     if ($col['index'] !== null) {
                         $row[] = ++$globalIndex;
-                    } elseif ($col['key'] !== null) {
-                        // Column with key (withColumn, withColumnImage, withCustomColumn with key):
-                        // use raw DB value — bypasses callbacks that return HTML
+                    } elseif ($col['key'] !== null && !($chunkDt->hasCallback($colIndex) && $this->isJoinedTableKey($col['key']))) {
+                        // Column with key on the base table (or no callback):
+                        // read raw DB value — bypasses callbacks that return HTML
                         $row[] = $chunkDt->getRawKeyData($rowIndex, $colIndex) ?? '';
                     } else {
-                        // Custom column without key: call callback and strip HTML
+                        // Joined-table key with callback, or no key at all:
+                        // call callback (knows the SELECT alias) and strip HTML
                         $row[] = strip_tags($chunkDt->getData($rowIndex, $colIndex) ?? '');
                     }
                 }
