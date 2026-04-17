@@ -14,7 +14,7 @@ class {{name}}Page extends MrCatzComponent
 
     /**
      * (Optional) Define form fields using the Form Builder.
-     * If this method is overridden, the Blade form file ({{snake}}_form.blade.php) is not required.
+     * If this method is overridden, the @section('forms') from Blade form file ({{snake}}_form.blade.php) is not required.
      * If not overridden, the form will use the Blade file as usual.
      *
      * Example:
