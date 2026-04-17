@@ -33,9 +33,7 @@ class {{name}}Table extends MrCatzDataTablesComponent
             // Add columns as needed:
             // ->withColumn('Name', 'name')
             // ->withColumn('Email', 'email')
-            ->withCustomColumn('Action', function ($data, $i) {
-                return MrCatzDataTables::getActionView($data, $i, true, true);
-            });
+            ->withActionColumn();
     }
 
     public function setFilter()
