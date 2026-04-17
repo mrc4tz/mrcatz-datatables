@@ -1,9 +1,9 @@
 <div>
 
     {{-- ============================================================
-       THIS FILE IS OPTIONAL when using the Form Builder (setForm()).
-       If {{name}}Page overrides setForm(), this file is not used.
-       Delete this file if you are fully using the Form Builder.
+       THIS @section('forms') IS OPTIONAL when using the Form Builder (setForm()).
+       If {{name}}Page overrides setForm(), this @section('forms') is not used.
+       Delete this @section('forms') if you are fully using the Form Builder.
        ============================================================ --}}
 
     @extends('mrcatz::components.ui.datatable-form')
