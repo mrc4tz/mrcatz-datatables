@@ -47,6 +47,20 @@ return [
     'filter_date_this_year'  => 'This year',
     'filter_date_last_year'  => 'Last year',
 
+    // Check filter (multi-checkbox)
+    'filter_check_pick'          => 'Pick options',
+    'filter_check_search'        => 'Search options...',
+    'filter_check_no_match'      => "No options match ':query'",
+    'filter_check_selected'      => ':count / :total selected',
+    'filter_check_select_all'    => 'Select all',
+    'filter_check_clear'         => 'Clear selection',
+    'filter_check_apply'         => 'Apply',
+    'filter_check_reset'         => 'Reset filter',
+    'filter_check_mode_include'  => 'Include',
+    'filter_check_mode_exclude'  => 'Exclude',
+    'filter_check_not_prefix'    => 'Not: ',
+    'filter_check_plus_more'     => '+:count more',
+
     // Map picker
     'map_use_my_location' => 'Use my location',
     'map_clear'           => 'Clear',

@@ -158,9 +158,11 @@ trait HasExport
             $id = $df['id'];
 
             $activeValue = null;
+            $activeEntry = null;
             foreach ($this->activeFilters as $af) {
                 if ($af['id'] === $id) {
                     $activeValue = $af['value'];
+                    $activeEntry = $af;
                     break;
                 }
             }
@@ -175,6 +177,29 @@ trait HasExport
                 $display = ($from ?? '...') . '  →  ' . ($to ?? '...');
             } elseif ($type === 'date') {
                 $display = $activeValue;
+            } elseif ($type === 'check') {
+                $selected = is_array($activeValue) ? array_values($activeValue) : [];
+                if (empty($selected)) continue;
+
+                // Resolve each selected value to its option label (fall back
+                // to the raw value when no matching row exists — e.g. a URL
+                // parameter for an option that was later removed from data).
+                $labels = [];
+                $rows   = $this->filterData[$f] ?? [];
+                foreach ($selected as $v) {
+                    $matched = $v;
+                    foreach ($rows as $row) {
+                        if (($row[$df['value']] ?? null) == $v) {
+                            $matched = $row[$df['option']] ?? $v;
+                            break;
+                        }
+                    }
+                    $labels[] = (string) $matched;
+                }
+
+                $joined  = implode(', ', $labels);
+                $exclude = (bool) ($activeEntry['exclude_mode'] ?? false);
+                $display = $exclude ? mrcatz_lang('filter_check_not_prefix') . '(' . $joined . ')' : $joined;
             } else {
                 // Resolve select value to display label
                 $display = $activeValue;
@@ -188,7 +213,8 @@ trait HasExport
 
             $icon = match ($type) {
                 'date', 'date_range' => 'event',
-                default => 'filter_alt',
+                'check'              => 'check_box',
+                default              => 'filter_alt',
             };
 
             $preview[] = ['icon' => $icon, 'label' => $df['label'], 'value' => $display];

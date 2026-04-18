@@ -102,4 +102,19 @@ class MrCatzException extends \RuntimeException
     {
         return new self("Invalid date range part [{$part}]. Must be 'from' or 'to'.");
     }
+
+    public static function invalidCheckCondition(string $condition): self
+    {
+        return new self("Invalid check filter condition [{$condition}]. Allowed: 'whereIn', 'whereNotIn'.");
+    }
+
+    public static function allowExcludeOnCallback(string $id): self
+    {
+        return new self("allowExclude() is not supported on createCheckWithCallback [{$id}] — the callback owns the include/exclude logic.");
+    }
+
+    public static function invalidCheckMode(string $mode): self
+    {
+        return new self("Invalid check filter mode [{$mode}]. Must be 'include' or 'exclude'.");
+    }
 }

@@ -190,6 +190,162 @@
                         </div>
                     </div>
 
+                @elseif($type === 'check')
+                    @php
+                        $ckVal  = $activeFilterValues[$filter['id']] ?? [];
+                        $ckVal  = is_array($ckVal) ? array_values($ckVal) : [];
+                        $ckMode = 'include';
+                        foreach ($activeFilters ?? [] as $af) {
+                            if (($af['id'] ?? null) === $filter['id']) {
+                                $ckMode = !empty($af['exclude_mode']) ? 'exclude' : 'include';
+                                break;
+                            }
+                        }
+                    @endphp
+                    <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]" wire:key="ck-wrap-{{ $filter['id'] }}">
+                        <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
+
+                        {{-- wire:key hashes the APPLIED value + mode so Livewire
+                             destroys+recreates this element (and Alpine re-inits
+                             with fresh state) whenever the filter is committed.
+                             Because draft edits (check/uncheck, mode toggle,
+                             select-all, clear-selection) never touch server state,
+                             the hash stays stable during editing → the popover
+                             doesn't close mid-edit. Apply / Reset / Clear-x are
+                             the only paths that change the hash — and they all
+                             close the popover anyway, so the re-init has no UX cost. --}}
+                        <div class="relative"
+                             wire:key="ck-{{ $filter['id'] }}-{{ md5(json_encode($ckVal) . '|' . $ckMode) }}"
+                             x-data="mrcatzCheckFilter({
+                                values: @js($ckVal),
+                                mode: @js($ckMode),
+                                options: @js($filterData[$f] ?? []),
+                                valueKey: @js($filter['value']),
+                                optionKey: @js($filter['option']),
+                                filterId: @js($filter['id']),
+                                allowExclude: @js((bool) ($filter['allow_exclude'] ?? false)),
+                                searchThreshold: @js($filter['search_threshold'] ?? null),
+                                labels: @js([
+                                    'pick'        => mrcatz_lang('filter_check_pick'),
+                                    'search'      => mrcatz_lang('filter_check_search'),
+                                    'noMatch'     => mrcatz_lang('filter_check_no_match'),
+                                    'selected'    => mrcatz_lang('filter_check_selected'),
+                                    'selectAll'   => mrcatz_lang('filter_check_select_all'),
+                                    'clear'       => mrcatz_lang('filter_check_clear'),
+                                    'apply'       => mrcatz_lang('filter_check_apply'),
+                                    'reset'       => mrcatz_lang('filter_check_reset'),
+                                    'include'     => mrcatz_lang('filter_check_mode_include'),
+                                    'exclude'     => mrcatz_lang('filter_check_mode_exclude'),
+                                    'notPrefix'   => mrcatz_lang('filter_check_not_prefix'),
+                                    'plusMore'    => mrcatz_lang('filter_check_plus_more'),
+                                ]),
+                             })"
+                             @keydown.escape.window="ckOpen = false"
+                             @click.outside="if (! ($refs.popover && $refs.popover.contains($event.target))) ckOpen = false">
+
+                            <button type="button"
+                                    x-ref="trigger"
+                                    @click="togglePopover($event.currentTarget)"
+                                    class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
+                                    :class="{ 'border-primary': ckOpen }">
+                                <span class="flex items-center gap-2 min-w-0 flex-1">
+                                    {!! mrcatz_icon('filter_alt', 'text-base-content/50 shrink-0 w-4 h-4') !!}
+                                    <span class="truncate text-left" x-text="triggerText()"></span>
+                                </span>
+                                <span class="flex items-center gap-1 shrink-0">
+                                    <span x-show="hasValue()"
+                                          role="button"
+                                          tabindex="0"
+                                          @click.stop="reset()"
+                                          @keydown.enter.stop.prevent="reset()"
+                                          @keydown.space.stop.prevent="reset()"
+                                          class="hover:bg-base-200 rounded-full p-0.5 transition cursor-pointer inline-flex items-center justify-center"
+                                          :title="labels.reset">
+                                        {!! mrcatz_icon('close', 'text-base-content/40 w-3.5 h-3.5') !!}
+                                    </span>
+                                    {!! mrcatz_icon('expand_more', 'text-base-content/40 w-4 h-4') !!}
+                                </span>
+                            </button>
+
+                            <template x-teleport="body">
+                            <div x-show="ckOpen"
+                                 x-ref="popover"
+                                 style="display: none;"
+                                 :style="{ top: popoverTop + 'px', left: popoverLeft + 'px' }"
+                                 class="fixed z-[100] w-[20rem] bg-base-100 rounded-xl shadow-2xl border border-base-300 overflow-hidden flex flex-col">
+
+                                {{-- Include / Exclude mode toggle (only when allowExclude).
+                                     Active-state highlight reads `draftMode` so the user
+                                     sees their in-progress pick, committed on Apply. --}}
+                                <template x-if="allowExclude">
+                                    <div class="flex items-stretch gap-1 p-2 border-b border-base-300 bg-base-200/50">
+                                        <button type="button"
+                                                @click="setMode('include')"
+                                                class="flex-1 px-2 py-1 text-xs rounded transition-colors"
+                                                :class="draftMode === 'include' ? 'bg-primary text-primary-content font-semibold' : 'text-base-content/60 hover:bg-base-300/50'"
+                                                x-text="labels.include"></button>
+                                        <button type="button"
+                                                @click="setMode('exclude')"
+                                                class="flex-1 px-2 py-1 text-xs rounded transition-colors"
+                                                :class="draftMode === 'exclude' ? 'bg-error text-error-content font-semibold' : 'text-base-content/60 hover:bg-base-300/50'"
+                                                x-text="labels.exclude"></button>
+                                    </div>
+                                </template>
+
+                                {{-- Search box (only when option count > threshold) --}}
+                                <template x-if="shouldShowSearch()">
+                                    <div class="p-2 border-b border-base-300">
+                                        <input type="text"
+                                               x-ref="searchInput"
+                                               x-model="search"
+                                               :placeholder="labels.search"
+                                               class="input input-bordered input-sm w-full text-sm">
+                                    </div>
+                                </template>
+
+                                {{-- Option list --}}
+                                <div class="max-h-[16rem] overflow-y-auto">
+                                    <template x-for="opt in filteredOptions()" :key="opt._key">
+                                        <label class="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer text-sm">
+                                            <input type="checkbox"
+                                                   class="checkbox checkbox-sm checkbox-primary"
+                                                   :checked="isChecked(opt._value)"
+                                                   @change="toggle(opt._value)">
+                                            <span class="flex-1 truncate" x-html="highlight(opt._label)"></span>
+                                        </label>
+                                    </template>
+                                    <div x-show="filteredOptions().length === 0"
+                                         class="px-3 py-6 text-center text-sm text-base-content/50"
+                                         x-text="labels.noMatch.replace(':query', search)"></div>
+                                </div>
+
+                                {{-- Counter + select-all / clear shortcuts.
+                                     `flex-wrap` lets the two groups stack vertically
+                                     when the translated labels would otherwise collide
+                                     with the counter (e.g. Indonesian "terpilih" +
+                                     "Pilih semua" / "Hapus pilihan" are long). --}}
+                                <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2 border-t border-base-300 bg-base-200/30 text-xs">
+                                    <span class="text-base-content/60 whitespace-nowrap" x-text="counterText()"></span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <button type="button" @click="selectAllVisible()" class="text-primary hover:underline whitespace-nowrap" x-text="labels.selectAll"></button>
+                                        <span class="text-base-content/30">·</span>
+                                        <button type="button" @click="clearVisible()" class="text-primary hover:underline whitespace-nowrap" x-text="labels.clear"></button>
+                                    </div>
+                                </div>
+
+                                {{-- Action footer. Apply commits draft → applied +
+                                     server; Reset clears both draft and applied and
+                                     commits empty. Closing the popover via ESC or
+                                     outside-click intentionally discards draft. --}}
+                                <div class="flex gap-2 p-2 border-t border-base-300">
+                                    <button type="button" @click="reset(); ckOpen = false" class="btn btn-ghost btn-sm flex-1" x-text="labels.reset"></button>
+                                    <button type="button" @click="apply()" class="btn btn-primary btn-sm flex-1" x-text="labels.apply"></button>
+                                </div>
+                            </div>
+                            </template>
+                        </div>
+                    </div>
+
                 @else
                     {{-- Default: select dropdown (existing behavior, unchanged) --}}
                     <div class="w-full sm:w-auto sm:min-w-48" wire:show="filterShow[{{$f}}]">
@@ -324,9 +480,16 @@
                         if (!trigger) return;
                         const rect = trigger.getBoundingClientRect();
                         const pw = 352; // w-[22rem] = 22 * 16
-                        const ph = 340; // approximate popover height
                         const gap = 4;
                         const margin = 8;
+
+                        // Prefer the real measured height once the popover has
+                        // rendered. Falls back to an approximation on the very
+                        // first paint before mount — the $nextTick refine pass
+                        // in togglePopover replaces it with offsetHeight so the
+                        // flip-above case nests snugly against the trigger.
+                        const pop = this.$refs && this.$refs.popover;
+                        const ph = (pop && pop.offsetHeight > 0) ? pop.offsetHeight : 340;
 
                         let top = rect.bottom + gap;
                         let left = rect.left;
@@ -445,6 +608,291 @@
                         // Single atomic server call — clears the filter entirely
                         // (no intermediate ['from'=>null,'to'=>OLD] state).
                         this.$wire.resetFilter(this.filterId);
+                    },
+                };
+            };
+        }
+
+        if (typeof window.mrcatzCheckFilter === 'undefined') {
+            window.mrcatzCheckFilter = function (config) {
+                // Build once per mount — we index options by a stable key so
+                // x-for reconciles cleanly across re-renders. Values that
+                // collide on their raw key get a positional suffix so Alpine
+                // never sees duplicate :key values.
+                const seen = new Map();
+                const options = (config.options || []).map((o, i) => {
+                    const rawV = o[config.valueKey];
+                    const rawL = o[config.optionKey];
+                    const k0 = String(rawV ?? '__null__');
+                    const n = (seen.get(k0) ?? -1) + 1;
+                    seen.set(k0, n);
+                    return {
+                        _key:   n === 0 ? k0 : `${k0}__${n}`,
+                        _value: rawV,
+                        _label: String(rawL ?? ''),
+                    };
+                });
+
+                // Escape a string for safe HTML interpolation.
+                const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+                }[c]));
+
+                return {
+                    ckOpen: false,
+                    // APPLIED state — mirrors server's activeFilters entry and
+                    // is what the trigger button displays. Only mutates when
+                    // Apply / Reset commits to the server.
+                    values: Array.isArray(config.values) ? [...config.values] : [],
+                    mode: config.mode === 'exclude' ? 'exclude' : 'include',
+                    // DRAFT state — user's in-progress selection inside the
+                    // popover. Synced FROM applied on popover open; the user's
+                    // check/uncheck/mode-toggle actions mutate only the draft
+                    // until they click Apply.
+                    draftValues: Array.isArray(config.values) ? [...config.values] : [],
+                    draftMode: config.mode === 'exclude' ? 'exclude' : 'include',
+                    options,
+                    allowExclude: !!config.allowExclude,
+                    searchThreshold: (config.searchThreshold === undefined) ? null : config.searchThreshold,
+                    search: '',
+                    filterId: config.filterId,
+                    labels: config.labels,
+                    // Off-screen until first computePosition runs — same
+                    // technique as mrcatzDateRange to avoid a 0,0 flash
+                    // during the x-show transition.
+                    popoverTop: -9999,
+                    popoverLeft: -9999,
+                    _triggerEl: null,
+                    _reposition: null,
+
+                    init() {
+                        this.$watch('ckOpen', (v) => {
+                            if (v) {
+                                // Opening: refresh draft from applied so any
+                                // previously discarded draft is forgotten.
+                                this.draftValues = [...this.values];
+                                this.draftMode = this.mode;
+                                this.search = '';
+                                this._reposition = () => this.positionPopover();
+                                window.addEventListener('scroll', this._reposition, true);
+                                window.addEventListener('resize', this._reposition);
+                                this.$nextTick(() => {
+                                    if (this.shouldShowSearch() && this.$refs.searchInput) {
+                                        this.$refs.searchInput.focus();
+                                    }
+                                });
+                            } else if (this._reposition) {
+                                window.removeEventListener('scroll', this._reposition, true);
+                                window.removeEventListener('resize', this._reposition);
+                                this._reposition = null;
+                            }
+                        });
+                        // Server-state sync is handled by wire:key: any change
+                        // to the APPLIED value/mode changes the key, so Livewire
+                        // recreates the element and this factory runs again with
+                        // fresh config from the blade render. No in-Alpine
+                        // watcher on $wire.activeFilters is needed.
+                    },
+
+                    togglePopover(el) {
+                        if (el) this._triggerEl = el;
+                        if (!this.ckOpen) this.computePosition();
+                        this.ckOpen = !this.ckOpen;
+                        if (this.ckOpen) this.$nextTick(() => this.computePosition());
+                    },
+
+                    _getTrigger() {
+                        return this._triggerEl
+                            || this.$refs.trigger
+                            || (this.$el && this.$el.querySelector('[x-ref="trigger"]'));
+                    },
+
+                    // Estimate popover height from the actual widget config —
+                    // much closer to reality than a flat constant. Used only
+                    // for the first paint; the refine pass in togglePopover's
+                    // $nextTick replaces it with a real offsetHeight measurement.
+                    _estimateHeight() {
+                        const modeH   = this.allowExclude       ? 40 : 0;
+                        const searchH = this.shouldShowSearch() ? 48 : 0;
+                        const optH    = 36;  // single checkbox row height
+                        const listH   = Math.min(this.options.length * optH, 256); // cap at max-h-[16rem]
+                        const counterH = 32;
+                        const footerH  = 48;
+                        return modeH + searchH + listH + counterH + footerH;
+                    },
+
+                    computePosition() {
+                        const trigger = this._getTrigger();
+                        if (!trigger) return;
+                        const rect = trigger.getBoundingClientRect();
+                        const pw = 320; // w-[20rem] = 20 * 16
+                        const gap = 4;
+                        const margin = 8;
+
+                        // Prefer the real measured height once the popover has
+                        // rendered. Falls back to the config-aware estimator on
+                        // the very first paint before mount.
+                        const pop = this.$refs && this.$refs.popover;
+                        const ph = (pop && pop.offsetHeight > 0)
+                            ? pop.offsetHeight
+                            : this._estimateHeight();
+
+                        let top = rect.bottom + gap;
+                        let left = rect.left;
+
+                        if (top + ph > window.innerHeight - margin) {
+                            top = Math.max(margin, rect.top - ph - gap);
+                        }
+                        if (left + pw > window.innerWidth - margin) {
+                            left = window.innerWidth - pw - margin;
+                        }
+                        if (left < margin) left = margin;
+
+                        this.popoverTop = top;
+                        this.popoverLeft = left;
+                    },
+
+                    positionPopover() { this.computePosition(); },
+
+                    // Trigger button state — based on APPLIED values, so the
+                    // chip reflects what's actually filtering right now.
+                    hasValue() { return this.values.length > 0; },
+
+                    shouldShowSearch() {
+                        if (this.searchThreshold === null) return false;
+                        return this.options.length > this.searchThreshold;
+                    },
+
+                    // Checkbox visual state reflects DRAFT so the user sees
+                    // their in-progress picks, not the applied set.
+                    isChecked(value) {
+                        return this.draftValues.some((v) => v == value);
+                    },
+
+                    filteredOptions() {
+                        const q = this.search.trim().toLowerCase();
+                        if (!q) return this.options;
+                        return this.options.filter((o) => o._label.toLowerCase().includes(q));
+                    },
+
+                    // --- Draft mutations (no server roundtrip) ---
+
+                    toggle(value) {
+                        const idx = this.draftValues.findIndex((v) => v == value);
+                        if (idx >= 0) {
+                            this.draftValues.splice(idx, 1);
+                        } else {
+                            this.draftValues.push(value);
+                        }
+                    },
+
+                    selectAllVisible() {
+                        const visible = this.filteredOptions();
+                        const next = [...this.draftValues];
+                        visible.forEach((opt) => {
+                            if (!next.some((v) => v == opt._value)) next.push(opt._value);
+                        });
+                        this.draftValues = next;
+                    },
+
+                    clearVisible() {
+                        // Empty search → clear whole draft. Active search →
+                        // clear only the currently visible subset so the
+                        // user's filtered intent is preserved.
+                        if (this.search.trim() === '') {
+                            this.draftValues = [];
+                        } else {
+                            const visible = new Set(
+                                this.filteredOptions().map((o) => String(o._value))
+                            );
+                            this.draftValues = this.draftValues.filter((v) => !visible.has(String(v)));
+                        }
+                    },
+
+                    setMode(mode) {
+                        if (mode !== 'include' && mode !== 'exclude') return;
+                        this.draftMode = mode;
+                    },
+
+                    // --- Commit paths (server roundtrip) ---
+
+                    // Apply: push draft → applied → server, then close.
+                    // Uses a single $wire.applyCheck call so the engine runs
+                    // findData() exactly once per commit.
+                    apply() {
+                        this.values = [...this.draftValues];
+                        this.mode = this.draftMode;
+                        this.$wire.applyCheck(
+                            this.filterId,
+                            this.values,
+                            this.allowExclude ? this.mode : null,
+                        );
+                        this.ckOpen = false;
+                    },
+
+                    // Reset: clear applied + draft AND commit empty state.
+                    // Used by the trigger's clear-x and the popover's Reset
+                    // button. resetFilter() on the server nulls the value
+                    // outright, so the filter is dropped from activeFilters.
+                    reset() {
+                        this.values = [];
+                        this.draftValues = [];
+                        this.mode = 'include';
+                        this.draftMode = 'include';
+                        this.search = '';
+                        this.$wire.resetFilter(this.filterId);
+                    },
+
+                    // XSS-safe highlight: match on the raw label, then escape
+                    // each chunk separately — the only unescaped HTML we emit
+                    // is the <mark> tag itself, which we control.
+                    highlight(label) {
+                        const q = this.search.trim();
+                        if (!q) return escapeHtml(label);
+
+                        const lower = label.toLowerCase();
+                        const qLower = q.toLowerCase();
+
+                        let out = '';
+                        let i = 0;
+                        while (i < label.length) {
+                            const idx = lower.indexOf(qLower, i);
+                            if (idx === -1) {
+                                out += escapeHtml(label.slice(i));
+                                break;
+                            }
+                            out += escapeHtml(label.slice(i, idx));
+                            out += '<mark class="bg-warning/40 text-base-content rounded px-0.5">'
+                                 + escapeHtml(label.slice(idx, idx + q.length))
+                                 + '</mark>';
+                            i = idx + q.length;
+                        }
+                        return out;
+                    },
+
+                    triggerText() {
+                        if (this.values.length === 0) return this.labels.pick;
+                        const names = this.values.map((v) => {
+                            const opt = this.options.find((o) => o._value == v);
+                            return opt ? opt._label : String(v);
+                        });
+                        let txt;
+                        if (names.length <= 2) {
+                            txt = names.join(', ');
+                        } else {
+                            txt = names[0] + ' ' + this.labels.plusMore.replace(':count', names.length - 1);
+                        }
+                        return this.mode === 'exclude'
+                            ? this.labels.notPrefix + txt
+                            : txt;
+                    },
+
+                    // Counter reads DRAFT so it feedback-matches what the
+                    // user is ticking in real-time, not the applied state.
+                    counterText() {
+                        return this.labels.selected
+                            .replace(':count', this.draftValues.length)
+                            .replace(':total', this.options.length);
                     },
                 };
             };

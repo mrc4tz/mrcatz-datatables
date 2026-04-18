@@ -274,4 +274,114 @@ class MrCatzDataTableFilterTest extends TestCase
         $this->assertNull($df['min_date']);
         $this->assertNull($df['max_date']);
     }
+
+    public function test_create_check_filter(): void
+    {
+        $filter = MrCatzDataTableFilter::createCheck(
+            id: 'status',
+            label: 'Status',
+            data: [['id' => 1, 'name' => 'A'], ['id' => 2, 'name' => 'B']],
+            value: 'id',
+            option: 'name',
+            key: 'status_id'
+        )->get();
+
+        $df = $filter->getDataFilter();
+        $this->assertEquals('check', $df['type']);
+        $this->assertEquals('whereIn', $df['condition']);
+        $this->assertFalse($df['allow_exclude']);
+        $this->assertSame(5, $df['search_threshold']);
+        $this->assertNull($filter->getCallback());
+    }
+
+    public function test_create_check_filter_with_custom_condition(): void
+    {
+        $filter = MrCatzDataTableFilter::createCheck(
+            id: 'status',
+            label: 'Status',
+            data: [],
+            value: 'id',
+            option: 'name',
+            key: 'status_id',
+            condition: 'whereNotIn'
+        )->get();
+
+        $this->assertEquals('whereNotIn', $filter->getDataFilter()['condition']);
+    }
+
+    public function test_create_check_invalid_condition_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('Invalid check filter condition [LIKE]');
+
+        MrCatzDataTableFilter::createCheck(
+            id: 'status',
+            label: 'Status',
+            data: [],
+            value: 'id',
+            option: 'name',
+            key: 'status_id',
+            condition: 'LIKE'
+        );
+    }
+
+    public function test_create_check_with_allow_exclude(): void
+    {
+        $filter = MrCatzDataTableFilter::createCheck(
+            id: 'status', label: 'Status', data: [], value: 'id', option: 'name', key: 'status_id'
+        )->allowExclude()->get();
+
+        $this->assertTrue($filter->getDataFilter()['allow_exclude']);
+    }
+
+    public function test_create_check_with_search_threshold(): void
+    {
+        $filter = MrCatzDataTableFilter::createCheck(
+            id: 'status', label: 'Status', data: [], value: 'id', option: 'name', key: 'status_id'
+        )->allowSearchWhen(20)->get();
+
+        $this->assertSame(20, $filter->getDataFilter()['search_threshold']);
+
+        // Null disables search entirely regardless of option count
+        $filter2 = MrCatzDataTableFilter::createCheck(
+            id: 'status', label: 'Status', data: [], value: 'id', option: 'name', key: 'status_id'
+        )->allowSearchWhen(null)->get();
+
+        $this->assertNull($filter2->getDataFilter()['search_threshold']);
+    }
+
+    public function test_create_check_with_callback(): void
+    {
+        $cb = fn($q, array $values) => $q->whereIn('status', $values);
+
+        $filter = MrCatzDataTableFilter::createCheckWithCallback(
+            id: 'status',
+            label: 'Status',
+            data: [],
+            value: 'id',
+            option: 'name',
+            callback: $cb
+        )->get();
+
+        $df = $filter->getDataFilter();
+        $this->assertEquals('check', $df['type']);
+        $this->assertEquals('-', $df['key']);
+        $this->assertEquals('-', $df['condition']);
+        $this->assertIsCallable($filter->getCallback());
+    }
+
+    public function test_allow_exclude_rejected_on_callback_variant(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('allowExclude() is not supported on createCheckWithCallback');
+
+        MrCatzDataTableFilter::createCheckWithCallback(
+            id: 'status',
+            label: 'Status',
+            data: [],
+            value: 'id',
+            option: 'name',
+            callback: fn($q, $v) => $q
+        )->allowExclude();
+    }
 }

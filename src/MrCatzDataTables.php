@@ -168,6 +168,11 @@ class MrCatzDataTables
                 continue;
             }
 
+            if ($type === 'check') {
+                $this->applyCheckFilter($kv, $hasCallback ? $cbList[$x] : null);
+                continue;
+            }
+
             // Default: legacy select-style filter.
             // Use strict null/'' check so legitimate falsy values like 0, '0',
             // false (e.g. ?filter[active]=0) are still applied.
@@ -214,6 +219,35 @@ class MrCatzDataTables
         if (($kv['key'] ?? '-') === '-') return;
 
         $this->applyDateComparison($kv['key'], $kv['format'] ?? 'date', $kv['condition'] ?? '=', $value);
+    }
+
+    /**
+     * Apply a multi-value check filter. Value is a list array of selected
+     * option values. Callback variant receives `($query, array $values)`
+     * (even when empty, mirroring date/date_range callback semantics).
+     * Non-callback variant applies `whereIn` or `whereNotIn` based on
+     * `exclude_mode` in the active filter entry.
+     */
+    private function applyCheckFilter(array $kv, ?\Closure $callback): void
+    {
+        $value  = $kv['value'] ?? null;
+        $values = is_array($value) ? array_values($value) : [];
+
+        if ($callback !== null) {
+            $this->dataBuilder = $callback($this->dataBuilder, $values);
+            return;
+        }
+
+        if (empty($values)) return;
+        if (($kv['key'] ?? '-') === '-') return;
+
+        $exclude = (bool) ($kv['exclude_mode'] ?? false);
+        $base    = $kv['condition'] ?? 'whereIn';
+        $method  = $exclude
+            ? ($base === 'whereNotIn' ? 'whereIn' : 'whereNotIn')
+            : $base;
+
+        $this->dataBuilder = $this->dataBuilder->{$method}($kv['key'], $values);
     }
 
     /**
@@ -498,6 +532,27 @@ class MrCatzDataTables
                 continue;
             }
 
+            // Check filter — translate to Meilisearch IN / NOT IN when the
+            // filter isn't a callback variant and has at least one value.
+            if ($type === 'check') {
+                $expr = $this->maybePushCheckFilter($kv, $hasCallback, $mode);
+                if ($expr !== null) {
+                    $pushed[] = $expr;
+                    continue;
+                }
+                // Empty array or callback variant → SQL fallback; skip unless
+                // there's a callback that needs to run (matches the
+                // "callbacks need to run even with empty value" invariant).
+                $hasValues = is_array($kv['value'] ?? null) && count($kv['value']) > 0;
+                if ($hasCallback || $hasValues) {
+                    $unpushedKv[$x] = $kv;
+                    if ($hasCallback) {
+                        $unpushedCb[$x] = $this->callbackFilters[$x];
+                    }
+                }
+                continue;
+            }
+
             // Empty filter values: nothing to push, but callbacks may still
             // need to run in SQL even with an empty value (existing semantics).
             if (empty($kv['value'])) {
@@ -555,6 +610,49 @@ class MrCatzDataTables
      *   - the format is one Meilisearch can express via numeric range
      *     (date / datetime / year / month_year — but NOT time / time_hm)
      */
+    /**
+     * Decide whether a check (multi-value) filter can be pushed to Meilisearch.
+     * Returns the Meilisearch expression on success, or null for SQL fallback.
+     *
+     * Push requires:
+     *   - filter is NOT a callback variant
+     *   - filter has a real key (not '-')
+     *   - at least one selected value
+     *
+     * Emits `key IN [v1, v2, ...]` or `key NOT IN [...]` — both forms are
+     * supported natively by Meilisearch once `key` is in `filterableAttributes`.
+     */
+    private function maybePushCheckFilter(array $kv, bool $hasCallback, string $mode): ?string
+    {
+        $key = $kv['key'] ?? '-';
+
+        if ($hasCallback) {
+            if ($mode === 'always') {
+                throw MrCatzException::filterNotPushable($key, 'check callback closure cannot be pushed');
+            }
+            return null;
+        }
+
+        if ($key === '-') return null;
+
+        $values = is_array($kv['value'] ?? null) ? array_values($kv['value']) : [];
+        if (empty($values)) return null;
+
+        $quote = function ($v) {
+            if (is_numeric($v)) return (string) $v;
+            return '"' . str_replace('"', '\\"', (string) $v) . '"';
+        };
+
+        $list       = '[' . implode(', ', array_map($quote, $values)) . ']';
+        $excludeMod = (bool) ($kv['exclude_mode'] ?? false);
+        $baseCond   = $kv['condition'] ?? 'whereIn';
+        $isNotIn    = $excludeMod
+            ? ($baseCond === 'whereNotIn' ? false : true)
+            : ($baseCond === 'whereNotIn');
+
+        return $isNotIn ? "{$key} NOT IN {$list}" : "{$key} IN {$list}";
+    }
+
     private function maybePushDateFilter(array $kv, bool $hasCallback, string $mode): ?string
     {
         $key  = $kv['key']  ?? '-';

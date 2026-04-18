@@ -47,6 +47,20 @@ return [
     'filter_date_this_year'  => 'Tahun ini',
     'filter_date_last_year'  => '1 tahun terakhir',
 
+    // Check filter (multi-checkbox)
+    'filter_check_pick'          => 'Pilih opsi',
+    'filter_check_search'        => 'Cari opsi...',
+    'filter_check_no_match'      => "Tidak ada opsi cocok untuk ':query'",
+    'filter_check_selected'      => ':count / :total terpilih',
+    'filter_check_select_all'    => 'Pilih semua',
+    'filter_check_clear'         => 'Hapus pilihan',
+    'filter_check_apply'         => 'Terapkan',
+    'filter_check_reset'         => 'Reset filter',
+    'filter_check_mode_include'  => 'Termasuk',
+    'filter_check_mode_exclude'  => 'Kecuali',
+    'filter_check_not_prefix'    => 'Kecuali: ',
+    'filter_check_plus_more'     => '+:count lagi',
+
     // Map picker
     'map_use_my_location' => 'Gunakan lokasi saya',
     'map_clear'           => 'Reset',

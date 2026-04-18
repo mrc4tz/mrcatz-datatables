@@ -30,12 +30,13 @@ trait HasFilters
                 $config = $this->findFilterConfigById($id);
                 if ($config) {
                     $this->activeFilters[] = [
-                        'id'        => $id,
-                        'key'       => $config['key'],
-                        'value'     => $value,
-                        'condition' => $config['condition'],
-                        'type'      => $config['type']   ?? 'select',
-                        'format'    => $config['format'] ?? '',
+                        'id'           => $id,
+                        'key'          => $config['key'],
+                        'value'        => $value,
+                        'condition'    => $config['condition'],
+                        'type'         => $config['type']   ?? 'select',
+                        'format'       => $config['format'] ?? '',
+                        'exclude_mode' => false,
                     ];
                 }
             }
@@ -129,12 +130,13 @@ trait HasFilters
 
         if (!$found) {
             $this->activeFilters[] = [
-                'id'        => $id,
-                'key'       => $filter['key'],
-                'value'     => $filterValue,
-                'condition' => $filter['condition'],
-                'type'      => $filter['type']   ?? 'select',
-                'format'    => $filter['format'] ?? '',
+                'id'           => $id,
+                'key'          => $filter['key'],
+                'value'        => $filterValue,
+                'condition'    => $filter['condition'],
+                'type'         => $filter['type']   ?? 'select',
+                'format'       => $filter['format'] ?? '',
+                'exclude_mode' => false,
             ];
         }
 
@@ -143,6 +145,180 @@ trait HasFilters
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $filterValue);
+    }
+
+    /**
+     * Toggle a single value into/out of a `check` filter's selected array.
+     * Immediately re-queries the data — matches the UX of native checkbox
+     * lists where each tick applies.
+     */
+    public function toggleCheck(string $id, mixed $value): void
+    {
+        $filter = $this->findFilterById($id);
+
+        $activeIndex = null;
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $activeIndex = $i;
+                break;
+            }
+        }
+
+        $current = [];
+        if ($activeIndex !== null && is_array($this->activeFilters[$activeIndex]['value'] ?? null)) {
+            $current = array_values($this->activeFilters[$activeIndex]['value']);
+        }
+
+        // Loose comparison: URL strings like '1' should match int 1 coming from DB.
+        $pos = null;
+        foreach ($current as $i => $v) {
+            if ($v == $value) { $pos = $i; break; }
+        }
+
+        if ($pos === null) {
+            $current[] = $value;
+        } else {
+            array_splice($current, $pos, 1);
+        }
+
+        $this->writeCheckValue($id, $filter, array_values($current));
+    }
+
+    /**
+     * Replace a `check` filter's selected array wholesale — used by the UI's
+     * Select-all / Clear-selection shortcuts and by external callers that
+     * need to set multiple values atomically.
+     */
+    public function setCheckValues(string $id, array $values): void
+    {
+        $filter = $this->findFilterById($id);
+        $this->writeCheckValue($id, $filter, array_values($values));
+    }
+
+    /**
+     * Atomically commit both values AND mode for a `check` filter in a
+     * single Livewire request — used by the popover's Apply button so the
+     * engine runs only one findData() cycle per commit. Pass `$mode = null`
+     * to leave the current exclude_mode untouched.
+     */
+    public function applyCheck(string $id, array $values, ?string $mode = null): void
+    {
+        if ($mode !== null && !in_array($mode, ['include', 'exclude'], true)) {
+            throw MrCatzException::invalidCheckMode($mode);
+        }
+
+        $filter = $this->findFilterById($id);
+        $values = array_values($values);
+
+        $activeIndex = null;
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $activeIndex = $i;
+                break;
+            }
+        }
+
+        if ($activeIndex !== null) {
+            $this->activeFilters[$activeIndex]['value'] = $values;
+            if ($mode !== null) {
+                $this->activeFilters[$activeIndex]['exclude_mode'] = $mode === 'exclude';
+            }
+        } else {
+            $this->activeFilters[] = [
+                'id'           => $id,
+                'key'          => $filter['key'],
+                'value'        => $values,
+                'condition'    => $filter['condition'],
+                'type'         => $filter['type']   ?? 'check',
+                'format'       => $filter['format'] ?? '',
+                'exclude_mode' => $mode === 'exclude',
+            ];
+        }
+
+        $this->syncFilterUrl();
+        $this->setPage(1);
+        $this->clearSelection();
+        $this->findData();
+        $this->safeFilterChanged($id, $values);
+    }
+
+    /**
+     * Switch a `check` filter between 'include' (whereIn) and 'exclude'
+     * (whereNotIn) mode. Only meaningful when the filter was built with
+     * `->allowExclude()` — but we don't enforce that here because the
+     * registry-level check happens at filter-config time.
+     */
+    public function setCheckMode(string $id, string $mode): void
+    {
+        if (!in_array($mode, ['include', 'exclude'], true)) {
+            throw MrCatzException::invalidCheckMode($mode);
+        }
+
+        $filter = $this->findFilterById($id);
+
+        $activeIndex = null;
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $activeIndex = $i;
+                break;
+            }
+        }
+
+        $exclude = $mode === 'exclude';
+        $current = $activeIndex !== null
+            ? array_values($this->activeFilters[$activeIndex]['value'] ?? [])
+            : [];
+
+        if ($activeIndex !== null) {
+            $this->activeFilters[$activeIndex]['exclude_mode'] = $exclude;
+        } else {
+            $this->activeFilters[] = [
+                'id'           => $id,
+                'key'          => $filter['key'],
+                'value'        => $current,
+                'condition'    => $filter['condition'],
+                'type'         => $filter['type']   ?? 'check',
+                'format'       => $filter['format'] ?? '',
+                'exclude_mode' => $exclude,
+            ];
+        }
+
+        $this->syncFilterUrl();
+        $this->setPage(1);
+        $this->clearSelection();
+        $this->findData();
+        $this->safeFilterChanged($id, $current);
+    }
+
+    private function writeCheckValue(string $id, array $filter, array $values): void
+    {
+        $activeIndex = null;
+        foreach ($this->activeFilters as $i => $af) {
+            if ($af['id'] === $id) {
+                $activeIndex = $i;
+                break;
+            }
+        }
+
+        if ($activeIndex !== null) {
+            $this->activeFilters[$activeIndex]['value'] = $values;
+        } else {
+            $this->activeFilters[] = [
+                'id'           => $id,
+                'key'          => $filter['key'],
+                'value'        => $values,
+                'condition'    => $filter['condition'],
+                'type'         => $filter['type']   ?? 'check',
+                'format'       => $filter['format'] ?? '',
+                'exclude_mode' => false,
+            ];
+        }
+
+        $this->syncFilterUrl();
+        $this->setPage(1);
+        $this->clearSelection();
+        $this->findData();
+        $this->safeFilterChanged($id, $values);
     }
 
     /**
@@ -185,12 +361,13 @@ trait HasFilters
             $this->activeFilters[$activeIndex]['value'] = $current;
         } else {
             $this->activeFilters[] = [
-                'id'        => $id,
-                'key'       => $filter['key'],
-                'value'     => $current,
-                'condition' => $filter['condition'],
-                'type'      => $filter['type']   ?? 'date_range',
-                'format'    => $filter['format'] ?? 'date',
+                'id'           => $id,
+                'key'          => $filter['key'],
+                'value'        => $current,
+                'condition'    => $filter['condition'],
+                'type'         => $filter['type']   ?? 'date_range',
+                'format'       => $filter['format'] ?? 'date',
+                'exclude_mode' => false,
             ];
         }
 
@@ -263,10 +440,16 @@ trait HasFilters
         if ($value === null || $value === '') return false;
 
         if (is_array($value)) {
-            // Date range — set if either bound is set
-            $from = $value['from'] ?? null;
-            $to   = $value['to']   ?? null;
-            return self::filterValueIsSet($from) || self::filterValueIsSet($to);
+            if (empty($value)) return false;
+
+            // Date range — assoc with 'from' / 'to' keys.
+            if (array_key_exists('from', $value) || array_key_exists('to', $value)) {
+                return self::filterValueIsSet($value['from'] ?? null)
+                    || self::filterValueIsSet($value['to']   ?? null);
+            }
+
+            // List array (check filter) — any non-empty list counts as set.
+            return true;
         }
 
         return true;

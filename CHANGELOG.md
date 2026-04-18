@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.18] - 2026-04-18
+
+### Added
+- **Check filter (multi-checkbox)** — new widget type alongside `select` / `date` / `date_range`. Two factories on `MrCatzDataTableFilter`:
+  - `createCheck($id, $label, $data, $value, $option, $key, $condition = 'whereIn', $show = true)` — standard whereIn / whereNotIn.
+  - `createCheckWithCallback($id, $label, $data, $value, $option, $callback, $show = true)` — callback receives `($query, array $values)` for custom SQL (joins, whereHas, etc).
+- **Chainable `->allowExclude()`** — adds an Include/Exclude mode toggle to the popover; engine flips `whereIn` ↔ `whereNotIn` atomically. Rejected on `createCheckWithCallback` (callback owns its own SQL).
+- **Chainable `->allowSearchWhen(?int $count = 5)`** — shows an in-popover search box once option count exceeds the threshold. `null` disables search entirely. Default 5 is aligned with the list area's visual scroll break.
+- **Popover UI** — fixed-width (20rem) popover teleported to `<body>` (mirrors the `date_range` pattern). Includes sticky search box with case-insensitive `<mark>` highlight (XSS-safe via per-chunk escaping), scrollable list (`max-h-[16rem]`), selected/total counter, and Select-all / Clear-selection shortcuts that respect the current search filter.
+- **Draft → Apply commit flow** — checkbox toggles, Select-all, Clear-selection, and Include/Exclude mode changes mutate in-popover draft state only. Nothing hits the server until the user clicks **Apply** (one atomic commit via new `applyCheck($id, $values, $mode)` Livewire method, running `findData()` exactly once). ESC / outside-click discards the draft; **Reset filter** and the trigger's clear-x both clear applied state and close the popover.
+- **Export conditions integration** — check filters render in the export banner with mode-aware formatting: `"Status: Active, Pending"` for include mode, `"Status: NOT (Archived, Draft)"` for exclude mode. `check_box` icon used for the check filter's row in the banner.
+- **Scout / Meilisearch pushdown** — non-callback check filters translate natively to `key IN [...]` / `key NOT IN [...]` expressions via `maybePushCheckFilter()`. Callback variants fall back to SQL (matches date-filter convention). Empty selection is a no-op (nothing pushed, nothing filtered).
+- **12 new lang keys** (EN + ID) — `filter_check_pick`, `filter_check_search`, `filter_check_no_match`, `filter_check_selected`, `filter_check_select_all`, `filter_check_clear`, `filter_check_apply`, `filter_check_reset`, `filter_check_mode_include`, `filter_check_mode_exclude`, `filter_check_not_prefix`, `filter_check_plus_more`.
+- **3 new exceptions** — `invalidCheckCondition`, `allowExcludeOnCallback`, `invalidCheckMode`.
+- **20 new tests** — 8 unit (factory signatures, allowExclude rejection on callback variant, allowSearchWhen defaults, invalid condition throws), 12 integration (engine whereIn / whereNotIn / callback / exclude-mode flip, Scout pushdown IN / NOT IN / callback fallback / always-mode throw / empty no-op).
+
+### Changed
+- **Popover positioning** — both `mrcatzDateRange` and `mrcatzCheckFilter` now measure real `offsetHeight` on the `$nextTick` refine pass instead of relying on a hardcoded approximation. The flip-above case no longer leaves a large visible gap when the actual popover is shorter than the estimate.
+- **`HasFilters::filterValueIsSet`** — teaches the check now accepts list-style arrays (`[1, 2, 3]`) instead of only date-range shapes (`['from' => ..., 'to' => ...]`). Empty lists correctly register as "unset" so they don't sync to URL params.
+- **Active filter schema** — `activeFilters[]` entries now include an `exclude_mode` boolean alongside `type` / `format`. `bootFilters` + `change` + `changeDateRange` updated to write the field uniformly so engine + export code can rely on it.
+
 ## [1.29.12] - 2026-04-16
 
 ### Added

@@ -15,7 +15,7 @@ class MrCatzDataTableFilter
     private ?array $dataFilter = null;
     private bool $show;
 
-    /** Filter widget type. 'select' (default) | 'date' | 'date_range' */
+    /** Filter widget type. 'select' (default) | 'date' | 'date_range' | 'check' */
     private string $type = 'select';
 
     /** Date format. '' (non-date) | 'date' | 'datetime' | 'time' | 'time_hm' | 'month_year' | 'year' */
@@ -25,8 +25,18 @@ class MrCatzDataTableFilter
     private ?string $minDate = null;
     private ?string $maxDate = null;
 
+    /** Check filter: enable Include/Exclude mode toggle in the popover. */
+    private bool $allowExclude = false;
+
+    /** Check filter: show in-popover search when option count exceeds this threshold. Null = never. */
+    private ?int $searchThreshold = 5;
+
+    /** Whether this instance was built by a *WithCallback factory — used to reject allowExclude(). */
+    private bool $isCallbackVariant = false;
+
     private const VALID_DATE_FORMATS = ['date', 'datetime', 'time', 'time_hm', 'month_year', 'year'];
     private const VALID_DATE_CONDITIONS = ['=', '!=', '<>', '>', '<', '>=', '<='];
+    private const VALID_CHECK_CONDITIONS = ['whereIn', 'whereNotIn'];
 
     public static function create(
         string $id,
@@ -210,6 +220,98 @@ class MrCatzDataTableFilter
         return $f;
     }
 
+    /**
+     * Multi-select checkbox filter. Renders a popover with a checkbox list;
+     * engine applies `whereIn` (default) or `whereNotIn` when Include/Exclude
+     * mode is toggled via `->allowExclude()`.
+     *
+     * Empty selection (no checkbox ticked) is a no-op.
+     */
+    public static function createCheck(
+        string $id,
+        string $label,
+        string|iterable $data,
+        string $value,
+        string $option,
+        string $key,
+        string $condition = 'whereIn',
+        bool $show = true
+    ): self {
+        self::validateCheckCondition($condition);
+
+        $f = new self();
+        $f->id        = $id;
+        $f->label     = $label;
+        $f->data      = $data;
+        $f->value     = $value;
+        $f->option    = $option;
+        $f->key       = $key;
+        $f->condition = $condition;
+        $f->type      = 'check';
+        $f->show      = $show;
+        return $f;
+    }
+
+    /**
+     * Multi-select checkbox filter that delegates to a user-provided callback.
+     * Use this when the SQL is non-trivial (whereHas, joins, custom predicates).
+     * The callback receives ($query, array $values) where $values is the list
+     * of selected option values. An empty array is still passed to the callback
+     * (for consistency with date/date_range callback variants).
+     *
+     * `->allowExclude()` is rejected on this variant — the callback owns the
+     * include/exclude logic.
+     */
+    public static function createCheckWithCallback(
+        string $id,
+        string $label,
+        string|iterable $data,
+        string $value,
+        string $option,
+        callable $callback,
+        bool $show = true
+    ): self {
+        $f = new self();
+        $f->id                = $id;
+        $f->label             = $label;
+        $f->data              = $data;
+        $f->value             = $value;
+        $f->option            = $option;
+        $f->key               = '-';
+        $f->condition         = '-';
+        $f->type              = 'check';
+        $f->callback          = \Closure::fromCallable($callback);
+        $f->show              = $show;
+        $f->isCallbackVariant = true;
+        return $f;
+    }
+
+    /**
+     * Enable the Include/Exclude mode toggle in a check filter popover.
+     * When Exclude is active, engine flips `whereIn` → `whereNotIn`.
+     *
+     * Rejected on `createCheckWithCallback` — the callback defines its own SQL.
+     */
+    public function allowExclude(): self
+    {
+        if ($this->isCallbackVariant) {
+            throw \MrCatz\DataTable\Exceptions\MrCatzException::allowExcludeOnCallback($this->id);
+        }
+        $this->allowExclude = true;
+        return $this;
+    }
+
+    /**
+     * Show the in-popover search box when the number of options exceeds $count.
+     * Pass `null` to never show the search (regardless of option count).
+     * Default threshold: 5 (aligned with the popover list visual scroll break).
+     */
+    public function allowSearchWhen(?int $count = 5): self
+    {
+        $this->searchThreshold = $count;
+        return $this;
+    }
+
     private static function validateDateFormat(string $format): void
     {
         if (!in_array($format, self::VALID_DATE_FORMATS, true)) {
@@ -221,6 +323,13 @@ class MrCatzDataTableFilter
     {
         if (!in_array($condition, self::VALID_DATE_CONDITIONS, true)) {
             throw \MrCatz\DataTable\Exceptions\MrCatzException::invalidDateCondition($condition);
+        }
+    }
+
+    private static function validateCheckCondition(string $condition): void
+    {
+        if (!in_array($condition, self::VALID_CHECK_CONDITIONS, true)) {
+            throw \MrCatz\DataTable\Exceptions\MrCatzException::invalidCheckCondition($condition);
         }
     }
 
@@ -240,6 +349,8 @@ class MrCatzDataTableFilter
             'format' => $this->format,
             'min_date' => $this->minDate,
             'max_date' => $this->maxDate,
+            'allow_exclude' => $this->allowExclude,
+            'search_threshold' => $this->searchThreshold,
         ];
         return $this;
     }

@@ -1313,4 +1313,256 @@ class MrCatzDataTablesIntegrationTest extends TestCase
         $this->assertObjectHasProperty('category', $row);
         $this->assertObjectHasProperty('price', $row);
     }
+
+    // --- Check filter (Fitur: multi-checkbox) ---
+
+    public function test_check_filter_where_in(): void
+    {
+        // 5 electronics + 3 furniture in setUp(); selecting both categories
+        // should return all 8 rows (the list is inclusive).
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => ['electronics', 'furniture'],
+                  'condition' => 'whereIn', 'type' => 'check']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(8, $dt->countRow());
+    }
+
+    public function test_check_filter_where_in_single_value(): void
+    {
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => ['electronics'],
+                  'condition' => 'whereIn', 'type' => 'check']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(5, $dt->countRow());
+    }
+
+    public function test_check_filter_empty_array_is_noop(): void
+    {
+        // Empty selection must not filter anything out.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => [], 'condition' => 'whereIn', 'type' => 'check']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(8, $dt->countRow());
+    }
+
+    public function test_check_filter_exclude_mode_flips_to_where_not_in(): void
+    {
+        // exclude_mode=true on a whereIn base → whereNotIn behavior.
+        // Select 'electronics' with exclude → should return 3 furniture rows.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => ['electronics'], 'condition' => 'whereIn',
+                  'type' => 'check', 'exclude_mode' => true]],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(3, $dt->countRow());
+    }
+
+    public function test_check_filter_base_where_not_in_condition(): void
+    {
+        // Developer-configured base condition = whereNotIn.
+        // Select 'electronics' → exclude them → 3 furniture rows.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => ['electronics'], 'condition' => 'whereNotIn',
+                  'type' => 'check']],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(3, $dt->countRow());
+    }
+
+    public function test_check_filter_exclude_mode_on_where_not_in_base_flips_to_where_in(): void
+    {
+        // Double-negative: base whereNotIn + exclude_mode → whereIn.
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => 'category',
+                  'value' => ['electronics'], 'condition' => 'whereNotIn',
+                  'type' => 'check', 'exclude_mode' => true]],
+                [null]
+            )
+            ->build();
+
+        $this->assertEquals(5, $dt->countRow());
+    }
+
+    public function test_check_filter_callback_variant(): void
+    {
+        // Callback receives the selected values array. Here we use whereIn
+        // via callback — equivalent to the built-in path but exercised
+        // through the closure branch.
+        $callback = fn($q, array $values) => $q->whereIn('category', $values);
+
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => '-',
+                  'value' => ['furniture'], 'condition' => '-', 'type' => 'check']],
+                [$callback]
+            )
+            ->build();
+
+        $this->assertEquals(3, $dt->countRow());
+    }
+
+    public function test_check_filter_callback_variant_receives_empty_array(): void
+    {
+        // Matches date/date_range callback semantics: callback IS invoked
+        // even with empty selection (developer can choose to no-op).
+        $received = null;
+        $callback = function ($q, array $values) use (&$received) {
+            $received = $values;
+            return $q;
+        };
+
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'cat', 'key' => '-',
+                  'value' => [], 'condition' => '-', 'type' => 'check']],
+                [$callback]
+            )
+            ->build();
+
+        $this->assertSame([], $received, 'Callback should be invoked with empty array');
+        $this->assertEquals(8, $dt->countRow());
+    }
+
+    // --- Check filter interaction with Scout pushdown ---
+
+    public function test_scout_pushdown_translates_check_where_in(): void
+    {
+        $dt = $this->createTable(10)->withColumn('Name', 'name');
+        $dt->setConfig([
+            'table_name' => 'products',
+            'table_id'   => 'id',
+            'search'     => ['driver' => 'scout', 'filter_pushdown' => 'auto'],
+        ]);
+        $dt->setFilters(
+            [['id' => 'cat', 'key' => 'category',
+              'value' => ['electronics', 'furniture'],
+              'condition' => 'whereIn', 'type' => 'check']],
+            [null]
+        );
+
+        [$pushed, $unpushedKv,] = $this->invokePrepareFilterPushdown($dt);
+
+        $this->assertSame('category IN ["electronics", "furniture"]', $pushed);
+        $this->assertEmpty($unpushedKv);
+    }
+
+    public function test_scout_pushdown_translates_check_with_exclude_mode(): void
+    {
+        $dt = $this->createTable(10)->withColumn('Name', 'name');
+        $dt->setConfig([
+            'table_name' => 'products',
+            'table_id'   => 'id',
+            'search'     => ['driver' => 'scout', 'filter_pushdown' => 'auto'],
+        ]);
+        $dt->setFilters(
+            [['id' => 'cat', 'key' => 'category',
+              'value' => ['electronics'], 'condition' => 'whereIn',
+              'type' => 'check', 'exclude_mode' => true]],
+            [null]
+        );
+
+        [$pushed,] = $this->invokePrepareFilterPushdown($dt);
+
+        $this->assertSame('category NOT IN ["electronics"]', $pushed);
+    }
+
+    public function test_scout_pushdown_check_empty_array_falls_back(): void
+    {
+        // Empty selection → nothing to push, SQL fallback (even though the
+        // fallback itself is a no-op). Neither pushed nor in unpushedKv
+        // (unless there's a callback, tested separately).
+        $dt = $this->createTable(10)->withColumn('Name', 'name');
+        $dt->setConfig([
+            'table_name' => 'products',
+            'table_id'   => 'id',
+            'search'     => ['driver' => 'scout', 'filter_pushdown' => 'auto'],
+        ]);
+        $dt->setFilters(
+            [['id' => 'cat', 'key' => 'category', 'value' => [],
+              'condition' => 'whereIn', 'type' => 'check']],
+            [null]
+        );
+
+        [$pushed, $unpushedKv,] = $this->invokePrepareFilterPushdown($dt);
+
+        $this->assertNull($pushed);
+        $this->assertEmpty($unpushedKv);
+    }
+
+    public function test_scout_pushdown_check_callback_falls_back_to_sql(): void
+    {
+        $callback = fn($q, array $v) => $q->whereIn('category', $v);
+
+        $dt = $this->createTable(10)->withColumn('Name', 'name');
+        $dt->setConfig([
+            'table_name' => 'products',
+            'table_id'   => 'id',
+            'search'     => ['driver' => 'scout', 'filter_pushdown' => 'auto'],
+        ]);
+        $dt->setFilters(
+            [['id' => 'cat', 'key' => '-', 'value' => ['electronics'],
+              'condition' => '-', 'type' => 'check']],
+            [$callback]
+        );
+
+        [$pushed, $unpushedKv, $unpushedCb] = $this->invokePrepareFilterPushdown($dt);
+
+        $this->assertNull($pushed);
+        $this->assertCount(1, $unpushedKv);
+        $this->assertCount(1, $unpushedCb);
+    }
+
+    public function test_scout_pushdown_check_callback_always_mode_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('check callback closure cannot be pushed');
+
+        $callback = fn($q, array $v) => $q;
+
+        $dt = $this->createTable(10)->withColumn('Name', 'name');
+        $dt->setConfig([
+            'table_name' => 'products',
+            'table_id'   => 'id',
+            'search'     => ['driver' => 'scout', 'filter_pushdown' => 'always'],
+        ]);
+        $dt->setFilters(
+            [['id' => 'cat', 'key' => '-', 'value' => ['electronics'],
+              'condition' => '-', 'type' => 'check']],
+            [$callback]
+        );
+
+        $this->invokePrepareFilterPushdown($dt);
+    }
 }
