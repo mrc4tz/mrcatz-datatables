@@ -54,6 +54,8 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $typeSearchWithDelay = false;
     public $typeSearchDelay = '500ms';
 
+    public $filterDebounceDelay = '300ms';
+
     public $load_start = false;
 
     public $enableKeyboardNav = true;
@@ -136,6 +138,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         // Validate debounce format (must be like '500ms' or '1s')
         if ($this->typeSearchWithDelay && !preg_match('/^\d+(ms|s)$/', $this->typeSearchDelay)) {
             $this->typeSearchDelay = '500ms';
+        }
+        if (!preg_match('/^\d+(ms|s)$/', $this->filterDebounceDelay)) {
+            $this->filterDebounceDelay = '300ms';
         }
 
         // Initialize hiddenColumns from column visible defaults (only if URL didn't set them)

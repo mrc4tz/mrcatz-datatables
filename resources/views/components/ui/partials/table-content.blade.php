@@ -4,10 +4,19 @@
     {{-- Mobile card view --}}
     <div class="md:hidden space-y-3 pt-3" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         @for($i = 0; $i < $posts->countRow(); $i++)
-            <div class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
+            @php
+                // Stable wire:key — prefer explicit bulk PK, fall back to `id`, then positional idx.
+                // Positional fallback is equivalent to no wire:key (same Livewire behavior) — used
+                // only when no stable identifier exists (views/CTEs without unique ID).
+                $rowRaw = $posts->getRowRawData($i);
+                $rowPk  = ($bulkPrimaryKey ? ($rowRaw->{$bulkPrimaryKey} ?? null) : null) ?? ($rowRaw->id ?? null);
+                $rowKey = $rowPk !== null ? 'row-' . $rowPk : 'row-idx-' . $i;
+            @endphp
+            <div wire:key="{{ $rowKey }}"
+                 class="rounded-xl border border-base-content/8 bg-base-100 shadow-sm transition-all duration-150"
                  :class="focusedRow === {{ $i }} ? 'ring-2 ring-primary/30 border-primary/20' : ''"
-                 @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}')); @endif"
-                 data-row="{{ json_encode($posts->getRowRawData($i)) }}">
+                 @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse('{{ json_encode($rowRaw) }}')); @endif"
+                 data-row="{{ json_encode($rowRaw) }}">
 
                 {{-- Card header: first data column as title --}}
                 @php
@@ -304,10 +313,17 @@
             </thead>
             <tbody>
             @for($i = 0; $i < $posts->countRow(); $i++)
-                <tr class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
+                @php
+                    // See mobile loop for wire:key strategy.
+                    $rowRaw = $posts->getRowRawData($i);
+                    $rowPk  = ($bulkPrimaryKey ? ($rowRaw->{$bulkPrimaryKey} ?? null) : null) ?? ($rowRaw->id ?? null);
+                    $rowKey = $rowPk !== null ? 'row-' . $rowPk : 'row-idx-' . $i;
+                @endphp
+                <tr wire:key="{{ $rowKey }}"
+                    class="border-b border-base-content/5 transition-colors duration-150 cursor-pointer"
                     :style="focusedRow === {{ $i }} ? 'background:color-mix(in srgb,var(--color-primary) 25%,transparent)' : '{{ $tableZebraStyle && $i % 2 === 1 ? 'background:color-mix(in srgb,var(--color-base-content) 3%,transparent)' : '' }}'"
                     @click="focusedRow = {{ $i }}; @if($enableRowClick) $wire.rowClicked(JSON.parse($el.dataset.row)); @endif"
-                    data-row="{{ json_encode($posts->getRowRawData($i)) }}">
+                    data-row="{{ json_encode($rowRaw) }}">
 
                     @if($showExpandDesktop)
                         <td class="w-8 text-center">
@@ -375,7 +391,8 @@
                          `hidden` utility sets display:none !important, and toggling
                          it off reliably restores table-row layout on every tr.
                          The inner <div> keeps x-show + transition for the fade. --}}
-                    <tr :class="{ 'hidden': !expandedRows.includes({{ $i }}) }" class="bg-base-200/20">
+                    <tr wire:key="expand-{{ $rowKey }}"
+                        :class="{ 'hidden': !expandedRows.includes({{ $i }}) }" class="bg-base-200/20">
                         <td colspan="{{ $totalColspan }}" class="p-0">
                             <div class="px-6 py-4 text-sm" x-show="expandedRows.includes({{ $i }})"
                                  x-transition:enter="transition ease-out duration-200"

@@ -89,6 +89,14 @@ return [
     'export_banner_exported' => 'Exported',
     'export_banner_total' => 'Total',
     'export_banner_rows' => 'rows',
+    'export_conditions_toggle' => 'Include conditions in file',
+    'export_conditions_hint' => 'Unavailable when no active conditions',
+    'export_conditions_banner' => 'Active Conditions',
+    'export_processing_title' => 'Processing :format file',
+    'export_processing_subtitle' => 'Please wait, your file is being prepared...',
+    'export_processing_pdf' => 'PDF',
+    'export_processing_csv' => 'CSV',
+    'export_processing_excel' => 'Excel',
 
     // Reset modal
     'reset_title' => 'Reset Search & Filter?',

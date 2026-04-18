@@ -17,6 +17,8 @@
         $shift   = $isCsv && ($hasIndexCol ?? false);
         $leading = $shift ? 1 : 0;
         $padCnt  = max(0, $colN - $leading - 1);
+        $conds   = $conditions ?? [];
+        $hasCond = count($conds) > 0;
     @endphp
     <tr>
         @for($i = 0; $i < $leading; $i++)<td></td>@endfor
@@ -28,6 +30,20 @@
         <td>{{ mrcatz_lang('export_banner_exported') }}: {{ now()->translatedFormat('d F Y, H:i') }} | {{ mrcatz_lang('export_banner_total') }}: {{ count($rows) }} {{ mrcatz_lang('export_banner_rows') }}</td>
         @for($i = 0; $i < $padCnt; $i++)<td></td>@endfor
     </tr>
+    @if($hasCond)
+        <tr>
+            @for($i = 0; $i < $leading; $i++)<td></td>@endfor
+            <td>{{ mrcatz_lang('export_conditions_banner') }}</td>
+            @for($i = 0; $i < $padCnt; $i++)<td></td>@endfor
+        </tr>
+        @foreach($conds as $cond)
+            <tr>
+                @for($i = 0; $i < $leading; $i++)<td></td>@endfor
+                <td>• {{ $cond['label'] }}: {{ $cond['value'] }}</td>
+                @for($i = 0; $i < $padCnt; $i++)<td></td>@endfor
+            </tr>
+        @endforeach
+    @endif
     <tr>
         @for($i = 0; $i < $colN; $i++)<td></td>@endfor
     </tr>

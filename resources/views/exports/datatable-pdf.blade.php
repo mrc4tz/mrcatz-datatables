@@ -14,6 +14,12 @@
         .header h2 { font-size: 18px; font-weight: 700; color: #{{ $c['title_text'] }}; margin-bottom: 4px; }
         .header .meta { font-size: 9px; color: #{{ $c['subtitle_text'] }}; }
 
+        .conditions { margin-bottom: 16px; padding: 10px 12px; background: #{{ $c['stripe'] }}; border-left: 3px solid #{{ $c['header_bg'] }}; }
+        .conditions .title { font-size: 9px; font-weight: 700; color: #{{ $c['title_text'] }}; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+        .conditions ul { list-style: none; }
+        .conditions li { font-size: 9px; color: #{{ $c['subtitle_text'] }}; padding: 2px 0; }
+        .conditions li .lbl { color: #{{ $c['title_text'] }}; font-weight: 600; }
+
         table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
         th {
             background: #{{ $c['header_bg'] }}; color: #{{ $c['header_text'] }}; font-weight: 600;
@@ -44,6 +50,17 @@
         <h2>{{ $title }}</h2>
         <div class="meta">{{ mrcatz_lang('export_banner_exported') }}: {{ now()->translatedFormat('d F Y, H:i') }} &mdash; {{ mrcatz_lang('export_banner_total') }}: {{ count($rows) }} {{ mrcatz_lang('export_banner_rows') }}</div>
     </div>
+
+    @if(!empty($conditions ?? []))
+        <div class="conditions">
+            <div class="title">{{ mrcatz_lang('export_conditions_banner') }}</div>
+            <ul>
+                @foreach($conditions as $cond)
+                    <li><span class="lbl">{{ $cond['label'] }}:</span> {{ $cond['value'] }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <table>
         <thead>

@@ -227,7 +227,7 @@ trait HasExport
     public function beforeExport(array $headers, array $rows, string $format, string $scope) { return ['headers' => $headers, 'rows' => $rows]; }
     public function afterExport(string $format, string $scope) {}
 
-    public function exportData(string $format, string $scope = 'filtered'): mixed
+    public function exportData(string $format, string $scope = 'filtered', bool $includeConditions = false): mixed
     {
         if ($format === 'pdf' && !class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $this->notice('error', 'PDF export memerlukan barryvdh/laravel-dompdf. Jalankan: composer require barryvdh/laravel-dompdf');
@@ -251,13 +251,18 @@ trait HasExport
         $title = $this->exportTitle ?: $this->title ?: 'Export';
         $filename = str_replace(' ', '_', strtolower($title)) . '_' . now()->format('Ymd_His');
 
+        // Conditions banner only meaningful on filtered scope
+        $conditions = ($includeConditions && $scope === 'filtered')
+            ? $this->buildExportPreview()
+            : [];
+
         if ($format === 'pdf') {
             $pdfView = view()->exists('exports.datatable-pdf')
                 ? 'exports.datatable-pdf'
                 : 'mrcatz::exports.datatable-pdf';
 
             $pdf = Pdf::loadView($pdfView, [
-                'title' => $title, 'headers' => $headers, 'rows' => $rows,
+                'title' => $title, 'headers' => $headers, 'rows' => $rows, 'conditions' => $conditions,
             ])->setPaper('a4', 'landscape');
 
             $this->afterExport($format, $scope);
@@ -277,6 +282,9 @@ trait HasExport
             }
             if (method_exists($exportClass, 'setHasIndexCol')) {
                 $exportClass->setHasIndexCol($exportData['hasIndexCol'] ?? false);
+            }
+            if (method_exists($exportClass, 'setConditions')) {
+                $exportClass->setConditions($conditions);
             }
 
             $this->afterExport($format, $scope);

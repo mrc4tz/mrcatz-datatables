@@ -14,7 +14,9 @@
 
 {{-- Export modal --}}
 @if($showExportButton)
-    <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self x-data="{ format: 'pdf', scope: 'filtered' }" aria-modal="true" aria-labelledby="modal-export-title">
+    <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self
+            x-data="{ format: 'pdf', scope: 'filtered', includeConditions: true, get hasConditions() { return ($wire.exportPreview || []).length > 0 } }"
+            aria-modal="true" aria-labelledby="modal-export-title">
         <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg" x-trap.noscroll="document.getElementById('modal-export')?.open">
             <div class="flex items-center justify-between pb-4 mb-5 border-b border-base-content/10">
                 <h3 id="modal-export-title" class="text-lg font-bold text-base-content flex items-center gap-2">
@@ -85,6 +87,18 @@
                         @empty
                             <p class="text-xs text-base-content/40 italic py-1">{{ mrcatz_lang('export_preview_empty') }}</p>
                         @endforelse
+
+                        <label class="flex items-center gap-2 pt-3 mt-2 border-t border-base-content/5"
+                               :class="hasConditions ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'">
+                            <input type="checkbox" class="checkbox checkbox-primary checkbox-xs"
+                                   x-model="includeConditions"
+                                   :disabled="!hasConditions"
+                                   :checked="hasConditions && includeConditions" />
+                            <span class="flex flex-col leading-tight">
+                                <span class="text-xs font-medium text-base-content">{{ mrcatz_lang('export_conditions_toggle') }}</span>
+                                <span x-show="!hasConditions" class="text-[10px] text-base-content/40 italic">{{ mrcatz_lang('export_conditions_hint') }}</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -100,7 +114,7 @@
 
             <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
                 <button class="btn btn-primary gap-2 px-6 shadow-sm"
-                        x-on:click="$wire.exportData(format, scope); document.getElementById('modal-export').close();">
+                        x-on:click="$dispatch('mrcatz-export-started', { format: format }); $wire.exportData(format, scope, hasConditions && includeConditions); document.getElementById('modal-export').close();">
                     {!! mrcatz_icon('download', 'text-lg') !!}
                     {{ mrcatz_lang('btn_export') }}
                 </button>
@@ -111,6 +125,58 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
+
+    {{-- Export processing indicator (sticky bottom-right, Drive-style) --}}
+    <div wire:loading.flex wire:target="exportData"
+         x-data="{
+            fmt: 'pdf',
+            cfg: {
+                pdf:   { icon: 'picture_as_pdf', color: 'error',   label: @js(mrcatz_lang('export_processing_pdf')) },
+                csv:   { icon: 'description',    color: 'info',    label: @js(mrcatz_lang('export_processing_csv')) },
+                excel: { icon: 'table_view',     color: 'success', label: @js(mrcatz_lang('export_processing_excel')) }
+            }
+         }"
+         x-on:mrcatz-export-started.window="fmt = $event.detail.format"
+         class="fixed bottom-6 right-6 z-[60] w-[22rem] max-w-[calc(100vw-2rem)] items-center gap-3 p-4 bg-base-100 border border-base-content/10 rounded-2xl shadow-2xl"
+         style="display: none;"
+         role="status" aria-live="polite">
+
+        {{-- Icon badge --}}
+        <div class="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center relative overflow-hidden"
+             :class="{
+                'bg-error/10':   fmt === 'pdf',
+                'bg-info/10':    fmt === 'csv',
+                'bg-success/10': fmt === 'excel'
+             }">
+            <template x-if="fmt === 'pdf'">{!! mrcatz_icon('picture_as_pdf', 'text-2xl text-error') !!}</template>
+            <template x-if="fmt === 'csv'">{!! mrcatz_icon('description', 'text-2xl text-info') !!}</template>
+            <template x-if="fmt === 'excel'">{!! mrcatz_icon('table_view', 'text-2xl text-success') !!}</template>
+            {{-- Pulsing ring for motion --}}
+            <span class="absolute inset-0 rounded-xl animate-ping opacity-30"
+                  :class="{
+                    'bg-error/20':   fmt === 'pdf',
+                    'bg-info/20':    fmt === 'csv',
+                    'bg-success/20': fmt === 'excel'
+                  }"></span>
+        </div>
+
+        {{-- Text column --}}
+        <div class="flex-1 min-w-0 leading-tight">
+            <p class="text-sm font-semibold text-base-content truncate"
+               x-text="@js(mrcatz_lang('export_processing_title')).replace(':format', cfg[fmt].label)"></p>
+            <p class="text-xs text-base-content/50 truncate mt-0.5">{{ mrcatz_lang('export_processing_subtitle') }}</p>
+        </div>
+
+        {{-- Spinner --}}
+        <div class="shrink-0">
+            <span class="loading loading-spinner loading-sm"
+                  :class="{
+                    'text-error':   fmt === 'pdf',
+                    'text-info':    fmt === 'csv',
+                    'text-success': fmt === 'excel'
+                  }"></span>
+        </div>
+    </div>
 @endif
 
 {{-- Reset confirmation modal --}}

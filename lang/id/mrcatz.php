@@ -89,6 +89,14 @@ return [
     'export_banner_exported' => 'Diekspor',
     'export_banner_total' => 'Total',
     'export_banner_rows' => 'data',
+    'export_conditions_toggle' => 'Sertakan kondisi di file',
+    'export_conditions_hint' => 'Tidak tersedia saat tidak ada kondisi aktif',
+    'export_conditions_banner' => 'Kondisi Aktif',
+    'export_processing_title' => 'Memproses file :format',
+    'export_processing_subtitle' => 'Mohon tunggu, file sedang disiapkan...',
+    'export_processing_pdf' => 'PDF',
+    'export_processing_csv' => 'CSV',
+    'export_processing_excel' => 'Excel',
 
     // Reset modal
     'reset_title' => 'Reset Pencarian & Filter?',

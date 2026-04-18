@@ -37,7 +37,8 @@
                                @if($filter['min_date'] ?? null) min="{{ $filter['min_date'] }}" @endif
                                @if($filter['max_date'] ?? null) max="{{ $filter['max_date'] }}" @endif
                                value="{{ $current }}"
-                               wire:change="change('{{$filter['id']}}', $event.target.value)">
+                               x-data
+                               @change.debounce.{{ $filterDebounceDelay }}="$wire.change('{{$filter['id']}}', $event.target.value)">
                     </div>
 
                 @elseif($type === 'date_range')
@@ -195,7 +196,8 @@
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
                         <select class="select select-bordered select-sm w-full text-sm focus:select-primary transition-all duration-200"
                                 id="{{$filter['id']."_".$prefix}}"
-                                wire:change="change('{{$filter['id']}}',$event.target.value)">
+                                x-data
+                                @change.debounce.{{ $filterDebounceDelay }}="$wire.change('{{$filter['id']}}', $event.target.value)">
                             @php
                                 $currentValue = $activeFilterValues[$filter['id']] ?? null;
                                 // "All" is selected only when value is truly unset (null / '') —

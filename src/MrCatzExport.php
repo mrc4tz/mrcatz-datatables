@@ -12,6 +12,7 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
 {
     private string $format = 'xlsx';
     private bool $hasIndexCol = false;
+    private array $conditions = [];
 
     public function __construct(
         private string $title,
@@ -31,6 +32,12 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
         return $this;
     }
 
+    public function setConditions(array $conditions): static
+    {
+        $this->conditions = $conditions;
+        return $this;
+    }
+
     public function view(): View
     {
         $viewName = view()->exists('exports.datatable-excel')
@@ -43,6 +50,7 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
             'rows' => $this->rows,
             'format' => $this->format,
             'hasIndexCol' => $this->hasIndexCol,
+            'conditions' => $this->conditions,
         ]);
     }
 
@@ -60,16 +68,32 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
         $c = self::colors();
         $colCount = count($this->headers);
         $lastCol = self::columnLetter($colCount);
-        $headerRow = 4;
-        $dataStart = 5;
+
+        // Layout shifts when conditions banner is included:
+        //   rows 1-2 always = title + meta, row 3+ depends on conditions.
+        $condCount = count($this->conditions);
+        $hasCond = $condCount > 0;
+        $condBannerRow = $hasCond ? 3 : null;
+        $condStart = $hasCond ? 4 : null;
+        $condEnd = $hasCond ? (3 + $condCount) : null;
+        $spacerRow = $hasCond ? (4 + $condCount) : 3;
+        $headerRow = $hasCond ? (5 + $condCount) : 4;
+        $dataStart = $headerRow + 1;
         $lastRow = $headerRow + count($this->rows);
 
         $sheet->mergeCells("A1:{$lastCol}1");
         $sheet->mergeCells("A2:{$lastCol}2");
-        $sheet->mergeCells("A3:{$lastCol}3");
-        $sheet->getRowDimension(3)->setRowHeight(8);
+        $sheet->mergeCells("A{$spacerRow}:{$lastCol}{$spacerRow}");
+        $sheet->getRowDimension($spacerRow)->setRowHeight(8);
         $sheet->getRowDimension($headerRow)->setRowHeight(28);
         $sheet->freezePane("A{$dataStart}");
+
+        if ($hasCond) {
+            $sheet->mergeCells("A{$condBannerRow}:{$lastCol}{$condBannerRow}");
+            for ($r = $condStart; $r <= $condEnd; $r++) {
+                $sheet->mergeCells("A{$r}:{$lastCol}{$r}");
+            }
+        }
 
         for ($r = $dataStart; $r <= $lastRow; $r++) {
             if (($r - $dataStart) % 2 === 1) {
@@ -85,7 +109,7 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
         $sheet->getStyle("A{$dataStart}:A{$lastRow}")->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        return [
+        $styles = [
             1 => [
                 'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => $c['title_text']]],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
@@ -110,6 +134,19 @@ class MrCatzExport implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite
                 'borders' => ['bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => $c['bottom_border']]]],
             ],
         ];
+
+        if ($hasCond) {
+            $styles[$condBannerRow] = [
+                'font' => ['bold' => true, 'size' => 9, 'color' => ['rgb' => $c['title_text']]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ];
+            $styles["A{$condStart}:{$lastCol}{$condEnd}"] = [
+                'font' => ['size' => 9, 'color' => ['rgb' => $c['subtitle_text']]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ];
+        }
+
+        return $styles;
     }
 
     public static function columnLetter(int $col): string
