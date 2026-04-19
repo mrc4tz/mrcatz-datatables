@@ -54,16 +54,17 @@
                     <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]" wire:key="dr-wrap-{{ $filter['id'] }}">
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
 
-                        {{-- wire:key includes a hash of the current value so that
-                             ANY value change (user X click, global reset, external
-                             setFilterShow / resetFilter, etc.) gives the element a
-                             new identity. Livewire then destroys + recreates it,
-                             which forces Alpine to re-initialise with the fresh
-                             @ js values from the server. This is the only way to
-                             keep client Alpine state in sync with server state
-                             across BOTH local interactions AND external resets. --}}
+                        {{-- wire:key hashes value bounds (from/to) + picker bounds
+                             (min/max) so Alpine re-inits on BOTH a value change
+                             (user X click, global reset, external resetFilter, etc.)
+                             AND a bounds change (setFilterDateBounds at runtime).
+                             Without min/max in the hash, a bounds override with no
+                             value change would leave Alpine with the old min/max
+                             baked into its x-data config. --}}
                         <div class="relative"
-                             wire:key="dr-{{ $filter['id'] }}-{{ md5($rangeFrom . '|' . $rangeTo) }}"
+                             wire:key="dr-{{ $filter['id'] }}-{{ md5(
+                                $rangeFrom . '|' . $rangeTo . '|' . ($minAttr ?? '') . '|' . ($maxAttr ?? '')
+                             ) }}"
                              x-data="mrcatzDateRange({
                                 from: @js($rangeFrom),
                                 to: @js($rangeTo),
@@ -205,17 +206,25 @@
                     <div class="w-full sm:w-auto sm:min-w-64" wire:show="filterShow[{{$f}}]" wire:key="ck-wrap-{{ $filter['id'] }}">
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
 
-                        {{-- wire:key hashes the APPLIED value + mode so Livewire
-                             destroys+recreates this element (and Alpine re-inits
-                             with fresh state) whenever the filter is committed.
-                             Because draft edits (check/uncheck, mode toggle,
-                             select-all, clear-selection) never touch server state,
-                             the hash stays stable during editing → the popover
-                             doesn't close mid-edit. Apply / Reset / Clear-x are
-                             the only paths that change the hash — and they all
-                             close the popover anyway, so the re-init has no UX cost. --}}
+                        {{-- wire:key hashes:
+                               • APPLIED value + mode → re-init after Apply / Reset / Clear-x
+                               • filterData (option list)   → re-init after setFilterData()
+                               • value / option column names → re-init after setFilterData()
+                                 overrides the column mapping
+                             Draft edits (check/uncheck, mode toggle, select-all,
+                             clear-selection) never touch these, so the popover stays
+                             open during normal editing — only filter-committing or
+                             definition-mutating actions force an Alpine re-init, and
+                             those close the popover anyway. --}}
                         <div class="relative"
-                             wire:key="ck-{{ $filter['id'] }}-{{ md5(json_encode($ckVal) . '|' . $ckMode) }}"
+                             wire:key="ck-{{ $filter['id'] }}-{{ md5(
+                                json_encode($ckVal)
+                                . '|' . $ckMode
+                                . '|' . json_encode($filterData[$f] ?? [])
+                                . '|' . ($filter['value'] ?? '')
+                                . '|' . ($filter['option'] ?? '')
+                                . '|' . ($filter['allow_exclude'] ? '1' : '0')
+                             ) }}"
                              x-data="mrcatzCheckFilter({
                                 values: @js($ckVal),
                                 mode: @js($ckMode),

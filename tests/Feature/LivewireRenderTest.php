@@ -7,6 +7,7 @@ use Livewire\Livewire;
 use MrCatz\DataTable\MrCatzEvent;
 use MrCatz\DataTable\Tests\Fixtures\ProductTableComponent;
 use MrCatz\DataTable\Tests\Fixtures\ProductTableWithDateFilterComponent;
+use MrCatz\DataTable\Tests\Fixtures\ProductTableWithOverrideFilterComponent;
 use MrCatz\DataTable\Tests\TestCase;
 
 class LivewireRenderTest extends TestCase
@@ -295,5 +296,211 @@ class LivewireRenderTest extends TestCase
         $active = $component->get('activeFilters');
         $found = collect($active)->firstWhere('id', 'created_period');
         $this->assertEquals('2030-12-31', $found['value']['from']);
+    }
+
+    // --- Runtime overrides: setFilterData extended + setFilterDateBounds ---
+
+    public function test_set_filter_data_stores_column_and_key_overrides(): void
+    {
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category', [['code' => 'ELE', 'label' => 'Electronics']],
+                value: 'code', option: 'label', key: 'name', condition: 'LIKE');
+
+        $this->assertSame('code', $component->get('filterValueColOverrides')['category']);
+        $this->assertSame('label', $component->get('filterOptionColOverrides')['category']);
+        $this->assertSame('name', $component->get('filterKeyOverrides')['category']);
+        $this->assertSame('LIKE', $component->get('filterConditionOverrides')['category']);
+    }
+
+    public function test_set_filter_data_override_reaches_engine_via_active_filters(): void
+    {
+        // Apply the filter with original key ('category'), then override to point
+        // at a different DB column ('name'). The resulting query must use the new key.
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('change', 'category', 'electronics')
+            ->call('setFilterData', 'category', [['id' => 'Laptop Pro', 'name' => 'Laptop Pro']],
+                key: 'name', condition: '=')
+            // Re-apply change so activeFilters.value matches the new key's domain
+            ->call('change', 'category', 'Laptop Pro');
+
+        $active = $component->get('activeFilters');
+        $found = collect($active)->firstWhere('id', 'category');
+
+        // After render() runs applyFilterOverrides(), the engine sees the new key.
+        $this->assertSame('name', $found['key']);
+        $this->assertSame('=', $found['condition']);
+    }
+
+    public function test_set_filter_data_callback_override_resolves_method_on_component(): void
+    {
+        // Register `altCategoryCallback` as the runtime callback for the
+        // 'category' filter. After this, the engine should invoke the
+        // component method instead of the factory's SQL path. The method
+        // applies a LIKE prefix match, so value 'elec' should match the
+        // 'electronics' row.
+        DB::table('products')->insert([
+            'name' => 'Gadget', 'category' => 'electronics', 'price' => 10,
+            'active' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category', [['id' => 'elec', 'name' => 'Elec']],
+                callback: 'altCategoryCallback')
+            ->call('change', 'category', 'elec')
+            ->assertSee('Gadget');
+    }
+
+    public function test_set_filter_data_callback_override_on_check_filter_wraps_as_closure(): void
+    {
+        // Regression guard: engine's applyCheckFilter() type-hints ?\Closure
+        // on the $callback arg. A plain `[$this, $method]` array is a valid
+        // callable but NOT a Closure — findFilterCallbackById() must wrap
+        // with Closure::fromCallable or the engine throws TypeError.
+        DB::table('products')->insert([
+            'name' => 'Elec Thing', 'category' => 'electronics', 'price' => 10,
+            'active' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category_multi',
+                [['id' => 'elec', 'name' => 'Elec']],
+                callback: 'altCheckCategoryCallback')
+            ->call('applyCheck', 'category_multi', ['elec'], null)
+            ->assertSee('Elec Thing');
+    }
+
+    public function test_set_filter_data_missing_callback_method_throws(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('does not exist on the component');
+
+        Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category', [['id' => 'x', 'name' => 'x']],
+                callback: 'nonExistentMethod')
+            ->call('change', 'category', 'x');
+    }
+
+    public function test_set_filter_date_bounds_stores_overrides(): void
+    {
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterDateBounds', 'created_on', min: '2024-01-01', max: '2024-12-31', condition: '=');
+
+        $this->assertSame('2024-01-01', $component->get('filterMinDateOverrides')['created_on']);
+        $this->assertSame('2024-12-31', $component->get('filterMaxDateOverrides')['created_on']);
+        $this->assertSame('=',          $component->get('filterConditionOverrides')['created_on']);
+    }
+
+    public function test_set_filter_date_bounds_patches_data_filters_on_render(): void
+    {
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterDateBounds', 'created_on', min: '2024-01-01', max: '2024-12-31');
+
+        $dataFilters = $component->get('dataFilters');
+        $found = collect($dataFilters)->firstWhere('id', 'created_on');
+        $this->assertSame('2024-01-01', $found['min_date']);
+        $this->assertSame('2024-12-31', $found['max_date']);
+    }
+
+    public function test_set_filter_date_bounds_throws_on_non_date_filter(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage("filter [category] is of type [select]");
+
+        Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterDateBounds', 'category', min: '2024-01-01');
+    }
+
+    public function test_set_filter_date_bounds_throws_on_unknown_filter(): void
+    {
+        $this->expectException(\MrCatz\DataTable\Exceptions\MrCatzException::class);
+        $this->expectExceptionMessage('Filter with ID [ghost] not found');
+
+        Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterDateBounds', 'ghost', min: '2024-01-01');
+    }
+
+    public function test_clear_filter_override_removes_specific_keys(): void
+    {
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category', [['id' => 'x', 'name' => 'X']],
+                key: 'new_key', condition: 'LIKE')
+            ->call('clearFilterOverride', 'category', ['key']);
+
+        // Only 'key' cleared — 'condition' override stays.
+        $this->assertArrayNotHasKey('category', $component->get('filterKeyOverrides'));
+        $this->assertSame('LIKE', $component->get('filterConditionOverrides')['category']);
+    }
+
+    public function test_callback_override_hides_allow_exclude_on_check_filter(): void
+    {
+        // Include/Exclude toggle is meaningless when a callback owns the
+        // WHERE clause — the engine doesn't route `exclude_mode` through
+        // callback calls. applyFilterOverrides() must zero out the
+        // `allow_exclude` display flag on any filter that has a callback
+        // override active, symmetric with createCheckWithCallback()
+        // rejecting ->allowExclude() at factory time.
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category_multi',
+                [['id' => 'elec', 'name' => 'Elec']],
+                callback: 'altCheckCategoryCallback');
+
+        $df = collect($component->get('dataFilters'))->firstWhere('id', 'category_multi');
+        $this->assertFalse($df['allow_exclude'],
+            'allow_exclude should be false while callback override is active');
+
+        // After clearing the callback override, allow_exclude falls back
+        // to whatever the factory produced (createCheck without
+        // ->allowExclude() is false here, so still false — but clearing
+        // proves applyFilterOverrides no longer zeros it out).
+        $component->call('clearFilterOverride', 'category_multi', ['callback']);
+        $df = collect($component->get('dataFilters'))->firstWhere('id', 'category_multi');
+        $this->assertFalse($df['allow_exclude'],
+            'allow_exclude should fall back to the factory value once the override is cleared');
+    }
+
+    public function test_url_boot_survives_driver_filter_reset_in_on_filter_changed(): void
+    {
+        // Regression: a URL like `?filter[category_driver]=default&filter[category][]=furniture`
+        // used to silently drop the `category` value on first render because
+        // bootFilters Phase 2 fires onFilterChanged → resetFilter('category') →
+        // findData() — caching a MrCatzDataTables built WITHOUT the category
+        // filter. Phase 3 restored activeFilters.category but left the cache
+        // stale, so the initial render ignored the URL-provided value.
+        //
+        // Fix: invalidate the engine cache at the end of bootFilters so
+        // render() rebuilds from the final restored activeFilters state.
+        DB::table('products')->insert([
+            'name' => 'Chair', 'category' => 'furniture', 'price' => 100,
+            'active' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class, [
+            'filterUrlParams' => [
+                'category_driver'  => 'default',
+                'category_multi'   => ['furniture'],
+            ],
+        ]);
+
+        // 'Chair' is furniture and must show — the electronics-only filter
+        // driver didn't actually filter anything away on initial render.
+        $component->assertSee('Chair');
+
+        // And the activeFilters snapshot should still carry the URL value,
+        // not a null from the Phase-2 resetFilter.
+        $active = collect($component->get('activeFilters'))->firstWhere('id', 'category_multi');
+        $this->assertSame(['furniture'], $active['value']);
+    }
+
+    public function test_clear_filter_override_removes_all_when_keys_null(): void
+    {
+        $component = Livewire::test(ProductTableWithOverrideFilterComponent::class)
+            ->call('setFilterData', 'category', [['id' => 'x', 'name' => 'X']],
+                key: 'new_key', condition: 'LIKE', value: 'id', option: 'name')
+            ->call('clearFilterOverride', 'category');
+
+        $this->assertArrayNotHasKey('category', $component->get('filterKeyOverrides'));
+        $this->assertArrayNotHasKey('category', $component->get('filterConditionOverrides'));
+        $this->assertArrayNotHasKey('category', $component->get('filterValueColOverrides'));
+        $this->assertArrayNotHasKey('category', $component->get('filterOptionColOverrides'));
     }
 }

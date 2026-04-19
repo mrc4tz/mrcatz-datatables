@@ -117,4 +117,15 @@ class MrCatzException extends \RuntimeException
     {
         return new self("Invalid check filter mode [{$mode}]. Must be 'include' or 'exclude'.");
     }
+
+    public static function setFilterDateBoundsNonDate(string $id, ?string $actualType): self
+    {
+        $got = $actualType ?? 'unknown';
+        return new self("setFilterDateBounds() requires a 'date' or 'date_range' filter, but filter [{$id}] is of type [{$got}].");
+    }
+
+    public static function filterCallbackMethodNotFound(string $id, string $method): self
+    {
+        return new self("Filter [{$id}] callback override points to method [{$method}()] which does not exist on the component. Make sure the method is public and spelled correctly.");
+    }
 }

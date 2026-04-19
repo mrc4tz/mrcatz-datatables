@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.19] - 2026-04-19
+
+### Added
+- **`setFilterData()` extended signature** — the method now accepts five optional runtime-override args beyond `$data`:
+  - `?string $value` — column name used for each option's value
+  - `?string $option` — column name used for each option's label
+  - `?string $key` — DB column the engine filters on
+  - `?string $condition` — SQL condition (`=`, `LIKE`, `whereIn`, …)
+  - `?string $callback` — method name on the component (not a closure — raw closures can't round-trip through Livewire state). Resolved to `[$this, $method]` and wrapped as `\Closure::fromCallable()` at query time so the engine's strict `?\Closure` type hints still match.
+  - Any arg left as `null` keeps the value the factory produced in `setFilter()`. Backwards compatible — existing `setFilterData($id, $data)` call-sites unchanged.
+- **`setFilterDateBounds($id, ?min, ?max, ?condition, ?callback)`** — new method, same pattern, but targeted at `date` / `date_range` filters. Throws `MrCatzException::setFilterDateBoundsNonDate` on non-date targets.
+- **`clearFilterOverride($id, ?array $keys = null)`** — remove previously-set overrides. `$keys = null` wipes all; pass a list like `['min', 'max']` to clear specific fields. Valid keys: `'key'`, `'condition'`, `'value'`, `'option'`, `'min'`, `'max'`, `'callback'`.
+- **7 new public override arrays on `HasFilters`** that persist through Livewire roundtrips — `filterKeyOverrides`, `filterConditionOverrides`, `filterValueColOverrides`, `filterOptionColOverrides`, `filterMinDateOverrides`, `filterMaxDateOverrides`, `filterCallbackOverrides`. Necessary because `setFilter()` re-runs fresh every render, so runtime overrides would otherwise be lost.
+- **`applyFilterOverrides()`** — protected method on `HasFilters`, called from `render()` right after `getDataFilter()`. Patches both `$dataFilters` and `$activeFilters` from the override maps so the engine sees the final effective filter config before building its query. Also zeros `allow_exclude` on any check filter whose callback override is active (the toggle is meaningless when a closure owns the WHERE clause — symmetric with `createCheckWithCallback()` rejecting `->allowExclude()` at factory time).
+- **3 new exceptions** — `MrCatzException::setFilterDateBoundsNonDate`, `MrCatzException::filterCallbackMethodNotFound`, and `MrCatzException::invalidCheckMode` (carry-over refinement).
+- **13 new tests** covering: override property persistence, `applyFilterOverrides` patching, engine-side key/condition swap, callback method-name resolution, `?\Closure` type-hint regression on check-filter callback path, `setFilterDateBounds` validation, `clearFilterOverride` semantics, `allow_exclude` auto-hide, and a URL-boot integration test.
+
+### Fixed
+- **URL-param boot silently dropping filter values when a driver filter's `onFilterChanged` called `resetFilter`**. Scenario: loading `?filter[category_source]=category&filter[category][]=1` would render the first page without the category filter applied; only a second Livewire roundtrip (any interaction) showed the correct data. Root cause: `bootFilters` Phase 2 (`onFilterChanged` fan-out) could trigger `resetFilter` → `findData`, caching a `MrCatzDataTables` built from pre-restore `activeFilters`; Phase 3 restored the URL value but left the engine cache stale. Fix: invalidate `$this->mrCatzDataTables` at the end of the URL-params block so `render()`'s `getData()` rebuilds against the final restored state plus any queued overrides.
+- **Check filter popover not reflecting runtime `setFilterData` / `setFilterDateBounds` changes until a page refresh**. `wire:key` used to hash only the applied value + mode, so when a driver filter mutated `filterData` or picker bounds while the target had no active value, the hash stayed stable, Livewire preserved the DOM, and Alpine kept its old x-data config. Fix: `wire:key` now also hashes the option list, the effective value/option column names, the `allow_exclude` flag, and (for `date_range`) the min/max bounds. Draft edits inside the popover still keep the hash stable so the popover doesn't close mid-edit.
+- **Include/Exclude toggle visible on check filter even when a callback override was active**. The toggle flips `whereIn` ↔ `whereNotIn` at the engine, but the engine never routes `exclude_mode` through callback invocations — so the toggle was purely cosmetic noise. Now auto-hides while `filterCallbackOverrides[$id]` is set and returns to its factory value once the override is cleared.
+
+### Docs
+- Filter docs page expanded with full `setFilterData` param table, a stale-value gotcha callout, a new `setFilterDateBounds` section, and `clearFilterOverride` usage.
+- API reference page updated with the extended method signatures and 5 newly-surfaced state helpers (`change`, `changeDateRange`, `applyCheck`, `toggleCheck`, `setCheckMode`).
+- Demo page ("Try these" section) now includes two bullets walking readers through the runtime-override demo filters ("Filter Category by" and "Release Window") added to `DemoProductTable`.
+
 ## [1.29.18] - 2026-04-18
 
 ### Added

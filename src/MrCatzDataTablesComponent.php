@@ -184,6 +184,9 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function render(): mixed
     {
         $this->dataFilters = $this->getDataFilter();
+        // Apply any runtime overrides (from setFilterData / setFilterDateBounds)
+        // BEFORE the engine reads activeFilters — see HasFilters::applyFilterOverrides.
+        $this->applyFilterOverrides();
         $posts = $this->getData();
         $this->hasMoreRows = $posts->hasMoreRows();
         return view($this->setView(), [

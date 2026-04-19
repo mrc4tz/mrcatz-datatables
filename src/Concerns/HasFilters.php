@@ -12,6 +12,28 @@ trait HasFilters
     public $filterShow = [];
     public $filterData = [];
 
+    /**
+     * Runtime overrides applied on top of the filter definition returned by
+     * setFilter(). Necessary because setFilter() re-runs fresh on every
+     * render, so `setFilterData()` / `setFilterDateBounds()` changes would
+     * otherwise be lost across Livewire roundtrips.
+     *
+     * Keyed by filter id. Any unset key falls back to the value the factory
+     * produced in setFilter(). applyFilterOverrides() patches `dataFilters`
+     * + `activeFilters` from these maps at the start of render().
+     *
+     * Callback overrides are stored as a **method name string** (serializable)
+     * and resolved to a callable via `[$this, $methodName]` at query time.
+     * Raw closures can't round-trip through Livewire state.
+     */
+    public array $filterKeyOverrides = [];
+    public array $filterConditionOverrides = [];
+    public array $filterValueColOverrides = [];
+    public array $filterOptionColOverrides = [];
+    public array $filterMinDateOverrides = [];
+    public array $filterMaxDateOverrides = [];
+    public array $filterCallbackOverrides = [];
+
     public $default_filter_value = '';
     private array $filterChangeStack = [];
 
@@ -64,6 +86,19 @@ trait HasFilters
 
             // Re-sync URL params so they match the restored activeFilters
             $this->syncFilterUrl();
+
+            // Any resetFilter() / change() inside Phase 2's onFilterChanged chain
+            // will have called $this->findData(), which caches a MrCatzDataTables
+            // instance built from PRE-restore activeFilters. Null the cache here
+            // so render()'s getData() rebuilds with the final restored state +
+            // any runtime overrides queued up by setFilterData / setFilterDateBounds.
+            // Without this, URL-driven filter values get silently dropped on the
+            // very first render after mount — noticeable when the user lands on
+            // a deep-linked URL and the filter visibly "does nothing" until a
+            // second Livewire roundtrip.
+            if (property_exists($this, 'mrCatzDataTables')) {
+                $this->mrCatzDataTables = null;
+            }
         }
     }
 
@@ -98,15 +133,167 @@ trait HasFilters
         $this->findData();
     }
 
-    public function setFilterData(string $id, array|object $data): void
-    {
+    /**
+     * Replace the option list for a filter. All non-data args are optional
+     * runtime overrides for the filter's definition — any arg left as null
+     * keeps the value the factory produced in `setFilter()`.
+     *
+     * Typical use case: point a select/check filter at a different underlying
+     * table whose column shape differs. Example:
+     *
+     *     // Was: categories table with id+name → products.category_id
+     *     // Now: tags table with slug+label → products.tag_id, as whereIn
+     *     $this->setFilterData(
+     *         'category',
+     *         DB::table('tags')->get(),
+     *         value: 'slug',
+     *         option: 'label',
+     *         key: 'products.tag_id',
+     *         condition: 'whereIn',
+     *     );
+     *
+     * Callback overrides accept a **method name string** on this component
+     * (resolved via [$this, $methodName] at query time) — raw closures aren't
+     * serializable across Livewire requests.
+     *
+     * Does NOT auto-reset the active value when key/value/option change. If
+     * the previously-picked value becomes invalid under the new column
+     * (e.g. an old category_id that doesn't exist in the new tag_id column),
+     * call `resetFilter($id)` explicitly after setFilterData().
+     */
+    public function setFilterData(
+        string $id,
+        array|object $data,
+        ?string $value = null,
+        ?string $option = null,
+        ?string $key = null,
+        ?string $condition = null,
+        ?string $callback = null,
+    ): void {
+        $found = false;
         foreach ($this->setFilter() as $f => $filter) {
             if ($filter->getDataFilter()['id'] == $id) {
                 $this->filterData[$f] = is_array($data) ? $data : json_decode(json_encode($data), true);
-                return;
+                $found = true;
+                break;
             }
         }
-        throw MrCatzException::filterNotFound($id);
+        if (!$found) {
+            throw MrCatzException::filterNotFound($id);
+        }
+
+        if ($value     !== null) $this->filterValueColOverrides[$id]  = $value;
+        if ($option    !== null) $this->filterOptionColOverrides[$id] = $option;
+        if ($key       !== null) $this->filterKeyOverrides[$id]       = $key;
+        if ($condition !== null) $this->filterConditionOverrides[$id] = $condition;
+        if ($callback  !== null) $this->filterCallbackOverrides[$id]  = $callback;
+    }
+
+    /**
+     * Override min/max bounds (and optionally condition/callback) for a
+     * `date` or `date_range` filter at runtime. Useful when the bounds
+     * should react to another filter's value — e.g. a "Release window"
+     * select that narrows the acceptable range for `release_on`.
+     *
+     * Throws if the filter isn't of date / date_range type. Null args are
+     * skipped — each call mutates only the supplied fields. Callbacks are
+     * stored as method-name strings (see setFilterData for reasoning).
+     */
+    public function setFilterDateBounds(
+        string $id,
+        ?string $min = null,
+        ?string $max = null,
+        ?string $condition = null,
+        ?string $callback = null,
+    ): void {
+        $found = false;
+        $type  = null;
+        foreach ($this->setFilter() as $filter) {
+            $df = $filter->getDataFilter();
+            if ($df['id'] == $id) {
+                $type  = $df['type'] ?? 'select';
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            throw MrCatzException::filterNotFound($id);
+        }
+        if (!in_array($type, ['date', 'date_range'], true)) {
+            throw MrCatzException::setFilterDateBoundsNonDate($id, $type);
+        }
+
+        if ($min       !== null) $this->filterMinDateOverrides[$id]   = $min;
+        if ($max       !== null) $this->filterMaxDateOverrides[$id]   = $max;
+        if ($condition !== null) $this->filterConditionOverrides[$id] = $condition;
+        if ($callback  !== null) $this->filterCallbackOverrides[$id]  = $callback;
+    }
+
+    /**
+     * Clear previously-set overrides for a filter. Pass `$keys = null` to
+     * clear all overrides for this filter, or a list like
+     * `['key', 'condition']` to clear only specific ones.
+     */
+    public function clearFilterOverride(string $id, ?array $keys = null): void
+    {
+        $maps = [
+            'key'       => 'filterKeyOverrides',
+            'condition' => 'filterConditionOverrides',
+            'value'     => 'filterValueColOverrides',
+            'option'    => 'filterOptionColOverrides',
+            'min'       => 'filterMinDateOverrides',
+            'max'       => 'filterMaxDateOverrides',
+            'callback'  => 'filterCallbackOverrides',
+        ];
+
+        $targets = $keys === null ? array_keys($maps) : $keys;
+        foreach ($targets as $t) {
+            if (isset($maps[$t])) {
+                $prop = $maps[$t];
+                unset($this->{$prop}[$id]);
+            }
+        }
+    }
+
+    /**
+     * Patch `dataFilters` + `activeFilters` from the per-id override maps.
+     * Invoked once at the start of each render so Livewire-persisted overrides
+     * survive the setFilter() rebuild.
+     */
+    protected function applyFilterOverrides(): void
+    {
+        $patch = function (array &$entry, string $id) {
+            if (isset($this->filterKeyOverrides[$id]))       $entry['key']       = $this->filterKeyOverrides[$id];
+            if (isset($this->filterConditionOverrides[$id])) $entry['condition'] = $this->filterConditionOverrides[$id];
+            if (isset($this->filterValueColOverrides[$id]))  $entry['value']     = $this->filterValueColOverrides[$id];
+            if (isset($this->filterOptionColOverrides[$id])) $entry['option']    = $this->filterOptionColOverrides[$id];
+            if (isset($this->filterMinDateOverrides[$id]))   $entry['min_date']  = $this->filterMinDateOverrides[$id];
+            if (isset($this->filterMaxDateOverrides[$id]))   $entry['max_date']  = $this->filterMaxDateOverrides[$id];
+        };
+
+        foreach ($this->dataFilters as $i => $df) {
+            $patch($this->dataFilters[$i], $df['id']);
+
+            // When a callback override is active, the check filter's
+            // Include/Exclude toggle is meaningless — the callback owns
+            // the WHERE clause and the engine doesn't apply `exclude_mode`
+            // through whereIn/whereNotIn. Same rationale that makes
+            // createCheckWithCallback() reject ->allowExclude() at
+            // factory time: applies symmetrically at runtime.
+            if (isset($this->filterCallbackOverrides[$df['id']])) {
+                $this->dataFilters[$i]['allow_exclude'] = false;
+            }
+        }
+
+        // activeFilters snapshots `key`/`condition` at change() time — we need
+        // to repatch them on each render so the engine uses the latest override.
+        // The `value` / `option` column names aren't stored on activeFilters
+        // (they're display-only), so no patching needed for those.
+        foreach ($this->activeFilters as $i => $af) {
+            $id = $af['id'];
+            if (isset($this->filterKeyOverrides[$id]))       $this->activeFilters[$i]['key']       = $this->filterKeyOverrides[$id];
+            if (isset($this->filterConditionOverrides[$id])) $this->activeFilters[$i]['condition'] = $this->filterConditionOverrides[$id];
+        }
     }
 
     public function change(string $id, mixed $value): void
@@ -474,6 +661,20 @@ trait HasFilters
 
     private function findFilterCallbackById(string $id): ?callable
     {
+        // Runtime override wins — resolves a method-name string to a callable
+        // bound to this component. This is how `setFilterData()` /
+        // `setFilterDateBounds()` let callers swap the filter's query closure
+        // at runtime despite Livewire not being able to serialize raw closures.
+        if (isset($this->filterCallbackOverrides[$id])) {
+            $method = $this->filterCallbackOverrides[$id];
+            if (!method_exists($this, $method)) {
+                throw MrCatzException::filterCallbackMethodNotFound($id, $method);
+            }
+            // Engine methods type-hint ?Closure, not ?callable — [$this, $m] is
+            // a callable but not a Closure. Wrap so the contract stays uniform.
+            return \Closure::fromCallable([$this, $method]);
+        }
+
         foreach ($this->setFilter() as $filter) {
             if ($filter->getDataFilter()['id'] == $id) return $filter->getCallback();
         }
