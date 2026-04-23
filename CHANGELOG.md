@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.24] - 2026-04-23
+
+### Fixed
+- **Inline-edit cell UI state bleeding across datatables on multi-CRUD pages.** `MrCatzDataTablesComponent::inlineUpdate()` dispatches two browser events around each save — `inline-validation-error` and `inline-save-done` — with a `cellId` that every inline-edit Alpine cell on the page listens for via `x-on:inline-*.window`. Pre-v1.29.24 the cellId was `{rowIndex}_{columnKey}`, so two datatables that happened to share a column name (e.g. both had an `aktif` column at row 0) would both toggle their loading/error UI when EITHER table saved that cell: Table B's spinner would flicker during a save to Table A, and a validation error fired from Table A would flip Table B's matching cell into edit mode with the sibling's error text. cellId is now prefixed with the originating table's `setPageName()` (`{pageName}_{rowIndex}_{columnKey}`) on both the server dispatch in `MrCatzDataTablesComponent::inlineUpdate()` and the three blade comparison sites in `resources/views/components/ui/partials/table-content.blade.php` (desktop table + mobile card first-field + mobile card rest-fields). Single-CRUD pages pick up a `page_` prefix too, but since the value is only ever compared for equality between the dispatch and the listener, consumer behaviour is unchanged.
+
 ## [1.29.23] - 2026-04-23
 
 ### Fixed

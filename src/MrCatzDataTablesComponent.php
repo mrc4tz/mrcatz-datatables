@@ -308,6 +308,13 @@ class MrCatzDataTablesComponent extends MrCatzComponent
         $dt = $this->setTable();
         $allRules = $dt->getInlineValidationRules();
 
+        // v1.29.24+ — cellId is prefixed with the table's setPageName() so
+        // multi-CRUD pages don't have siblings' cells toggle their UI state
+        // when the `inline-validation-error` / `inline-save-done` browser
+        // events bubble to window. Table-content.blade builds the matching
+        // prefix on the consumer side.
+        $cellId = $this->setPageName() . '_' . $rowIndex . '_' . $columnKey;
+
         if (isset($allRules[$columnKey])) {
             // Strip table prefix (e.g. 'products.name' → 'name') so Laravel
             // doesn't interpret the dot as nested array notation.
@@ -320,14 +327,14 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
             if ($validator->fails()) {
                 $error = $validator->errors()->first($validationKey);
-                $this->dispatch('inline-validation-error', cellId: $rowIndex . '_' . $columnKey, error: $error);
+                $this->dispatch('inline-validation-error', cellId: $cellId, error: $error);
                 $this->notice('error', $error);
                 return;
             }
         }
 
         $this->dispatch(MrCatzEvent::INLINE_UPDATE, $rowData, $columnKey, $newValue, $this->setPageName());
-        $this->dispatch('inline-save-done', cellId: $rowIndex . '_' . $columnKey);
+        $this->dispatch('inline-save-done', cellId: $cellId);
     }
 
     // Dispatches include the table's own `setPageName()` so a single page

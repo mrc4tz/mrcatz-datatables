@@ -79,8 +79,8 @@
                                              $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($firstDataCol) }}', this.val, {{ $i }});
                                          }
                                      }"
-                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { saving = false; error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }"
-                                     x-on:inline-save-done.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { saving = false }">
+                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $this->setPageName() }}_{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { saving = false; error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus()) }"
+                                     x-on:inline-save-done.window="if ($event.detail.cellId === '{{ $this->setPageName() }}_{{ $i }}_{{ $posts->getKey($firstDataCol) }}') { saving = false }">
                                     <span class="text-[10px] text-base-content/30 uppercase tracking-wider font-semibold flex items-center gap-1">{{ $posts->getHead($firstDataCol) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <p x-show="!editing && !saving" @click.stop="val = $root.dataset.currentValue; editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $firstDataCol }}']?.focus())"
                                        class="text-sm font-semibold text-base-content truncate cursor-text rounded bg-primary/5 border border-dashed border-primary/20 px-1.5 py-0.5 @if($posts->isUppercase($firstDataCol)) uppercase @endif">{!! $posts->getData($i, $firstDataCol) !!}</p>
@@ -135,8 +135,8 @@
                                              $wire.inlineUpdate(JSON.parse('{{ json_encode($posts->getRowRawData($i)) }}'), '{{ $posts->getKey($ci) }}', this.val, {{ $i }});
                                          }
                                      }"
-                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { saving = false; error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }"
-                                     x-on:inline-save-done.window="if ($event.detail.cellId === '{{ $i }}_{{ $posts->getKey($ci) }}') { saving = false }">
+                                     x-on:inline-validation-error.window="if ($event.detail.cellId === '{{ $this->setPageName() }}_{{ $i }}_{{ $posts->getKey($ci) }}') { saving = false; error = $event.detail.error; editing = true; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus()) }"
+                                     x-on:inline-save-done.window="if ($event.detail.cellId === '{{ $this->setPageName() }}_{{ $i }}_{{ $posts->getKey($ci) }}') { saving = false }">
                                     <span class="text-[11px] text-base-content/40 block mb-0.5 flex items-center gap-1">{{ $posts->getHead($ci) }} <svg class="w-2.5 h-2.5 text-primary/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"/></svg></span>
                                     <span x-show="!editing && !saving" @click.stop="val = $root.dataset.currentValue; editing = true; error = ''; $nextTick(() => $refs['mc_{{ $i }}_{{ $ci }}']?.focus())"
                                           class="text-sm text-base-content/80 cursor-text block truncate rounded bg-primary/5 border border-dashed border-primary/20 px-1.5 py-0.5 @if($posts->isUppercase($ci)) uppercase @endif">{!! $posts->getData($i, $ci) !!}</span>
@@ -372,7 +372,7 @@
                                 @elseif($posts->gravity($ci)=='right') text-right
                                 @else text-left @endif">
                                 @include('mrcatz::components.ui.partials.inline-edit', [
-                                    'cellId' => $i . '_' . $posts->getKey($ci),
+                                    'cellId' => $this->setPageName() . '_' . $i . '_' . $posts->getKey($ci),
                                     'ref' => 'ie_' . $i . '_' . $ci,
                                     'value' => strip_tags($posts->getData($i, $ci)),
                                     'display' => $posts->getData($i, $ci),
