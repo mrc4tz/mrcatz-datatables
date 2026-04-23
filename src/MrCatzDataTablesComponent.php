@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Url;
 use MrCatz\DataTable\Concerns\HasBulkActions;
 use MrCatz\DataTable\Concerns\HasCustomBulkActions;
 use MrCatz\DataTable\Concerns\HasExport;
@@ -26,22 +25,14 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     protected ?MrCatzDataTables $mrCatzDataTables = null;
 
-    #[Url(except: '')]
+    // URL-persisted state. Aliases are assigned dynamically by `queryString()`
+    // below so two tables on the same page can coexist without colliding on
+    // query-string keys — each table's pageName becomes its prefix.
     public $search = '';
-
-    #[Url(as: 'per_page')]
     public $p = null;
-
-    #[Url(as: 'sort', except: '')]
     public $key = '';
-
-    #[Url(as: 'dir', except: '')]
     public $value = '';
-
-    #[Url(as: 'sort_multi', except: [])]
     public $multiSort = [];
-
-    #[Url(as: 'filter', except: [])]
     public $filterUrlParams = [];
 
     public $withLoading = false;
@@ -61,13 +52,8 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $enableKeyboardNav = true;
     public $enableColumnResize = true;
 
-    #[Url(as: 'col_order', except: [])]
     public $columnOrder = [];
-
-    #[Url(as: 'col_hidden', except: [])]
     public $hiddenColumns = [];
-
-    #[Url(as: 'col_widths', except: [])]
     public $columnWidths = [];
 
     public $enableColumnVisibility = true;
@@ -126,6 +112,52 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public function rowClicked($data): void
     {
         $this->dispatch(MrCatzEvent::ROW_CLICK, data: $data);
+    }
+
+    /**
+     * URL query-string alias prefix. When multiple datatables live on the
+     * same page they'd otherwise collide on keys like `?search`, `?filter`,
+     * `?col_hidden`, etc. By deriving the prefix from `setPageName()`:
+     *
+     *   - default pageName (`page`) → no prefix → preserves existing URLs
+     *     for single-datatable pages.
+     *   - custom pageName (e.g. `penyediaPage`) → that value becomes the
+     *     prefix → each table gets its own namespace:
+     *     `?penyediaPage_search=foo&penyediaPage_col_hidden[]=1`.
+     *
+     * Override this method on a child class if you need a different scheme,
+     * e.g. shorter prefixes or decoupling the URL namespace from pagination.
+     */
+    public function urlPrefix(): string
+    {
+        $name = $this->setPageName();
+        if ($name === 'page' || $name === '' || $name === null) {
+            return '';
+        }
+        return $name . '_';
+    }
+
+    /**
+     * Build the query-string mapping dynamically so `urlPrefix()` can namespace
+     * aliases at runtime. Livewire's `#[Url]` attribute doesn't support dynamic
+     * `as:` values, but the legacy `queryString()` method still works in v3
+     * and is merged into the URL binding system via SupportQueryString.
+     */
+    public function queryString(): array
+    {
+        $prefix = $this->urlPrefix();
+
+        return [
+            'search'          => ['as' => $prefix . 'search',     'except' => ''],
+            'p'               => ['as' => $prefix . 'per_page'],
+            'key'             => ['as' => $prefix . 'sort',       'except' => ''],
+            'value'           => ['as' => $prefix . 'dir',        'except' => ''],
+            'multiSort'       => ['as' => $prefix . 'sort_multi', 'except' => []],
+            'filterUrlParams' => ['as' => $prefix . 'filter',     'except' => []],
+            'columnOrder'     => ['as' => $prefix . 'col_order',  'except' => []],
+            'hiddenColumns'   => ['as' => $prefix . 'col_hidden', 'except' => []],
+            'columnWidths'    => ['as' => $prefix . 'col_widths', 'except' => []],
+        ];
     }
 
     public function mount(): void

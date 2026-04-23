@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.20] - 2026-04-23
+
+### Fixed
+- **URL state collision between multiple datatables on the same Livewire page.** Two `<livewire:*-table />` instances hosted on a single page used to share every query-string key (`?search=`, `?filter=`, `?col_hidden=`, `?col_order=`, `?col_widths=`, `?sort=`, `?dir=`, `?sort_multi=`, `?per_page=`), because the parent component declared them with `#[Url(as: '...')]` — a compile-time constant, same for every subclass. Hiding column 1 in table A immediately hid column 1 in table B; searching in one table drove results in both. The fix re-routes the same 9 aliases through the legacy `queryString()` method (still fully supported in Livewire 3 via `SupportQueryString::getQueryString()`), which is free to build keys at runtime from `urlPrefix()`.
+
+### Added
+- **`urlPrefix()` method** on `MrCatzDataTablesComponent`. Default implementation returns `setPageName() . '_'` when the page name has been overridden to a non-default value (anything other than `'page'` / `''` / `null`), or an empty string otherwise. Consumers can override for custom schemes (shorter prefixes, different separators) without also redefining `queryString()`.
+- **`queryString()` method** on `MrCatzDataTablesComponent`. Returns the dynamic URL alias map for all 9 persisted properties, prefixed with `urlPrefix()`.
+
+### Changed
+- **Single-table pages — no change.** `setPageName()` still returns `'page'` by default, so `urlPrefix()` returns `''`, and query-string keys stay exactly as they were (`?search=`, `?filter=`, etc.). Existing bookmarks and shared URLs on single-datatable pages continue to work.
+- **Multi-table pages — opt in by overriding `setPageName()` per table.** Declaring `public function setPageName() { return 'penyediaPage'; }` on one child and `'swakelolaPage'` on the other routes their URL state to `?penyediaPage_search=…` and `?swakelolaPage_search=…` respectively. Pagination already uses the same page name, so the namespace is consistent across all state.
+- Removed the 9 `#[Url(...)]` attributes and the `use Livewire\Attributes\Url;` import from `MrCatzDataTablesComponent.php`. The property declarations themselves are unchanged so child-class overrides stay source-compatible.
+
+### Migration notes
+- **If you currently have two datatables on one page and had been living with the collision:** override `setPageName()` on each child component. No other code changes are required; the package rewrites the aliases on the next request. Old bookmarks that hit the collided URLs won't rehydrate — they pointed at a bug and there's no backwards-compatible way to preserve them without reintroducing the collision.
+- **If you already override `setPageName()` on a table for pagination purposes only:** your pagination URL (`?yourPageName=2`) is unchanged, but the *other* URL params now prefix onto the same name (`?yourPageName_search=foo`). Shared links that passed both `?yourPageName=…` and the old unprefixed `?search=…` will keep their page but lose their search term. Update shared links or accept the one-time break.
+
 ## [1.29.19] - 2026-04-19
 
 ### Added
