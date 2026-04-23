@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.26] - 2026-04-23
+
+### Fixed
+- **Checkbox not vertically centered against first line of option label.** v1.29.25's wrap fix used `items-start` on the option row + `mt-0.5` on the checkbox + `leading-snug` (1.375) on the label, which visually nudged the checkbox down but left its center a few pixels off from the first text line's center — a small but noticeable misalignment once rows wrapped to two or three lines. The checkbox now drops the manual `mt-0.5` and the label span switches `leading-snug` → `leading-5` (20px line-box, matching daisyUI 5's `checkbox-sm` 1.25rem size). With both elements top-aligned via `items-start` and sharing the same 20px cross-axis dimension, the first-line center aligns exactly with the checkbox center, while subsequent wrapped lines continue below at the same 20px line-height.
+
 ## [1.29.25] - 2026-04-23
 
 ### Fixed

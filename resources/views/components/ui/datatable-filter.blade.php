@@ -317,10 +317,10 @@
                                     <template x-for="opt in filteredOptions()" :key="opt._key">
                                         <label class="flex items-start gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer text-sm">
                                             <input type="checkbox"
-                                                   class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
+                                                   class="checkbox checkbox-sm checkbox-primary shrink-0"
                                                    :checked="isChecked(opt._value)"
                                                    @change="toggle(opt._value)">
-                                            <span class="flex-1 min-w-0 break-words leading-snug" x-html="highlight(opt._label)"></span>
+                                            <span class="flex-1 min-w-0 break-words leading-5" x-html="highlight(opt._label)"></span>
                                         </label>
                                     </template>
                                     <div x-show="filteredOptions().length === 0"
