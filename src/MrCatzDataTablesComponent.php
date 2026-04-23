@@ -316,7 +316,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     #[On(MrCatzEvent::SEARCH_TYPING)]
     public function searchData(): void
     {
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->loadedRows = 0;
         $this->clearSelection();
         $this->findData();
@@ -324,7 +324,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public function resetData(): void
     {
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->search = '';
         $this->key = '';
         $this->value = '';
@@ -376,7 +376,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public function paginate($perPage): void
     {
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->p = $perPage;
         $this->clearSelection();
         $this->findData();

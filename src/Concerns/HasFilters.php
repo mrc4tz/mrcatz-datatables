@@ -328,7 +328,7 @@ trait HasFilters
         }
 
         $this->syncFilterUrl();
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $filterValue);
@@ -423,7 +423,7 @@ trait HasFilters
         }
 
         $this->syncFilterUrl();
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $values);
@@ -471,7 +471,7 @@ trait HasFilters
         }
 
         $this->syncFilterUrl();
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $current);
@@ -502,7 +502,7 @@ trait HasFilters
         }
 
         $this->syncFilterUrl();
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $values);
@@ -559,7 +559,7 @@ trait HasFilters
         }
 
         $this->syncFilterUrl();
-        $this->setPage(1);
+        $this->setPage(1, $this->setPageName());
         $this->clearSelection();
         $this->findData();
         $this->safeFilterChanged($id, $current);

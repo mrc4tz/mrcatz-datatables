@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.21] - 2026-04-23
+
+### Fixed
+- **Pagination not resetting to page 1 when filter, search, or per-page changed on a component with a custom `setPageName()`.** All 8 internal `$this->setPage(1)` call-sites across `MrCatzDataTablesComponent` (searchData / resetData / paginate) and `HasFilters` (change / applyCheck / changeDateRange / and the other filter-state mutators) used the 2-arg `setPage($page, $pageName = 'page')` method from Livewire's `HandlesPagination` trait without passing the component's actual page name. With the v1.29.20 `setPageName()`-driven URL prefix in effect, the real paginator lives under a non-default key (e.g. `'desaPage'`), so these calls were quietly resetting the wrong paginator and leaving the user stranded on an out-of-bounds page after an applied filter — showing an empty table instead of the filtered page 1 result. Now every internal `setPage(1, ...)` passes `$this->setPageName()` so it always hits the paginator actually in use.
+
 ## [1.29.20] - 2026-04-23
 
 ### Fixed
