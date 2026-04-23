@@ -9,8 +9,24 @@
      bg-primary/10 bg-secondary/10 bg-accent/10 bg-neutral/10 bg-info/10 bg-success/10 bg-warning/10 bg-error/10 bg-ghost/10
      text-primary text-secondary text-accent text-neutral text-info text-success text-warning text-error text-ghost --}}
 @php
+    // `$ownerSuffix` is the `$modalSuffix` passed through from the form
+    // partial that `@extends('mrcatz::components.ui.datatable-form')`. When
+    // a page hosts multiple CRUDs (v1.29.22+), EACH form partial pulls in
+    // this bulk-action modal once via that @extends chain — so without a
+    // guard TWO identical dialogs render in the DOM for every bulk action,
+    // share the same page state, and (for manual-blade mode) yield each
+    // partial's own `@section('bulk-*')` content stacked on top of each
+    // other. Derive the "owner" pageName from the suffix and only treat
+    // the modal as active when the originating datatable's setPageName()
+    // matches — so exactly one dialog shows even with multiple tables on
+    // the page. Default suffix '' → owner is 'page' → legacy single-CRUD
+    // pages keep their existing behaviour unchanged.
+    $ownerSuffix   = $ownerSuffix ?? '';
+    $ownerPageName = ltrim($ownerSuffix, '-') ?: 'page';
     $active = $this->activeBulkAction ?? [];
-    $hasActive = !empty($this->activeBulkActionId) && !empty($active);
+    $hasActive = !empty($this->activeBulkActionId)
+                 && !empty($active)
+                 && (($this->currentCrudPageName ?? 'page') === $ownerPageName);
 @endphp
 
 @if($hasActive)
@@ -19,7 +35,7 @@
     @endphp
     <dialog
         open
-        wire:key="mrcatz-bulk-action-{{ $active['id'] }}"
+        wire:key="mrcatz-bulk-action{{ $ownerSuffix }}-{{ $active['id'] }}"
         class="modal modal-open modal-bottom sm:modal-middle"
         aria-modal="true"
         role="dialog"

@@ -91,7 +91,7 @@
     @include('mrcatz::components.ui.form-page')
 @endif
 
-@include('mrcatz::components.ui.datatable-bulk-action')
+@include('mrcatz::components.ui.datatable-bulk-action', ['ownerSuffix' => $modalSuffix])
 
 <dialog id="modal-data-delete{{ $modalSuffix }}" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-delete-title{{ $modalSuffix }}">
     <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl" x-data x-trap.noscroll="document.getElementById('modal-data-delete{{ $modalSuffix }}')?.open">

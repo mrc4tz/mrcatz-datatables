@@ -111,7 +111,7 @@ trait HasCustomBulkActionModal
         $id = $this->activeBulkActionId;
         if (!$id) return [];
 
-        $definition = $this->setBulkForm($id);
+        $definition = $this->setBulkForm($id, $this->currentCrudPageName ?? null);
         if (!is_array($definition)) return [];
 
         $fields = [];
@@ -137,7 +137,7 @@ trait HasCustomBulkActionModal
         $id = $this->activeBulkActionId;
         if (!$id) return null;
 
-        $definition = $this->setBulkForm($id);
+        $definition = $this->setBulkForm($id, $this->currentCrudPageName ?? null);
         return is_string($definition) && $definition !== '' ? $definition : null;
     }
 

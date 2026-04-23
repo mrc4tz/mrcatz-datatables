@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.23] - 2026-04-23
+
+### Fixed
+- **Custom bulk-action modal double-render on multi-CRUD pages.** The `datatable-bulk-action.blade.php` modal is pulled in from `datatable-form.blade.php`, so a page with two form partials (one per CRUD, each `@extends('mrcatz::components.ui.datatable-form')`) was emitting TWO copies of the dialog — both bound to the same page-level `$activeBulkActionId` state. Under manual-blade bulk form mode (`setBulkForm()` returning a `@section('bulk-*')` name), each copy would yield its own partial's section content, stacking unrelated bulk-change-status bodies on top of each other when the user clicked a bulk-action chip. The modal now takes an `$ownerSuffix` (passed through from the calling form partial's `$modalSuffix`) and only activates when `$this->currentCrudPageName` matches the owner's pageName — so exactly one dialog shows, and it's the dialog tied to the datatable that triggered the action.
+- **`setBulkForm()` called inconsistently with / without `$pageName` on the same request.** `processBulkAction()` (submit) invoked `setBulkForm($id, $this->currentCrudPageName)`, but the render-time helpers `getBulkFormFields()` / `getBulkFormSection()` called it as `setBulkForm($id)` — so a user override that widened its signature to branch on pageName received the value at submit but `null` at render, producing a mismatched form schema. Both render-time calls now pass `$this->currentCrudPageName` positionally, matching the submit path. Consumers whose override is still the default 1-arg signature see no behaviour change — PHP discards the extra argument.
+
+### Changed
+- `resources/views/components/ui/datatable-form.blade.php` now forwards its own `$modalSuffix` into the bulk-action include (`@include('mrcatz::components.ui.datatable-bulk-action', ['ownerSuffix' => $modalSuffix])`) so the modal can resolve its owner pageName. Single-CRUD pages (no `$modalSuffix` declared) pass `''` → owner `'page'` → legacy behaviour unchanged.
+
 ## [1.29.22] - 2026-04-23
 
 ### Added
@@ -17,8 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`$modalSuffix` variable contract** in `mrcatz::components.ui.datatable-form`. For manual-blade form partials, declare `@php($modalSuffix = '-yourPageName')` before `@extends('mrcatz::components.ui.datatable-form')` so each CRUD gets its own `<dialog id="modal-data-yourPageName">`. Omit it on single-CRUD pages — the default `$modalSuffix = ''` produces ids byte-identical to pre-v1.29.22.
 
 ### Changed
-- Every internal dispatch now carries `pageName: $this->setPageName()` in its payload: `ADD_DATA`, `EDIT_DATA`, `DELETE_DATA`, `BULK_DELETE`, `BULK_ACTION_OPEN`, `BULK_ACTION_DONE`, `INLINE_UPDATE`, `ROW_CLICK`, `OPEN_EXPORT_MODAL`, plus the `dispatch_to_view` `REFRESH_DATA` / `SHOW_NOTIF` dispatches emit `$this->currentCrudPageName` so the JS layer can close the correct namespaced modal.
-- `datatable-scripts.blade` JS listeners now read the `pageName` off the payload, forward it to `prepareAddData / Edit / Delete`, and resolve the correct `modal-data-<pageName>` / `modal-data-delete-<pageName>` / `modal-export-<pageName>` dialog when calling `.show()` / `.showModal()` / `.close()`. Unknown pageName (payload missing) defaults to `'page'` → empty suffix → legacy behaviour.
+- Every internal dispatch now carries the originating `setPageName()` as a trailing POSITIONAL argument: `ADD_DATA`, `EDIT_DATA`, `DELETE_DATA`, `BULK_DELETE`, `BULK_ACTION_OPEN`, `BULK_ACTION_DONE`, `INLINE_UPDATE`, `ROW_CLICK`, `OPEN_EXPORT_MODAL`, plus the `dispatch_to_view` `REFRESH_DATA` / `SHOW_NOTIF` dispatches carry `$this->currentCrudPageName` in their payload array so the JS layer can close the correct namespaced modal.
+- `datatable-scripts.blade` JS listeners now read the `pageName` off the payload (`d[0]` or `d[1]` depending on the event shape), forward it to `prepareAddData / Edit / Delete`, and resolve the correct `modal-data-<pageName>` / `modal-data-delete-<pageName>` / `modal-export-<pageName>` dialog when calling `.show()` / `.showModal()` / `.close()`. Unknown pageName (payload missing) defaults to `'page'` → empty suffix → legacy behaviour.
 - `HasCustomBulkActions::onBulkActionDone($pageName = null)` now ignores dispatches meant for a sibling datatable (`$pageName !== $this->setPageName()`), so a multi-CRUD page no longer clears every table's selection whenever any bulk action finishes. A null `$pageName` preserves the pre-v1.29.22 "clear all" behaviour for legacy callers.
 
 ### Stubs
