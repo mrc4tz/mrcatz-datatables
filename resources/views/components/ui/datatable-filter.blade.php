@@ -257,7 +257,7 @@
                                     @click="togglePopover($event.currentTarget)"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': ckOpen }">
-                                <span class="flex items-center gap-2 min-w-0 flex-1">
+                                <span class="flex items-center gap-2 min-w-0 flex-1" :title="triggerText()">
                                     {!! mrcatz_icon('filter_alt', 'text-base-content/50 shrink-0 w-4 h-4') !!}
                                     <span class="truncate text-left" x-text="triggerText()"></span>
                                 </span>
@@ -315,12 +315,12 @@
                                 {{-- Option list --}}
                                 <div class="max-h-[16rem] overflow-y-auto">
                                     <template x-for="opt in filteredOptions()" :key="opt._key">
-                                        <label class="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer text-sm">
+                                        <label class="flex items-start gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer text-sm">
                                             <input type="checkbox"
-                                                   class="checkbox checkbox-sm checkbox-primary"
+                                                   class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
                                                    :checked="isChecked(opt._value)"
                                                    @change="toggle(opt._value)">
-                                            <span class="flex-1 truncate" x-html="highlight(opt._label)"></span>
+                                            <span class="flex-1 min-w-0 break-words leading-snug" x-html="highlight(opt._label)"></span>
                                         </label>
                                     </template>
                                     <div x-show="filteredOptions().length === 0"

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.25] - 2026-04-23
+
+### Fixed
+- **Long option labels unreadable in the `createCheck` filter popover.** The option rows inside the checkbox filter popover (`datatable-filter.blade.php`, `@elseif($type === 'check')` branch) used `flex items-center` on the `<label>` and `flex-1 truncate` on the label span, so any option text that exceeded the 20rem popover width was clipped to a single line with ellipsis — which hit real-world Kategori / SKPD taxonomies where names routinely run past 30 characters and share common prefixes (so the ellipsis landed at a point that made sibling options indistinguishable). The row now uses `flex items-start` so the checkbox stays top-aligned while the label wraps to as many lines as needed; the label span swaps `truncate` for `min-w-0 break-words leading-snug` (wrap on word boundary, break inside unbroken strings like long codes, tighter line-height to keep multi-line rows compact); and the checkbox input picks up `mt-0.5 shrink-0` so it vertical-nudges to visually center against the first text line and never compresses under long labels. First-paint popover-height estimate in `_estimateHeight()` still uses `optH = 36`; a `$nextTick` pass replaces it with the real `offsetHeight` measurement, so multi-line rows reposition correctly on the second frame.
+- **Check-filter trigger button ellipsis hides the active selection summary.** The trigger button's summary span (`<span class="truncate text-left" x-text="triggerText()">`) still truncates on purpose — wrapping the trigger would shift toolbar row height — but long summaries like "Kategori: 5 selected (Tingkat Kemiskinan, Angka Harapan Hidup, …)" were unreadable without opening the popover. The wrapper span now carries `:title="triggerText()"`, so hovering the trigger surfaces the full summary in a native tooltip without any layout change.
+
 ## [1.29.24] - 2026-04-23
 
 ### Fixed
