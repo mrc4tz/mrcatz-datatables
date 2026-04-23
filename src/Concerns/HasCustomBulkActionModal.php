@@ -23,8 +23,15 @@ trait HasCustomBulkActionModal
     public array $bulkSelectedRows = [];
 
     #[On(MrCatzEvent::BULK_ACTION_OPEN)]
-    public function onBulkActionOpen($action, $selectedRows): void
+    public function onBulkActionOpen($action, $selectedRows, $pageName = null): void
     {
+        // Stash the originating datatable's pageName so setBulkForm() and
+        // processBulkActionData() can branch on it when this page component
+        // hosts multiple bulk-action-capable datatables.
+        if (property_exists($this, 'currentCrudPageName')) {
+            $this->currentCrudPageName = $pageName;
+        }
+
         $action = (array) $action;
         $this->activeBulkActionId = $action['id'] ?? null;
         $this->activeBulkAction = $action;
@@ -51,7 +58,7 @@ trait HasCustomBulkActionModal
         $formData = [];
 
         if ($mode === 'form') {
-            $definition = $this->setBulkForm($id);
+            $definition = $this->setBulkForm($id, $this->currentCrudPageName ?? null);
 
             if (is_array($definition) && !empty($definition)) {
                 $rules = [];
@@ -83,12 +90,12 @@ trait HasCustomBulkActionModal
         // Hand off to the user. Reset modal state first so any refresh
         // inside the hook sees a clean slate.
         $this->resetBulkModalState();
-        $this->processBulkActionData($id, $rows, $formData);
+        $this->processBulkActionData($id, $rows, $formData, $this->currentCrudPageName ?? null);
 
         // Tell the table component to clear its selection now that
         // the action has been applied. Safe to fire even if the user
         // hook short-circuited — the table just resets $selectedRows.
-        $this->dispatch(MrCatzEvent::BULK_ACTION_DONE);
+        $this->dispatch(MrCatzEvent::BULK_ACTION_DONE, $this->currentCrudPageName ?? null);
     }
 
     public function cancelBulkAction(): void

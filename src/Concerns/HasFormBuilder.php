@@ -23,6 +23,18 @@ trait HasFormBuilder
     /**
      * Override this method to define form fields using MrCatzFormField.
      * Return empty array to use traditional Blade @yield('forms') instead.
+     *
+     * v1.29.22+: on a page hosting multiple datatables, the triggering
+     * datatable's `setPageName()` is available via
+     * `$this->currentCrudPageName` so overrides can branch per-datatable
+     * without touching the signature. Consumers who prefer the value as an
+     * explicit argument can widen their override to
+     * `setForm($pageName = null): array` — LSP permits adding optional
+     * parameters on a child — and the engine always calls
+     * `$this->setForm($this->currentCrudPageName)` positionally so the
+     * value reaches any declared parameter. Pre-v1.29.22 zero-arg
+     * overrides remain valid; PHP silently discards the extra positional
+     * argument.
      */
     public function setForm(): array
     {
@@ -30,11 +42,13 @@ trait HasFormBuilder
     }
 
     /**
-     * Check if form builder is active (setForm() returns non-empty).
+     * Check if form builder is active (setForm() returns non-empty for the
+     * CRUD flow currently routed by `listenAddData/EditData` via
+     * `$currentCrudPageName`).
      */
     public function hasFormBuilder(): bool
     {
-        return !empty($this->setForm());
+        return !empty($this->setForm($this->currentCrudPageName ?? null));
     }
 
     /**
@@ -45,7 +59,7 @@ trait HasFormBuilder
     {
         $fields = [];
 
-        foreach ($this->setForm() as $fieldObj) {
+        foreach ($this->setForm($this->currentCrudPageName ?? null) as $fieldObj) {
             $field = $fieldObj->toArray();
 
             // Resolve disabled Closure
@@ -121,7 +135,7 @@ trait HasFormBuilder
     public function getFormValidationRules(): array
     {
         $rules = [];
-        foreach ($this->setForm() as $fieldObj) {
+        foreach ($this->setForm($this->currentCrudPageName ?? null) as $fieldObj) {
             $fieldRules = $fieldObj->getRules();
             $fieldId = $fieldObj->getId();
             if ($fieldRules && $fieldId) {
@@ -146,7 +160,7 @@ trait HasFormBuilder
     public function getFormValidationMessages(): array
     {
         $messages = [];
-        foreach ($this->setForm() as $fieldObj) {
+        foreach ($this->setForm($this->currentCrudPageName ?? null) as $fieldObj) {
             $fieldMessages = $fieldObj->getMessages();
             $fieldId = $fieldObj->getId();
             if ($fieldMessages && $fieldId) {
@@ -203,7 +217,7 @@ trait HasFormBuilder
      */
     public function formFieldChanged(string $fieldId, mixed $value): void
     {
-        foreach ($this->setForm() as $fieldObj) {
+        foreach ($this->setForm($this->currentCrudPageName ?? null) as $fieldObj) {
             $field = $fieldObj->toArray();
             if ($field['id'] === $fieldId && $field['onChange']) {
                 $method = $field['onChange'];

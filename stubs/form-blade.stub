@@ -4,7 +4,17 @@
        THIS @section('forms') IS OPTIONAL when using the Form Builder (setForm()).
        If {{name}}Page overrides setForm(), this @section('forms') is not used.
        Delete this @section('forms') if you are fully using the Form Builder.
+
+       MULTI-CRUD (v1.29.22+): if your page hosts more than one datatable CRUD,
+       uncomment the `@php($modalSuffix = '-<pageName>')` line below and set it
+       to match the originating datatable's `setPageName()`. This namespaces
+       the modal DOM ids (`modal-data-<pageName>`, `modal-data-delete-<pageName>`)
+       so each CRUD opens its own dialog instead of both tables sharing one.
+       Leave unset for single-CRUD pages — the default suffix '' keeps DOM ids
+       byte-identical to pre-v1.29.22.
        ============================================================ --}}
+
+    {{-- @php($modalSuffix = '-<pageName>') --}}
 
     @extends('mrcatz::components.ui.datatable-form')
 

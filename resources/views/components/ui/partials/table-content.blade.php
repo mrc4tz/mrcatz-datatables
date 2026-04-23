@@ -1,7 +1,19 @@
 {{-- Table Content: data table, empty state, skeleton, pagination --}}
+@php
+    // v1.29.22+ — suffix modal-mobile-expand / modal-expand-title so multi-
+    // CRUD pages don't collide on a single shared mobile-expand dialog.
+    $_ms = $this->setPageName() === 'page' ? '' : '-' . $this->setPageName();
+
+    // v1.29.22+ — when the table explicitly opts out of the mobile card
+    // layout (`public $showCardOnMobile = false`) we hide the card list
+    // entirely and strip the `hidden md:*` gate from the desktop table so
+    // it renders at every breakpoint with horizontal scroll.
+    $_scm = $this->showCardOnMobile ?? true;
+@endphp
 <div class="relative">
 @if($posts->hasData())
     {{-- Mobile card view --}}
+    @if ($_scm)
     <div class="md:hidden space-y-3 pt-3" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         @for($i = 0; $i < $posts->countRow(); $i++)
             @php
@@ -167,12 +179,12 @@
 
     {{-- Mobile expand modal --}}
     @if($showExpandMobile)
-        <dialog id="modal-mobile-expand" class="modal modal-bottom md:hidden" aria-modal="true" aria-labelledby="modal-expand-title"
+        <dialog id="modal-mobile-expand{{ $_ms }}" class="modal modal-bottom md:hidden" aria-modal="true" aria-labelledby="modal-expand-title{{ $_ms }}"
                 x-data="{ expandIndex: -1 }"
                 x-on:open-mobile-expand.window="expandIndex = $event.detail.index; $el.showModal()">
             <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
                 <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
-                    <h3 id="modal-expand-title" class="text-sm font-bold text-base-content flex items-center gap-2">
+                    <h3 id="modal-expand-title{{ $_ms }}" class="text-sm font-bold text-base-content flex items-center gap-2">
                         {!! mrcatz_icon('info', 'text-primary') !!}
                         {{ mrcatz_lang('btn_details') }}
                     </h3>
@@ -191,6 +203,7 @@
             <form method="dialog" class="modal-backdrop"><button>close</button></form>
         </dialog>
     @endif
+    @endif {{-- /$_scm — mobile card + mobile-expand modal --}}
 
     {{-- Desktop table view.
          When $stickyHeader is on, we put the scroll container into its own
@@ -201,7 +214,7 @@
          the container. Without isolate, toolbar tooltips (z:1) get clipped
          under the sticky header; without z-10 inside, action buttons paint
          on top of the sticky header. Isolate + z-10 solves both. --}}
-    <div class="hidden md:block overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto isolate @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
+    <div class="{{ $_scm ? 'hidden md:block' : 'block' }} overflow-x-auto @if($stickyHeader) max-h-[70vh] overflow-y-auto isolate @endif" wire:loading.class="invisible" wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData">
         <table class="table outline-none" role="grid" aria-label="{{ $tableTitle ?: $title ?: 'Data table' }}"
                @if($enableKeyboardNav)
                tabindex="0"
@@ -439,6 +452,7 @@
 <div wire:loading wire:target="searchData, goToP, nextPage, previousPage, change, paginate, resetData, orderData"
      class="absolute inset-0 z-10 bg-base-100/80">
     {{-- Mobile skeleton --}}
+    @if ($_scm)
     <div class="md:hidden space-y-3 pt-3">
         @for($sk = 0; $sk < min($p ?? 5, 3); $sk++)
             <div class="rounded-xl border border-base-content/8 bg-base-100 p-4 space-y-2">
@@ -457,8 +471,9 @@
             </div>
         @endfor
     </div>
+    @endif
     {{-- Desktop skeleton --}}
-    <div class="hidden md:block overflow-x-auto">
+    <div class="{{ $_scm ? 'hidden md:block' : 'block' }} overflow-x-auto">
         <table class="table">
             <thead>
                 <tr class="bg-base-200/50 border-b border-base-content/10">

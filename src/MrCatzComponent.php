@@ -85,6 +85,16 @@ class MrCatzComponent extends Component
     public $bulkFormData = [];
 
     /**
+     * Which `setPageName()` scope a CRUD flow is currently running under.
+     * Set by the `listen*Data()` wrappers below before user hooks fire, and
+     * read by `HasFormBuilder::setForm($pageName)` so one page component can
+     * host multiple CRUDs (each datatable has its own setPageName). Stays
+     * null when the consumer only has a single CRUD on the page — backward
+     * compatible with every pre-v1.29.22 page component.
+     */
+    public $currentCrudPageName = null;
+
+    /**
      * Close the full-page form and return to the datatable view.
      * When `$scroll` is true, dispatches `mrcatz-form-page-closed` so
      * the client can restore scroll position to the top of the
@@ -116,11 +126,20 @@ class MrCatzComponent extends Component
     public function dropData() {}
 
     #[On(MrCatzEvent::PREPARE_ADD)]
-    public function listenAddData(): void
+    public function listenAddData($pageName = null): void
     {
+        $this->currentCrudPageName = $pageName;
         $this->index = -1;
         $this->isEdit = false;
-        $this->prepareAddData();
+        // Forward $pageName positionally. The parent stub signature stays at
+        // 0 params so existing overrides `prepareAddData()` remain LSP-valid
+        // (a child is NOT allowed to declare FEWER parameters than its parent).
+        // PHP silently discards the extra positional argument when the child
+        // declares no param for it; new consumers can widen their override
+        // with `$pageName = null` (LSP allows adding optional parameters on
+        // a child) to receive the value explicitly. Either way also works
+        // via `$this->currentCrudPageName` set above.
+        $this->prepareAddData($pageName);
         if ($this->modalFullScreen) {
             $this->formPageVisible = true;
             $this->dispatch('mrcatz-form-page-opened');
@@ -132,10 +151,11 @@ class MrCatzComponent extends Component
     public function selectChangeValue($value, $id) {}
 
     #[On(MrCatzEvent::PREPARE_EDIT)]
-    public function listenEditData($data): void
+    public function listenEditData($data, $pageName = null): void
     {
+        $this->currentCrudPageName = $pageName;
         $this->isEdit = true;
-        $this->prepareEditData($data);
+        $this->prepareEditData($data, $pageName);
         if ($this->modalFullScreen) {
             $this->formPageVisible = true;
             $this->dispatch('mrcatz-form-page-opened');
@@ -145,17 +165,22 @@ class MrCatzComponent extends Component
     public function prepareEditData($data) {}
 
     #[On(MrCatzEvent::PREPARE_DELETE)]
-    public function listenDeleteData($data): void
+    public function listenDeleteData($data, $pageName = null): void
     {
-        $this->prepareDeleteData($data);
+        $this->currentCrudPageName = $pageName;
+        $this->prepareDeleteData($data, $pageName);
     }
 
     public function prepareDeleteData($data) {}
 
     #[On(MrCatzEvent::BULK_DELETE)]
-    public function listenBulkDeleteData($selectedRows): void
+    public function listenBulkDeleteData($selectedRows, $pageName = null): void
     {
-        $this->dropBulkData($selectedRows);
+        $this->currentCrudPageName = $pageName;
+        // Pass $pageName positionally — old `dropBulkData($selectedRows)`
+        // overrides discard it, new overrides can widen to
+        // `dropBulkData($selectedRows, $pageName = null)` to receive it.
+        $this->dropBulkData($selectedRows, $pageName);
     }
 
     public function dropBulkData($selectedRows) {}
@@ -171,6 +196,10 @@ class MrCatzComponent extends Component
      * "bulkFormData.your_field_id" so processBulkActionData receives
      * the values).
      *
+     * v1.29.22+: the active datatable's `setPageName()` is available via
+     * `$this->currentCrudPageName` so overrides can branch per datatable on
+     * multi-CRUD pages without changing their method signature.
+     *
      * @return array|string
      */
     public function setBulkForm(string $id)
@@ -184,31 +213,45 @@ class MrCatzComponent extends Component
      * @param string $id            The MrCatzBulkAction id that fired.
      * @param array  $selectedRows  IDs of the currently selected rows.
      * @param array  $bulkFormData  Form values (only populated for mode=form).
+     *
+     * v1.29.22+: `$this->currentCrudPageName` holds the originating datatable's
+     * setPageName() so multi-CRUD pages can branch on it.
      */
     public function processBulkActionData(string $id, array $selectedRows, array $bulkFormData): void {}
 
     #[On(MrCatzEvent::INLINE_UPDATE)]
-    public function listenInlineUpdate($rowData, $columnKey, $newValue): void
+    public function listenInlineUpdate($rowData, $columnKey, $newValue, $pageName = null): void
     {
-        $this->onInlineUpdate($rowData, $columnKey, $newValue);
+        $this->currentCrudPageName = $pageName;
+        // Pass $pageName positionally — old 3-arg overrides discard it,
+        // new overrides can widen to accept it.
+        $this->onInlineUpdate($rowData, $columnKey, $newValue, $pageName);
     }
 
     public function onInlineUpdate($rowData, $columnKey, $newValue) {}
 
     #[On(MrCatzEvent::ROW_CLICK)]
-    public function listenRowClick($data): void
+    public function listenRowClick($data, $pageName = null): void
     {
-        $this->onRowClick($data);
+        $this->currentCrudPageName = $pageName;
+        $this->onRowClick($data, $pageName);
     }
 
     public function onRowClick($data) {}
 
     public function dispatch_to_view(bool $condition, string $type): void
     {
+        // Emit the currently-open CRUD's pageName so datatable-scripts can
+        // close the correct namespaced modal on success (`modal-data-<name>`
+        // / `modal-data-delete-<name>`). Falls back to null → '' suffix for
+        // single-CRUD pages, byte-identical to pre-v1.29.22.
+        $pageName = $this->currentCrudPageName ?? null;
+
         if (!$condition) {
             $this->dispatch(MrCatzEvent::REFRESH_DATA, [
-                'status' => false,
-                'text' => $this->title . ' ' . mrcatz_lang('failed')
+                'status'   => false,
+                'text'     => $this->title . ' ' . mrcatz_lang('failed'),
+                'pageName' => $pageName,
             ]);
             return;
         }
@@ -221,16 +264,18 @@ class MrCatzComponent extends Component
         };
 
         $this->dispatch(MrCatzEvent::REFRESH_DATA, [
-            'status' => true,
-            'text' => $this->title . ' ' . mrcatz_lang('success') . ' ' . $text
+            'status'   => true,
+            'text'     => $this->title . ' ' . mrcatz_lang('success') . ' ' . $text,
+            'pageName' => $pageName,
         ]);
     }
 
     public function show_notif(string $type, string $text): void
     {
         $this->dispatch(MrCatzEvent::SHOW_NOTIF, [
-            'type' => $type,
-            'text' => $text
+            'type'     => $type,
+            'text'     => $text,
+            'pageName' => $this->currentCrudPageName ?? null,
         ]);
     }
 

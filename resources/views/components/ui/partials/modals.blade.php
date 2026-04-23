@@ -12,14 +12,24 @@
     </div>
 @endif
 
+@php
+    // v1.29.22+ — all modals rendered by this file (export, bulk-delete,
+    // mobile-columns, mobile-preset, reset-confirm) suffix their DOM ids
+    // with `setPageName()` when it's non-default so two tables on one page
+    // (multi-CRUD) don't collide on identical dialog elements. `$_ms` stays
+    // '' for single-CRUD pages — byte-identical to pre-v1.29.22 ids.
+    $_ms = $this->setPageName() === 'page' ? '' : '-' . $this->setPageName();
+    $exportModalId = 'modal-export' . $_ms;
+@endphp
+
 {{-- Export modal --}}
 @if($showExportButton)
-    <dialog id="modal-export" class="modal modal-bottom sm:modal-middle" wire:ignore.self
+    <dialog id="{{ $exportModalId }}" class="modal modal-bottom sm:modal-middle" wire:ignore.self
             x-data="{ format: 'pdf', scope: 'filtered', includeConditions: true, get hasConditions() { return ($wire.exportPreview || []).length > 0 } }"
-            aria-modal="true" aria-labelledby="modal-export-title">
-        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg" x-trap.noscroll="document.getElementById('modal-export')?.open">
+            aria-modal="true" aria-labelledby="{{ $exportModalId }}-title">
+        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg" x-trap.noscroll="document.getElementById('{{ $exportModalId }}')?.open">
             <div class="flex items-center justify-between pb-4 mb-5 border-b border-base-content/10">
-                <h3 id="modal-export-title" class="text-lg font-bold text-base-content flex items-center gap-2">
+                <h3 id="{{ $exportModalId }}-title" class="text-lg font-bold text-base-content flex items-center gap-2">
                     {!! mrcatz_icon('download', 'text-primary') !!}
                     {{ mrcatz_lang('export_title') }}
                 </h3>
@@ -114,7 +124,7 @@
 
             <div class="modal-action pt-4 mt-4 border-t border-base-content/10">
                 <button class="btn btn-primary gap-2 px-6 shadow-sm"
-                        x-on:click="$dispatch('mrcatz-export-started', { format: format }); $wire.exportData(format, scope, hasConditions && includeConditions); document.getElementById('modal-export').close();">
+                        x-on:click="$dispatch('mrcatz-export-started', { format: format }); $wire.exportData(format, scope, hasConditions && includeConditions); document.getElementById('{{ $exportModalId }}').close();">
                     {!! mrcatz_icon('download', 'text-lg') !!}
                     {{ mrcatz_lang('btn_export') }}
                 </button>
@@ -180,17 +190,17 @@
 @endif
 
 {{-- Reset confirmation modal --}}
-<dialog id="modal-reset-confirm" class="modal modal-bottom sm:modal-middle" aria-modal="true" aria-labelledby="modal-reset-title">
-    <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-reset-confirm')?.open">
+<dialog id="modal-reset-confirm{{ $_ms }}" class="modal modal-bottom sm:modal-middle" aria-modal="true" aria-labelledby="modal-reset-title{{ $_ms }}">
+    <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-reset-confirm{{ $_ms }}')?.open">
         <div class="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
             {!! mrcatz_icon('restart_alt', 'text-2xl text-warning') !!}
         </div>
-        <h3 id="modal-reset-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
+        <h3 id="modal-reset-title{{ $_ms }}" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('reset_title') }}</h3>
         <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('reset_desc') }}</p>
         <div class="flex gap-2 justify-center">
             <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
             <button class="btn btn-warning btn-sm"
-                    x-on:click="$wire.resetData(); document.getElementById('modal-reset-confirm')?.close();">
+                    x-on:click="$wire.resetData(); document.getElementById('modal-reset-confirm{{ $_ms }}')?.close();">
                 {{ mrcatz_lang('btn_yes_reset') }}
             </button>
         </div>
@@ -200,17 +210,17 @@
 
 {{-- Bulk delete modal --}}
 @if($bulkPrimaryKey !== null && (!property_exists($this, 'showBulkDeleteAction') || $this->showBulkDeleteAction))
-    <dialog id="modal-bulk-delete" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-bulk-delete-title">
-        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-bulk-delete')?.open">
+    <dialog id="modal-bulk-delete{{ $_ms }}" class="modal modal-bottom sm:modal-middle" wire:ignore.self aria-modal="true" aria-labelledby="modal-bulk-delete{{ $_ms }}-title">
+        <div class="modal-box bg-base-100 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-sm text-center" x-data x-trap.noscroll="document.getElementById('modal-bulk-delete{{ $_ms }}')?.open">
             <div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
                 {!! mrcatz_icon('delete_sweep', 'text-2xl text-error') !!}
             </div>
-            <h3 id="modal-bulk-delete-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
+            <h3 id="modal-bulk-delete{{ $_ms }}-title" class="text-base font-bold text-base-content mb-1">{{ mrcatz_lang('bulk_delete_title') }}</h3>
             <p class="text-sm text-base-content/50 mb-6">{{ mrcatz_lang('bulk_delete_desc') }}</p>
             <div class="flex gap-2 justify-center">
                 <form method="dialog"><button class="btn btn-ghost btn-sm">{{ mrcatz_lang('btn_cancel') }}</button></form>
                 <button class="btn btn-error btn-sm"
-                        x-on:click="$wire.bulkDelete(); document.getElementById('modal-bulk-delete')?.close();">
+                        x-on:click="$wire.bulkDelete(); document.getElementById('modal-bulk-delete{{ $_ms }}')?.close();">
                     {{ mrcatz_lang('btn_yes_delete') }}
                 </button>
             </div>
@@ -221,15 +231,15 @@
 
 {{-- Mobile columns bottom-sheet --}}
 @if($enableColumnVisibility)
-    <dialog id="modal-mobile-columns" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-columns-title">
+    <dialog id="modal-mobile-columns{{ $_ms }}" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-columns-title{{ $_ms }}">
         <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
             <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
-                <h3 id="modal-columns-title" class="text-sm font-bold text-base-content flex items-center gap-2">
+                <h3 id="modal-columns-title{{ $_ms }}" class="text-sm font-bold text-base-content flex items-center gap-2">
                     {!! mrcatz_icon('view_column', 'text-primary') !!}
                     {{ mrcatz_lang('col_visibility') }}
                 </h3>
                 <button class="btn btn-ghost btn-sm btn-circle hover:bg-base-200"
-                        onclick="document.getElementById('modal-mobile-columns')?.close()">{!! mrcatz_icon('close') !!}</button>
+                        onclick="document.getElementById('modal-mobile-columns{{ $_ms }}')?.close()">{!! mrcatz_icon('close') !!}</button>
             </div>
             <div class="px-5 py-4 space-y-1 max-h-[60vh] overflow-y-auto">
                 @foreach(range(0, $totalCols - 1) as $ci)
@@ -248,10 +258,10 @@
 
 {{-- Mobile preset bottom-sheet --}}
 @if(count($filters) > 0 || $showSearch)
-    <dialog id="modal-mobile-preset" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-preset-title">
+    <dialog id="modal-mobile-preset{{ $_ms }}" class="modal modal-bottom sm:hidden" aria-modal="true" aria-labelledby="modal-preset-title{{ $_ms }}">
         <div class="modal-box bg-base-100 rounded-t-2xl shadow-2xl max-w-lg p-0">
             <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-base-content/10">
-                <h3 id="modal-preset-title" class="text-sm font-bold text-base-content flex items-center gap-2">
+                <h3 id="modal-preset-title{{ $_ms }}" class="text-sm font-bold text-base-content flex items-center gap-2">
                     {!! mrcatz_icon('bookmarks', 'text-primary') !!}
                     {{ mrcatz_lang('filter_preset') }}
                 </h3>

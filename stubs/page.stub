@@ -17,8 +17,14 @@ class {{name}}Page extends MrCatzComponent
      * If this method is overridden, the @section('forms') from Blade form file ({{snake}}_form.blade.php) is not required.
      * If not overridden, the form will use the @section('forms') from Blade file as usual.
      *
+     * v1.29.22+: the `$pageName` argument is set to the originating
+     * datatable's `setPageName()` — use it to return different fields per
+     * CRUD when this page hosts multiple datatables. Ignore it for
+     * single-CRUD pages; PHP silently discards extra args on the older
+     * `setForm(): array` signature.
+     *
      * Example:
-     * public function setForm(): array
+     * public function setForm($pageName = null): array
      * {
      *     return [
      *         MrCatzFormField::text('name', label: 'Name', rules: 'required|max:255', icon: 'person'),
@@ -49,7 +55,12 @@ class {{name}}Page extends MrCatzComponent
             ->layout('components.layouts.admin_layout');
     }
 
-    public function prepareAddData()
+    // v1.29.22+: each prepare*/handle hook receives an optional `$pageName`
+    // (the `setPageName()` of the datatable that triggered it). Branch on it
+    // when hosting multiple CRUDs on one page; ignore it otherwise — PHP
+    // allows callers to pass extra args to methods with fewer parameters.
+
+    public function prepareAddData($pageName = null)
     {
         $this->form_title = 'Add {{name}}';
         $this->resetErrorBag();
@@ -57,7 +68,7 @@ class {{name}}Page extends MrCatzComponent
         // Reset form fields
     }
 
-    public function prepareEditData($data)
+    public function prepareEditData($data, $pageName = null)
     {
         $this->id = $data['id'];
         $this->form_title = 'Edit {{name}}';
@@ -66,7 +77,7 @@ class {{name}}Page extends MrCatzComponent
         // Set form fields from $data
     }
 
-    public function prepareDeleteData($data)
+    public function prepareDeleteData($data, $pageName = null)
     {
         $this->id = $data['id'];
         $this->form_title = 'Delete {{name}}';
@@ -80,6 +91,9 @@ class {{name}}Page extends MrCatzComponent
         //
         // If using manual Blade form:
         // $this->validate([...]);
+        //
+        // For multi-CRUD pages: $this->currentCrudPageName holds the pageName
+        // of the datatable whose modal was open, so you can branch on it.
 
         if ($this->isEdit) {
             $record = {{name}}::find($this->id);
@@ -104,15 +118,16 @@ class {{name}}Page extends MrCatzComponent
         $this->dispatch_to_view($delete, 'delete');
     }
 
-    public function dropBulkData($selectedRows)
+    public function dropBulkData($selectedRows, $pageName = null)
     {
         if (empty($selectedRows)) return;
 
         $count = {{name}}::whereIn('id', $selectedRows)->delete();
 
         $this->dispatch('refresh-data', [
-            'status' => true,
-            'text' => $count . ' {{lower}} deleted successfully!'
+            'status'   => true,
+            'text'     => $count . ' {{lower}} deleted successfully!',
+            'pageName' => $pageName,
         ]);
     }
 }

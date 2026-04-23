@@ -1,6 +1,20 @@
 {{-- Toolbar --}}
+@php
+    // v1.29.22+ — `modal-mobile-preset`, `modal-mobile-columns`,
+    // `modal-reset-confirm` all live in partials/modals.blade.php with
+    // setPageName()-based suffixes; the click handlers here must resolve
+    // the same id.
+    $_ms = $this->setPageName() === 'page' ? '' : '-' . $this->setPageName();
+
+    // v1.29.22+ — when the table opts out of the mobile card layout
+    // (`$showCardOnMobile = false`) we also skip the compact mobile
+    // toolbar so the desktop toolbar is what renders at every breakpoint.
+    $_scm = $this->showCardOnMobile ?? true;
+@endphp
+
 
 {{-- ========== MOBILE TOOLBAR (md:hidden) ========== --}}
+@if ($_scm)
 <div class="flex flex-col gap-2 mb-4 md:hidden">
     {{-- Row 1: Search full-width --}}
     @if($showSearch)
@@ -31,14 +45,14 @@
 
         @if(count($filters) > 0 || $showSearch)
             <button class="btn btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom min-w-[44px] min-h-[44px]" data-tip="{{ mrcatz_lang('filter_preset') }}"
-                    @click="document.getElementById('modal-mobile-preset')?.showModal()">
+                    @click="document.getElementById('modal-mobile-preset{{ $_ms }}')?.showModal()">
                 {!! mrcatz_icon('bookmarks', 'text-xl') !!}
             </button>
         @endif
 
         @if($enableColumnVisibility)
             <button class="btn btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom min-w-[44px] min-h-[44px]" data-tip="{{ mrcatz_lang('col_visibility') }}"
-                    @click="document.getElementById('modal-mobile-columns')?.showModal()">
+                    @click="document.getElementById('modal-mobile-columns{{ $_ms }}')?.showModal()">
                 {!! mrcatz_icon('view_column', 'text-xl') !!}
             </button>
         @endif
@@ -47,7 +61,7 @@
             <button class="btn btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom min-w-[44px] min-h-[44px]" data-tip="{{ mrcatz_lang('btn_reset') }}"
                     x-on:click="
                         if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
-                            document.getElementById('modal-reset-confirm')?.showModal()
+                            document.getElementById('modal-reset-confirm{{ $_ms }}')?.showModal()
                         } else {
                             $wire.resetData()
                         }
@@ -88,6 +102,7 @@
         </div>
     @endif
 </div>
+@endif {{-- /$_scm — mobile toolbar --}}
 
 {{-- ========== DESKTOP TOOLBAR (hidden md:flex) ========== --}}
 {{-- Desktop toolbar wraps gracefully when the table is rendered inside a
@@ -96,8 +111,10 @@
      than md, so the left + right action groups can exceed the row width and
      overflow horizontally. flex-wrap + gap-y-2 keeps them on separate lines
      when they don't fit, and max-w-full on the search input lets it shrink
-     below its 18rem ideal without blowing out the layout. --}}
-<div class="hidden md:flex md:flex-wrap md:items-center md:justify-between gap-y-2 gap-x-3 mb-4">
+     below its 18rem ideal without blowing out the layout.
+     When $showCardOnMobile is false the toolbar drops its `hidden md:`
+     gate so it renders at every breakpoint (desktop layout everywhere). --}}
+<div class="{{ $_scm ? 'hidden md:flex md:flex-wrap md:items-center md:justify-between' : 'flex flex-wrap items-center justify-between' }} gap-y-2 gap-x-3 mb-4">
     <div class="flex items-center gap-2 flex-wrap">
         @if($showSearch)
             <form wire:submit="searchData" class="min-w-0">
@@ -198,7 +215,7 @@
             <button class="btn btn-md btn-ghost btn-square border border-base-content/15 tooltip tooltip-bottom" data-tip="{{ mrcatz_lang('btn_reset') }}"
                     x-on:click="
                         if ($wire.search || $wire.activeFilters.filter(f => f.value != null).length > 0) {
-                            document.getElementById('modal-reset-confirm')?.showModal()
+                            document.getElementById('modal-reset-confirm{{ $_ms }}')?.showModal()
                         } else {
                             $wire.resetData()
                         }
@@ -287,7 +304,7 @@
 
             @if($showBulkDelete)
                 <button class="btn btn-xs btn-error btn-outline gap-1 flex-1 sm:flex-none min-w-0"
-                        x-on:click="document.getElementById('modal-bulk-delete')?.showModal()">
+                        x-on:click="document.getElementById('modal-bulk-delete{{ $_ms }}')?.showModal()">
                     {!! mrcatz_icon('delete', 'text-xs shrink-0') !!}
                     <span class="truncate">{{ mrcatz_lang('btn_delete') }}</span>
                 </button>

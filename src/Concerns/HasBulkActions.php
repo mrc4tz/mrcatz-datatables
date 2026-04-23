@@ -47,6 +47,6 @@ trait HasBulkActions
         if (empty($this->selectedRows)) return;
         $rows = $this->selectedRows;
         $this->clearSelection();
-        $this->dispatch(MrCatzEvent::BULK_DELETE, selectedRows: $rows);
+        $this->dispatch(MrCatzEvent::BULK_DELETE, $rows, $this->setPageName());
     }
 }

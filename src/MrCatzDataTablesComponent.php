@@ -69,6 +69,27 @@ class MrCatzDataTablesComponent extends MrCatzComponent
     public $hasMoreRows = false;
 
     /**
+     * Whether the mobile breakpoint (<md) renders each row as a stacked
+     * card (the default editorial look) or falls back to the same
+     * horizontally-scrolling table used at md+ widths.
+     *
+     * Set to `false` on a child component when your table's columns are
+     * dense enough that the card layout hides useful context, or when
+     * you just want mobile parity with desktop for a data-first view:
+     *
+     *     public $showCardOnMobile = false;
+     *
+     * Flips three things at render time:
+     *   1. Mobile card list (`table-content.blade.php`) stops rendering.
+     *   2. Desktop table loses its `hidden md:block` gate and shows at
+     *      every breakpoint, horizontally scrolling on narrow screens.
+     *   3. Mobile toolbar is skipped in favour of the desktop toolbar
+     *      at every breakpoint, so search / filter / bulk-action chips
+     *      stay visible without the mobile-specific compact layout.
+     */
+    public $showCardOnMobile = true;
+
+    /**
      * Whether to render the "Load more" button when $usePagination = false
      * and the result set exceeds $maxRows. Default true.
      *
@@ -111,7 +132,7 @@ class MrCatzDataTablesComponent extends MrCatzComponent
 
     public function rowClicked($data): void
     {
-        $this->dispatch(MrCatzEvent::ROW_CLICK, data: $data);
+        $this->dispatch(MrCatzEvent::ROW_CLICK, $data, $this->setPageName());
     }
 
     /**
@@ -305,13 +326,24 @@ class MrCatzDataTablesComponent extends MrCatzComponent
             }
         }
 
-        $this->dispatch(MrCatzEvent::INLINE_UPDATE, rowData: $rowData, columnKey: $columnKey, newValue: $newValue);
+        $this->dispatch(MrCatzEvent::INLINE_UPDATE, $rowData, $columnKey, $newValue, $this->setPageName());
         $this->dispatch('inline-save-done', cellId: $rowIndex . '_' . $columnKey);
     }
 
-    public function addData(): void { $this->dispatch(MrCatzEvent::ADD_DATA); }
-    public function editData($data): void { $this->dispatch(MrCatzEvent::EDIT_DATA, $data); }
-    public function deleteData($data): void { $this->dispatch(MrCatzEvent::DELETE_DATA, $data); }
+    // Dispatches include the table's own `setPageName()` so a single page
+    // component can host multiple CRUDs (each datatable has its own
+    // setPageName). datatable-scripts.blade relays the pageName into the
+    // page's prepareAddData / prepareEditData / prepareDeleteData dispatch
+    // so `listenAddData` etc. can set `currentCrudPageName` before invoking
+    // the user hook and before the form-builder calls `setForm($pageName)`.
+    // Positional payloads so the JS listeners in datatable-scripts can index
+    // them as arrays (`d[0]`, `d[1]`). Named-arg dispatches arrive as objects
+    // on the JS side and break the index access — silently forwarding a null
+    // `$data` to the server's prepareEditData / prepareDeleteData, which then
+    // fails dependency resolution because `$data` is a required parameter.
+    public function addData(): void    { $this->dispatch(MrCatzEvent::ADD_DATA,    $this->setPageName()); }
+    public function editData($data): void   { $this->dispatch(MrCatzEvent::EDIT_DATA,   $data, $this->setPageName()); }
+    public function deleteData($data): void { $this->dispatch(MrCatzEvent::DELETE_DATA, $data, $this->setPageName()); }
 
     #[On(MrCatzEvent::SEARCH_TYPING)]
     public function searchData(): void

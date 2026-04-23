@@ -18,7 +18,7 @@ trait HasExport
     {
         $this->exportPreview = $this->buildExportPreview();
         $this->updateExportCount('filtered');
-        $this->dispatch(MrCatzEvent::OPEN_EXPORT_MODAL);
+        $this->dispatch(MrCatzEvent::OPEN_EXPORT_MODAL, $this->setPageName());
     }
 
     public function updateExportCount(string $scope = 'filtered'): void

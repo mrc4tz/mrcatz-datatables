@@ -69,8 +69,9 @@ trait HasCustomBulkActions
 
         $this->dispatch(
             MrCatzEvent::BULK_ACTION_OPEN,
-            action: $found,
-            selectedRows: $this->selectedRows,
+            $found,
+            $this->selectedRows,
+            $this->setPageName(),
         );
     }
 
@@ -80,8 +81,14 @@ trait HasCustomBulkActions
      * toolbar closes and checkboxes reset.
      */
     #[\Livewire\Attributes\On(MrCatzEvent::BULK_ACTION_DONE)]
-    public function onBulkActionDone(): void
+    public function onBulkActionDone($pageName = null): void
     {
+        // When a page hosts multiple bulk-action-capable datatables, only
+        // the originating table should reset its selection — otherwise
+        // unrelated tables with their own selection state also get cleared.
+        // Null `$pageName` = legacy dispatch (no scope) → clear to preserve
+        // pre-v1.29.22 behaviour.
+        if ($pageName !== null && $pageName !== $this->setPageName()) return;
         $this->clearSelection();
     }
 }
