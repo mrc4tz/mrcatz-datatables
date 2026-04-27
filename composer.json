@@ -4,6 +4,12 @@
     "keywords": ["laravel", "livewire", "datatable", "crud", "daisyui", "tailwind"],
     "type": "library",
     "license": "MIT",
+    "homepage": "https://datatable.catzoid.tech",
+    "support": {
+        "docs": "https://datatable.catzoid.tech",
+        "source": "https://github.com/mrc4tz/mrcatz-datatables",
+        "issues": "https://github.com/mrc4tz/mrcatz-datatables/issues"
+    },
     "authors": [
         {
             "name": "Ryan N.R.",
