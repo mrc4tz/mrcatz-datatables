@@ -43,10 +43,12 @@ trait HasExport
                 $df = $filter->getDataFilter();
                 $id = $df['id'];
                 $activeValue = null;
+                $activeEntry = null;
 
                 foreach ($this->activeFilters as $af) {
                     if ($af['id'] === $id) {
                         $activeValue = $af['value'];
+                        $activeEntry = $af;
                         break;
                     }
                 }
@@ -74,6 +76,30 @@ trait HasExport
                     } elseif ($df['key'] !== '-') {
                         $query = $this->exportDateWhere($query, $df['key'], $df['format'] ?? 'date', $df['condition'] ?? '=', $activeValue);
                     }
+                } elseif ($type === 'check') {
+                    // Mirrors MrCatzDataTables::applyCheckFilter — value is a
+                    // list array of selected option values; non-callback path
+                    // uses whereIn / whereNotIn driven by exclude_mode. The
+                    // generic `where($key, $condition, $value)` fallback can
+                    // not be reused here because the condition is `whereIn`
+                    // (a builder method name, not a SQL operator).
+                    $values = is_array($activeValue) ? array_values($activeValue) : [];
+
+                    if ($callback !== null) {
+                        $query = $callback($query, $values);
+                        continue;
+                    }
+
+                    if (empty($values)) continue;
+                    if (($df['key'] ?? '-') === '-') continue;
+
+                    $exclude = (bool) ($activeEntry['exclude_mode'] ?? false);
+                    $base    = $df['condition'] ?? 'whereIn';
+                    $method  = $exclude
+                        ? ($base === 'whereNotIn' ? 'whereIn' : 'whereNotIn')
+                        : $base;
+
+                    $query = $query->{$method}($df['key'], $values);
                 } else {
                     if ($callback !== null) {
                         $query = $callback($query, $activeValue);

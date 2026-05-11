@@ -32,7 +32,7 @@
                     <div class="w-full sm:w-auto sm:min-w-48" wire:show="filterShow[{{$f}}]">
                         <label class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1 block">{{ $filter['label'] }}</label>
                         <input type="{{ $htmlType }}"
-                               class="input input-bordered input-sm w-full text-sm focus:input-primary transition-all duration-200"
+                               class="input input-bordered input-sm h-8 w-full text-sm focus:input-primary transition-all duration-200"
                                id="{{$filter['id']."_".$prefix}}"
                                @if($filter['min_date'] ?? null) min="{{ $filter['min_date'] }}" @endif
                                @if($filter['max_date'] ?? null) max="{{ $filter['max_date'] }}" @endif
@@ -99,7 +99,7 @@
                             <button type="button"
                                     x-ref="trigger"
                                     @click="togglePopover($event.currentTarget)"
-                                    class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
+                                    class="w-full flex items-center justify-between gap-2 h-8 px-3 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': drOpen }">
                                 <span class="flex items-center gap-2 min-w-0 flex-1">
                                     {!! mrcatz_icon('event', 'text-base-content/50 shrink-0 w-4 h-4') !!}
@@ -255,7 +255,7 @@
                             <button type="button"
                                     x-ref="trigger"
                                     @click="togglePopover($event.currentTarget)"
-                                    class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
+                                    class="w-full flex items-center justify-between gap-2 h-8 px-3 text-sm rounded-lg border border-base-content/20 bg-base-100 hover:border-primary focus:border-primary focus:outline-none transition-colors"
                                     :class="{ 'border-primary': ckOpen }">
                                 <span class="flex items-center gap-2 min-w-0 flex-1" :title="triggerText()">
                                     {!! mrcatz_icon('filter_alt', 'text-base-content/50 shrink-0 w-4 h-4') !!}
