@@ -64,7 +64,7 @@ trait HasExport
                     if (!$from && !$to) continue;
 
                     if ($callback !== null) {
-                        $query = $callback($query, ['from' => $from, 'to' => $to]);
+                        $query = $this->exportApplyBuilderCallback($callback, $query, ['from' => $from, 'to' => $to]);
                     } elseif ($df['key'] !== '-') {
                         $format = $df['format'] ?? 'date';
                         if ($from) $query = $this->exportDateWhere($query, $df['key'], $format, '>=', $from);
@@ -72,7 +72,7 @@ trait HasExport
                     }
                 } elseif ($type === 'date') {
                     if ($callback !== null) {
-                        $query = $callback($query, $activeValue);
+                        $query = $this->exportApplyBuilderCallback($callback, $query, $activeValue);
                     } elseif ($df['key'] !== '-') {
                         $query = $this->exportDateWhere($query, $df['key'], $df['format'] ?? 'date', $df['condition'] ?? '=', $activeValue);
                     }
@@ -86,7 +86,7 @@ trait HasExport
                     $values = is_array($activeValue) ? array_values($activeValue) : [];
 
                     if ($callback !== null) {
-                        $query = $callback($query, $values);
+                        $query = $this->exportApplyBuilderCallback($callback, $query, $values);
                         continue;
                     }
 
@@ -102,7 +102,7 @@ trait HasExport
                     $query = $query->{$method}($df['key'], $values);
                 } else {
                     if ($callback !== null) {
-                        $query = $callback($query, $activeValue);
+                        $query = $this->exportApplyBuilderCallback($callback, $query, $activeValue);
                     } elseif ($df['key'] !== '-') {
                         $query = $query->where($df['key'], $df['condition'], $activeValue);
                     }
@@ -121,6 +121,20 @@ trait HasExport
         }
 
         return $query;
+    }
+
+    /**
+     * Invoke a user-provided filter callback against the export builder. Mirrors
+     * MrCatzDataTables::applyBuilderCallback — callbacks may either return the
+     * modified builder (legacy) or mutate $query in place and return void/null
+     * (Laravel-idiomatic). When the callback returns null we keep the existing
+     * builder so we never propagate null through the export pipeline (would
+     * blow up the subsequent whereIn / where calls).
+     */
+    private function exportApplyBuilderCallback(\Closure $callback, mixed $query, mixed $value): mixed
+    {
+        $result = $callback($query, $value);
+        return $result !== null ? $result : $query;
     }
 
     /**

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.29] - 2026-05-13
+
+### Fixed
+- **`HasExport::buildExportQuery` blows up with `Call to a member function whereIn() on null` when an export runs against a filter whose callback mutates the query in place.** v1.29.28 fixed the same class of bug inside the live datatable engine (`MrCatzDataTables::applyFilter*`), but the export pipeline carries its own near-identical filter loop in `HasExport::buildExportQuery` that wasn't updated. All four user-callback callsites there (date_range, date, check, and the legacy select fallback) did `$query = $callback($query, $value)` — so a callback like `function ($q, $v) { $q->whereDate('foo', $v); }` (no return) overwrote `$query` with `null`, and the very next statement — the bulk-selection guard or a subsequent filter's `where` — exploded on the null builder. The four callsites now route through a new private trait helper `exportApplyBuilderCallback($cb, $query, $value)` that mirrors the engine helper: it returns the callback's result when non-null, otherwise hands back the original `$query`. Behaviour stays identical for callbacks that already returned the modified builder; void-returning callbacks (which previously worked everywhere else in Laravel's query API) now stop crashing the export count + download flow.
+
 ## [1.29.28] - 2026-05-13
 
 ### Fixed
