@@ -180,7 +180,7 @@ class MrCatzDataTables
 
             if ($hasValue) {
                 if ($hasCallback) {
-                    $this->dataBuilder = $cbList[$x]($this->dataBuilder, $kv['value']);
+                    $this->applyBuilderCallback($cbList[$x], $kv['value']);
                 } else {
                     if ($kv['key'] != '-') {
                         $this->dataBuilder = $this->dataBuilder->where($kv['key'], $kv['condition'], $kv['value']);
@@ -188,7 +188,7 @@ class MrCatzDataTables
                 }
             } else {
                 if ($hasCallback) {
-                    $this->dataBuilder = $cbList[$x]($this->dataBuilder, $kv['value']);
+                    $this->applyBuilderCallback($cbList[$x], $kv['value']);
                 }
             }
         }
@@ -206,13 +206,13 @@ class MrCatzDataTables
         if (empty($value)) {
             // Empty value: only run callback if it explicitly handles empty input
             if ($callback !== null) {
-                $this->dataBuilder = $callback($this->dataBuilder, $value);
+                $this->applyBuilderCallback($callback, $value);
             }
             return;
         }
 
         if ($callback !== null) {
-            $this->dataBuilder = $callback($this->dataBuilder, $value);
+            $this->applyBuilderCallback($callback, $value);
             return;
         }
 
@@ -234,7 +234,7 @@ class MrCatzDataTables
         $values = is_array($value) ? array_values($value) : [];
 
         if ($callback !== null) {
-            $this->dataBuilder = $callback($this->dataBuilder, $values);
+            $this->applyBuilderCallback($callback, $values);
             return;
         }
 
@@ -269,13 +269,13 @@ class MrCatzDataTables
         // Both empty: only callbacks that explicitly handle empty input run
         if (!$hasFrom && !$hasTo) {
             if ($callback !== null) {
-                $this->dataBuilder = $callback($this->dataBuilder, ['from' => null, 'to' => null]);
+                $this->applyBuilderCallback($callback, ['from' => null, 'to' => null]);
             }
             return;
         }
 
         if ($callback !== null) {
-            $this->dataBuilder = $callback($this->dataBuilder, ['from' => $from, 'to' => $to]);
+            $this->applyBuilderCallback($callback, ['from' => $from, 'to' => $to]);
             return;
         }
 
@@ -286,6 +286,21 @@ class MrCatzDataTables
 
         if ($hasFrom) $this->applyDateComparison($key, $format, '>=', $from);
         if ($hasTo)   $this->applyDateComparison($key, $format, '<=', $to);
+    }
+
+    /**
+     * Invoke a user-provided filter callback with `$this->dataBuilder` and run-time
+     * args. The callback may either return the modified builder (legacy style) or
+     * mutate `$query` in-place and return null/void (Laravel-idiomatic). When the
+     * callback returns null we keep the existing builder so we never assign null
+     * (which would violate the typed property).
+     */
+    private function applyBuilderCallback(\Closure $callback, mixed $value): void
+    {
+        $result = $callback($this->dataBuilder, $value);
+        if ($result !== null) {
+            $this->dataBuilder = $result;
+        }
     }
 
     /**

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.28] - 2026-05-13
+
+### Fixed
+- **`createDateWithCallback` / `createCheckWithCallback` filter blows up with `TypeError` when the user callback mutates `$query` in place and returns void/null.** All seven filter-callback invocations inside `MrCatzDataTables::applyFilter*` did `$this->dataBuilder = $callback($this->dataBuilder, $value)`, directly assigning the callback's return value to a typed property (`Builder|Builder|array`). The documented signature `($query, $value)` suggests a Laravel-idiomatic mutate-via-reference style (matching `where(function ($q) { $q->where(...); })` and the entire query-scope ecosystem), so users naturally wrote `fn($q, $v) => $q->whereDate('foo', $v)` — fine — and `function ($q, $v) { $q->whereDate('foo', $v); }` — boom, `Cannot assign null to property of type Builder|Builder|array`. The check-filter and date-range variants had the same fault. The fix routes every callback invocation through a single new helper `applyBuilderCallback($cb, $value)` that runs the callback against `$this->dataBuilder` and only reassigns when the callback returned a non-null result; legacy callbacks that return the modified builder keep working untouched, while callbacks that just mutate the builder and fall through to an implicit `return null` no longer crash. Covered by two new feature tests (`test_date_filter_callback_mutates_in_place_without_return`, `test_check_filter_callback_mutates_in_place_without_return`).
+
 ## [1.29.27] - 2026-05-12
 
 ### Fixed

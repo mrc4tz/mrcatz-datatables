@@ -880,6 +880,50 @@ class MrCatzDataTablesIntegrationTest extends TestCase
         $this->assertEquals(1, $dt->countRow());
     }
 
+    public function test_date_filter_callback_mutates_in_place_without_return(): void
+    {
+        // Regression: prior versions assigned the callback's return value
+        // directly to $dataBuilder, so a void/null-returning callback (the
+        // Laravel-idiomatic mutate-via-reference style) blew up with a
+        // typed-property assignment error. The callback below mutates $q in
+        // place and returns nothing — engine must keep the existing builder.
+        $this->seedDatedProducts();
+
+        $callback = function ($q, $v) {
+            $q->whereDate('created_at', $v);
+            // no return on purpose
+        };
+
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'd', 'key' => '-', 'value' => '2024-06-15', 'condition' => '-', 'type' => 'date', 'format' => 'date']],
+                [$callback]
+            )
+            ->build();
+
+        $this->assertEquals(1, $dt->countRow());
+    }
+
+    public function test_check_filter_callback_mutates_in_place_without_return(): void
+    {
+        // Same regression on the check-filter callback path.
+        $callback = function ($q, array $values) {
+            $q->whereIn('category', $values);
+            // no return on purpose
+        };
+
+        $dt = $this->createTable(20)
+            ->withColumn('Name', 'name')
+            ->setFilters(
+                [['id' => 'c', 'key' => '-', 'value' => ['electronics', 'furniture'], 'condition' => '-', 'type' => 'check']],
+                [$callback]
+            )
+            ->build();
+
+        $this->assertGreaterThan(0, $dt->countRow());
+    }
+
     public function test_date_range_filter_callback_variant(): void
     {
         $this->seedDatedProducts();
