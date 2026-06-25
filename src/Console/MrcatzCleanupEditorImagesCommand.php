@@ -35,17 +35,38 @@ class MrcatzCleanupEditorImagesCommand extends Command
 
         $cutoff = Carbon::now()->subHours($lifetime);
         $deleted = 0;
+        $failed = 0;
 
-        foreach ($storage->files($tmpPath) as $file) {
-            $lastModified = Carbon::createFromTimestamp($storage->lastModified($file));
+        // List the tmp directory once. The listing response (e.g. S3 ListObjectsV2)
+        // already carries each file's last-modified time, so we avoid a per-file
+        // HeadObject/metadata call — that call can 403 on S3-compatible disks whose
+        // policy permits listing but not HEAD on the object, and it's N requests slower.
+        foreach ($storage->listContents($tmpPath, false) as $item) {
+            if (!$item->isFile()) {
+                continue;
+            }
 
-            if ($lastModified->lt($cutoff)) {
-                $storage->delete($file);
-                $deleted++;
+            $file = $item->path();
+
+            try {
+                $timestamp = $item->lastModified()
+                    ?? $storage->lastModified($file);
+
+                if (Carbon::createFromTimestamp($timestamp)->lt($cutoff)) {
+                    $storage->delete($file);
+                    $deleted++;
+                }
+            } catch (\Throwable $e) {
+                $failed++;
+                $this->warn("Skipped {$file}: {$e->getMessage()}");
             }
         }
 
         $this->info("Deleted {$deleted} expired temporary editor image(s).");
+
+        if ($failed > 0) {
+            $this->warn("Skipped {$failed} file(s) due to storage errors.");
+        }
 
         return self::SUCCESS;
     }

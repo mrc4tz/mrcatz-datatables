@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.30] - 2026-06-26
+
+### Fixed
+- **`mrcatz:cleanup-editor-images` crashes with `UnableToRetrieveMetadata` / `403 Forbidden` on S3-compatible disks.** The command listed the tmp directory with `Storage::files()` (a single `ListObjectsV2`) and then called `$storage->lastModified($file)` for every file — each of which issues a separate `HeadObject` request. On S3-compatible endpoints whose policy permits listing but denies `HEAD` on the object (e.g. `storage.firmanyusi.com`), that per-file metadata call returns `403 Forbidden`, throwing `League\Flysystem\UnableToRetrieveMetadata` and aborting the entire cleanup job. The loop now uses `Storage::listContents($tmpPath, false)`, reading each file's last-modified time straight from the listing response (`ListObjectsV2` already carries `LastModified` per object) — eliminating the per-file `HeadObject` round-trip entirely, which both removes the 403 failure mode and reduces the request count from N+1 to 1. As a safety net, each file is wrapped in a `try/catch`: a single problematic object is skipped with a warning instead of killing the job, and the command reports how many files were skipped due to storage errors.
+
 ## [1.29.29] - 2026-05-13
 
 ### Fixed
