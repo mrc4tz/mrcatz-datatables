@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.31] - 2026-08-21
+
+### Fixed
+- **Saving a form crashes with `UnableToRetrieveMetadata` / `403 Forbidden` when `processEditorImages()` runs its temp-image cleanup.** v1.29.30 fixed this exact failure mode in the `mrcatz:cleanup-editor-images` console command but missed the second copy of the same loop: the private `HasFormBuilder::cleanupExpiredEditorImages()` that `processEditorImages()` invokes inline on every save. It still iterated `Storage::files()` and called `$storage->lastModified($file)` per file — one `HeadObject` each — so a single unreadable object (a ghost listing entry whose `HEAD` returns 403/404, observed on S3-compatible disks such as RustFS/MinIO behind a proxy) threw `League\Flysystem\UnableToRetrieveMetadata` and aborted the whole save, even when the editor content contained no tmp images at all. The inline loop now mirrors the command: it reads each file's last-modified straight from `Storage::listContents()` (one `ListObjectsV2`, no per-file `HeadObject`), skips unreadable entries with a `Log::warning`, and the entire cleanup is best-effort — any storage failure inside it logs a warning instead of breaking the save.
+
 ## [1.29.30] - 2026-06-26
 
 ### Fixed

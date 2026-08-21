@@ -4,6 +4,7 @@ namespace MrCatz\DataTable\Concerns;
 
 use Carbon\Carbon;
 use Closure;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 trait HasFormBuilder
@@ -311,18 +312,39 @@ trait HasFormBuilder
      */
     private function cleanupExpiredEditorImages($storage, string $tmpPath, int $lifetimeHours): void
     {
-        if (!$storage->exists($tmpPath)) {
-            return;
-        }
-
-        $cutoff = Carbon::now()->subHours($lifetimeHours);
-
-        foreach ($storage->files($tmpPath) as $file) {
-            $lastModified = Carbon::createFromTimestamp($storage->lastModified($file));
-
-            if ($lastModified->lt($cutoff)) {
-                $storage->delete($file);
+        try {
+            if (!$storage->exists($tmpPath)) {
+                return;
             }
+
+            $cutoff = Carbon::now()->subHours($lifetimeHours);
+
+            // List the tmp directory once. The listing response (e.g. S3 ListObjectsV2)
+            // already carries each file's last-modified time, so we avoid a per-file
+            // HeadObject/metadata call — that call can fail (403/404) on S3-compatible
+            // disks and must never abort the save this cleanup runs inside of.
+            foreach ($storage->listContents($tmpPath, false) as $item) {
+                if (!$item->isFile()) {
+                    continue;
+                }
+
+                $file = $item->path();
+
+                try {
+                    $timestamp = $item->lastModified()
+                        ?? $storage->lastModified($file);
+
+                    if (Carbon::createFromTimestamp($timestamp)->lt($cutoff)) {
+                        $storage->delete($file);
+                    }
+                } catch (\Throwable $e) {
+                    // Skip unreadable/ghost entries; best-effort housekeeping only.
+                    Log::warning("mrcatz editor-image cleanup skipped {$file}: {$e->getMessage()}");
+                }
+            }
+        } catch (\Throwable $e) {
+            // Cleanup is housekeeping — it must never block the save.
+            Log::warning("mrcatz editor-image cleanup failed for {$tmpPath}: {$e->getMessage()}");
         }
     }
 
