@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.32] - 2026-08-21
+
+### Fixed
+- **Saving a form with an editor image fails with `UnableToCheckFileExistence` / `403 Forbidden` on S3-compatible disks behind a proxy.** When a rich-text image had just been uploaded to `<path>/tmp/` (seconds before hitting Save), `processEditorImages()` gated the move on `$storage->exists()` — a `HeadObject` — and on RustFS/MinIO fronts like `storage.polrestabalong.com` a freshly-written object answers `HeadObject` with `403` for a short window, aborting the whole save. Worse, the `move()` behind that gate (`CopyObject`) on such a fresh object "succeeds" but produces a permanently empty destination. The tmp→permanent move is now a read-rewrite (`get()` + `put()` + `delete()`): `GetObject`/`PutObject`/`DeleteObject` are healthy from the first second on those same disks (verified 4/4 at +0s). A 404 on read skips the URL (e.g. re-saving content whose tmp was already moved), with one short retry for read-freshness hiccups; a failed `delete()` of the source is tolerated because `cleanupExpiredEditorImages()` sweeps the tmp directory later. The removed-image comparison loop is also best-effort now — a storage error there logs a warning instead of failing the save.
+
 ## [1.29.31] - 2026-08-21
 
 ### Fixed

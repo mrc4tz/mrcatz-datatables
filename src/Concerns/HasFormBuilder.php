@@ -267,14 +267,54 @@ trait HasFormBuilder
             $relativePath = str_replace($baseUrl, '', $tmpUrl);
             $relativePath = ltrim($relativePath, '/');
 
-            if (!$storage->exists($relativePath)) {
-                continue;
-            }
-
             $filename = basename($relativePath);
             $permanentPath = $path . '/' . $filename;
 
-            $storage->move($relativePath, $permanentPath);
+            // Pindahkan dengan baca-tulis-ulang (get + put + delete), bukan
+            // move()/CopyObject. Pada beberapa disk S3-compatible di belakang
+            // proxy (RustFS/MinIO), objek yang baru ditulis tidak bisa
+            // di-HeadObject (exists() melempar 403) dan CopyObject-nya
+            // menghasilkan salinan kosong permanen, sementara GetObject /
+            // PutObject / DeleteObject selalu sehat sejak detik nol.
+            $content = null;
+
+            for ($attempt = 1; $attempt <= 2; $attempt++) {
+                try {
+                    $content = $storage->get($relativePath);
+                } catch (\Throwable $e) {
+                    $prev = $e->getPrevious();
+                    $status = $prev && method_exists($prev, 'getStatusCode') ? $prev->getStatusCode() : null;
+
+                    // 404 = file tmp memang tidak ada (mis. save ulang) —
+                    // berhenti mencari dan biarkan URL lama apa adanya.
+                    if ($status === 404) {
+                        $content = false;
+                        break;
+                    }
+                }
+
+                if (is_string($content) && $content !== '') {
+                    break;
+                }
+
+                // Objek belum terbaca (jendela freshnes sesaat) — tunggu
+                // sebentar lalu coba sekali lagi.
+                if ($attempt < 2) {
+                    sleep(1);
+                }
+            }
+
+            if (!is_string($content) || $content === '') {
+                continue;
+            }
+
+            $storage->put($permanentPath, $content);
+
+            try {
+                $storage->delete($relativePath);
+            } catch (\Throwable $e) {
+                // Sisa tmp akan dijemput cleanupExpiredEditorImages nanti.
+            }
 
             $permanentUrl = $storage->url($permanentPath);
             $html = str_replace($tmpUrl, $permanentUrl, $html);
@@ -294,9 +334,14 @@ trait HasFormBuilder
                 $relativePath = str_replace($baseUrl, '', $oldUrl);
                 $relativePath = ltrim($relativePath, '/');
 
-                // Only delete images within our editor path
-                if (str_starts_with($relativePath, $path . '/') && $storage->exists($relativePath)) {
-                    $storage->delete($relativePath);
+                // Only delete images within our editor path. Best-effort:
+                // kegagalan storage di sini tidak boleh menjatuhkan save.
+                try {
+                    if (str_starts_with($relativePath, $path . '/') && $storage->exists($relativePath)) {
+                        $storage->delete($relativePath);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("mrcatz editor-image removal skipped {$relativePath}: {$e->getMessage()}");
                 }
             }
         }
